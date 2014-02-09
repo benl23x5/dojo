@@ -16,7 +16,7 @@ Executable dojo
         blaze-html      == 0.6.*,
         blaze-markup    == 0.5.*,
         containers      == 0.5.*,
-        cgi             == 3001.1.*,
+        cgi             == 3001.1.7.*,
         HDBC            == 2.3.*,
         HDBC-sqlite3    == 2.3.*,
         convertible     == 1.0.*,

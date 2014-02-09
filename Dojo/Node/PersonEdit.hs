@@ -50,15 +50,7 @@ cgiPersonEdit ss inputs
                         return  (Just pid, person)
 
              Nothing
-              -> do     -- Get the current time for when this person was added.
-                        zonedTime       <- liftIO $ Time.getZonedTime
-                        let (pdate, ptime)
-                                        = splitPersonCreateTime
-                                        $ Time.zonedTimeToLocalTime zonedTime
-
-                        !!! record when person was added, use this as key to get back from DB.
-
-                        let person      = zeroPerson pdate ptime "(required)"
+              -> do     let person      = zeroPerson "(required)"
                         return   (Nothing, person)
 
         let result
@@ -94,7 +86,7 @@ cgiPersonEdit_update ss conn mPid person inputs
      | Nothing  <- mPid
      -> do     
         -- Insert the new person.
-        liftIO $ insertPerson conn person'
+        liftIO $ insertPerson conn person
         liftIO $ commit conn
         
 

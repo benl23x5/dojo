@@ -44,14 +44,7 @@ data Person
         , personMobile          :: PersonMobile
 
           -- | Email address.
-        , personEmail           :: PersonEmail 
-
-          -- | Creation time.
-        , personCreateTime      :: PersonCreateTime
-
-          -- | Creation date.
-        , personCreateDate      :: PersonCreateDate }
-
+        , personEmail           :: PersonEmail }
 
 data PersonId           
         = PersonId Integer
