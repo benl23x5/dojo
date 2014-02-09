@@ -1,0 +1,95 @@
+Name:           dojo
+Version:        0.1.0.0
+License:        MIT
+License-file:   LICENSE
+Author:         The Aiki Dojo Strike Force
+Maintainer:     Ben Lippmeier <benl@ouroborus.net>
+Build-Type:     Simple
+Cabal-Version:  >=1.6
+Stability:      experimental
+Synopsis:       Aiki Dojo Web App
+
+Executable dojo
+  Build-Depends: 
+        base            == 4.6.*,
+        time            == 1.4.*,
+        blaze-html      == 0.6.*,
+        blaze-markup    == 0.5.*,
+        containers      == 0.5.*,
+        cgi             == 3001.1.*,
+        HDBC            == 2.3.*,
+        HDBC-sqlite3    == 2.3.*,
+        convertible     == 1.0.*,
+        pureMD5         == 2.1.*,
+        bytestring      == 0.10.*,
+        random          == 1.0.*
+
+
+  Main-is:
+        Main.hs
+
+  Other-modules:
+        Dojo.Data.Attendance
+
+        Dojo.Data.Event.Base
+        Dojo.Data.Event.Presentation
+        Dojo.Data.Event.Database
+        Dojo.Data.Event
+
+        Dojo.Data.Person.Base
+        Dojo.Data.Person.Presentation
+        Dojo.Data.Person.Database
+        Dojo.Data.Person
+
+        Dojo.Data.Session.Base
+        Dojo.Data.Session.Database
+        Dojo.Data.Session
+
+        Dojo.Data.User.Base
+        Dojo.Data.User.Database
+        Dojo.Data.User
+
+        Dojo.Framework.Lens
+        Dojo.Framework.Path
+        Dojo.Framework.Pretty
+        Dojo.Framework.Parse
+        Dojo.Framework
+
+        Dojo.Node.Main
+        Dojo.Node.PersonEdit.Form
+        Dojo.Node.PersonEdit
+
+        Dojo.Node.PersonList
+
+        Dojo.Node.EventEdit.Arg
+        Dojo.Node.EventEdit.Form
+
+        Dojo.Node.EventList
+        Dojo.Node.EventView
+        Dojo.Node.EventEdit
+
+        Dojo.Node.Login
+        Dojo.Node.Logout
+
+        Dojo.Base
+        Dojo.Framework
+        Dojo.Paths
+
+        Config
+                  
+  GHC-options:
+        -Wall
+        -fno-warn-orphans
+        -fno-warn-missing-signatures
+        -fno-warn-unused-do-bind
+
+  Extensions:
+        BangPatterns
+        PatternGuards
+        ParallelListComp
+        OverloadedStrings
+        TypeSynonymInstances
+        FlexibleInstances
+        MultiParamTypeClasses
+        ScopedTypeVariables
+

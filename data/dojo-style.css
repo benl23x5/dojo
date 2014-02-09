@@ -1,0 +1,176 @@
+
+/* Defaults and Layout ************************************/
+body 
+{
+        background-color: rgb(0,80,150);
+        font-family:    "Helvetica", "Arial", Sans-Serif;
+        font-size:      14px;
+}
+
+th
+{       text-align:     left;
+        font-weight:    bold;
+        font-size:      12px;
+}
+
+
+#container 
+{       min-width:      500px;
+        max-width:      1000px;
+        margin-left:    auto;
+        margin-right:   auto;
+}
+
+
+#content
+{      background-color: #ffffff;
+       padding:         10px;
+       padding-left:    20px;
+       padding-right:   20px;
+}
+
+h1
+{       font-size:      18px;
+}
+
+h2
+{       font-size:      16px;
+}
+
+
+/* Field feedback *****************************************/
+.invalid
+{       color:          red;
+}
+
+.updated
+{       color:          #080
+}
+
+
+/* Person and Event Lists *********************************/
+.list table
+{       width:          100%;
+}
+
+
+.list tbody .link
+{       text-decoration: underline;
+}
+
+/* The whole list row is a link to the edit page, 
+   so we don't need to underline it separately. */
+.list tbody tr:hover a
+{       color: #00f;
+        text-decoration: none;
+}
+
+.list tbody tr:hover .link
+{       color: #00f;
+        text-decoration: underline;
+}
+
+
+.list tbody a
+{       color: #000;
+        text-decoration: none;
+}
+
+.list th
+{       text-align:     left;
+        border-bottom:  2px solid rgb(0,80,150);
+        height:         1.8em;
+}
+
+.list td
+{       text-align:     left;
+        height:         1.5em;
+}
+
+
+/* Event List *********************************************/
+.event-list .Date               { width: 8em;  }
+.event-list .Time               { width: 8em;  }
+.event-list .Type               { width: 8em;   }
+.event-list .People             { width: 3em;   }
+.event-list .actions            { width: 3em;   }
+
+
+/* Event View/Edit ******************************************/
+
+/* View Mode */
+#event-details-view             { width: 100%;  }
+#event-details-view th
+{       height:         2em;
+        border-bottom:  2px solid rgb(0,80,150);
+}
+
+#event-details-view td
+{       height:         1.8em;
+}
+
+#event-details-view .EventId    { width: 3em;   }
+#event-details-view .Date       { width: 8em; }
+#event-details-view .Time       { width: 5em; }
+#event-details-view .Location   { width: 8em; }
+#event-details-view .Type       { width: 8em; }
+
+
+/* Edit Mode */
+#event-details-edit             { width: 100%;  }
+#event-details-edit th
+{       height:         2em;
+        border-bottom:  2px solid rgb(0,80,150);
+}
+
+#event-details-edit input            
+{       height:         1.8em;
+}
+
+#event-details-edit .EventId    { width: 3em; }
+#event-details-edit .Date       { width: 10em; }
+#event-details-edit .Time       { width: 7em; }
+#event-details-edit .Location   { width: 10em; }
+#event-details-edit .Type       { width: 10em; }
+#event-details-edit input       { width: 95%; }
+
+#event-attendance-cur .index    { width: 3em;}
+#event-attendance-cur .actions  { width: 3em;}
+#event-attendance-new .index    { width: 3em; }
+
+
+/* Person List ********************************************/
+.person-list .Mobile            { width: 10em; }
+.person-list .MemberId          { width: 3em; }
+.person-list .actions           { width: 3em; }
+
+
+/* Person View/Edit **************************************/
+
+/* View Mode */
+#person-details-view th
+{       height:         1.7em;
+        min-width:      8em;
+        border-bottom:  2px solid rgb(0,80,150);
+}
+
+
+/* Edit Mode */
+#person-details-edit th
+{       height:         1.7em;
+        min-width:      8em;
+        border-bottom:  2px solid rgb(0,80,150);
+}
+
+#person-details-edit input
+{       height:         1.7em;
+}
+
+#person-details-edit .Email     { width: 20em; }
+
+.person-attendance .Date        { width: 8em;  }
+.person-attendance .Time        { width: 8em;  }
+.person-attendance .Type        { width: 8em;   }
+.person-attendance .actions     { width: 3em;   }
+
+
