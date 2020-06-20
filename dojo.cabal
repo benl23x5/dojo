@@ -10,19 +10,19 @@ Stability:      experimental
 Synopsis:       Aiki Dojo Web App
 
 Executable dojo
-  Build-Depends: 
-        base            == 4.6.*,
-        time            == 1.4.*,
-        blaze-html      == 0.6.*,
-        blaze-markup    == 0.5.*,
-        containers      == 0.5.*,
-        cgi             == 3001.1.7.*,
-        HDBC            == 2.3.*,
-        HDBC-sqlite3    == 2.3.*,
-        convertible     == 1.0.*,
-        pureMD5         == 2.1.*,
+  Build-Depends:
+        base            == 4.13.*,
         bytestring      == 0.10.*,
-        random          == 1.0.*
+        random          == 1.1.*,
+        time            == 1.9.*,
+        pureMD5         == 2.1.*,
+        convertible     == 1.1.*,
+        blaze-html      == 0.9.*,
+        blaze-markup    == 0.8.*,
+        containers      == 0.5.*,
+        cgi             == 3001.5.*,
+        HDBC            == 2.4.*,
+        HDBC-sqlite3    == 2.3.*
 
 
   Main-is:
@@ -37,8 +37,9 @@ Executable dojo
         Dojo.Data.Event
 
         Dojo.Data.Person.Base
-        Dojo.Data.Person.Presentation
+        Dojo.Data.Person.Search
         Dojo.Data.Person.Database
+        Dojo.Data.Person.Presentation
         Dojo.Data.Person
 
         Dojo.Data.Session.Base
@@ -53,13 +54,17 @@ Executable dojo
         Dojo.Framework.Path
         Dojo.Framework.Pretty
         Dojo.Framework.Parse
+        Dojo.Framework.Form
         Dojo.Framework
 
         Dojo.Node.Main
         Dojo.Node.PersonEdit.Form
+        Dojo.Node.PersonEdit.Arg
         Dojo.Node.PersonEdit
+        Dojo.Node.PersonView
 
         Dojo.Node.PersonList
+        Dojo.Node.PersonAdd
 
         Dojo.Node.EventEdit.Arg
         Dojo.Node.EventEdit.Form
@@ -71,12 +76,14 @@ Executable dojo
         Dojo.Node.Login
         Dojo.Node.Logout
 
+        Dojo.Chrome
+
         Dojo.Base
         Dojo.Framework
         Dojo.Paths
 
         Config
-                  
+
   GHC-options:
         -Wall
         -fno-warn-orphans
@@ -92,4 +99,5 @@ Executable dojo
         FlexibleInstances
         MultiParamTypeClasses
         ScopedTypeVariables
+        FlexibleContexts
 

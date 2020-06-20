@@ -1,4 +1,4 @@
-{-# LANGUAGE UndecidableInstances, OverlappingInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
 module Dojo.Framework.Pretty where
 import Dojo.Base
 import qualified Data.Time      as Time
@@ -7,11 +7,14 @@ import qualified Data.Time      as Time
 class Pretty a where
  pretty :: a -> String
 
-instance Pretty a => ToMarkup a where
+instance {-# INCOHERENT #-} Pretty a => ToMarkup a where
  toMarkup = toMarkup . pretty
 
 
 instance Pretty Integer where
+ pretty = show
+
+instance Pretty Int where
  pretty = show
 
 
@@ -34,4 +37,4 @@ instance Pretty Time.TimeOfDay where
 
 padRc :: Char -> Int -> String -> String
 padRc c len str
-        = replicate (len - length str) c ++ str 
+        = replicate (len - length str) c ++ str

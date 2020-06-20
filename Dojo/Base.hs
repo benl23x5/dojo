@@ -27,14 +27,16 @@ import Database.HDBC.Sqlite3
         (connectSqlite3)
 
 import Text.Blaze
-import Text.Blaze.Html5 
-        hiding (map, span)
+        hiding ((!?))
+
+import Text.Blaze.Html5
+        hiding (map, span, (!?))
 
 import Text.Blaze.Html.Renderer.Utf8
         (renderHtml)
 
 import Data.Char
-import Data.List        
+import Data.List
         hiding (head, span)
 
 import Data.Maybe
@@ -43,7 +45,7 @@ import Data.Convertible
 
 import Control.Monad
 
-import Prelude 
+import Prelude
         hiding (head, tail, last, undefined, span, div)
 
 (!?) x (enable, attr, v)

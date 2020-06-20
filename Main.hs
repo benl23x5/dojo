@@ -13,13 +13,13 @@ import Dojo.Node.EventEdit
 import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Framework
-import Dojo.Base
+import Dojo.Base hiding (main)
 import Config
 import qualified Network.CGI            as CGI
 
 
 main :: IO ()
-main    
+main
  = CGI.runCGI (CGI.handleErrors cgiTop)
 
 
@@ -31,10 +31,10 @@ cgiTop
         let mHash       = lookup "s" inputs
         mSession
          <- case mHash of
-                Nothing         
+                Nothing
                  -> return Nothing
 
-                Just hash       
+                Just hash
                  -> do  conn    <- liftIO $ connectSqlite3 databasePath
                         ss      <- liftIO $ getSessionByHash conn (SessionHash hash)
                         liftIO $ disconnect conn
