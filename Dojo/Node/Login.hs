@@ -24,9 +24,9 @@ cgiLogin :: [(String, String)] -> CGI CGIResult
 cgiLogin inputs
 
  -- Have username and password
- | Just username        <- lookup "username" inputs
- , Just password        <- lookup "password" inputs
- = do   
+ | Just username <- lookup "username" inputs
+ , Just password <- lookup "password" inputs
+ = do
         -- Connect to database.
         conn    <- liftIO $ connectSqlite3 databasePath
 
@@ -90,8 +90,8 @@ loginCheck user password
 
         -- Combine the supplied password with the salt to get
         -- the hash we need. We accept a newline on the end so it's
-        -- easy to make these hashes at the unix console.     
-        let hash'       = Digest.md5 
+        -- easy to make these hashes at the unix console.
+        let hash'       = Digest.md5
                         $ BS.pack $ map convert $ password ++ salt ++ "\n"
 
         -- Whether the entered password matches the stored one.
@@ -124,11 +124,11 @@ loginActivate user
         -- Use the current time as a placeholder until we have
         -- the real time.
         zonedTime       <- liftIO $ Time.getZonedTime
-        let (startDate, startTime) 
+        let (startDate, startTime)
                         = splitSessionLocalTime
                         $ Time.zonedTimeToLocalTime zonedTime
 
-        let session     = makeSession 
+        let session     = makeSession
                                 hash
                                 (userId user)
                                 startDate
@@ -147,5 +147,5 @@ loginActivate user
         -- Redirect to main page.
         CGI.redirect $ flatten $ (pathEventList session)
 
-        
+
 

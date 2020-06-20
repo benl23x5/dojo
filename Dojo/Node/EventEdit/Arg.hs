@@ -13,7 +13,7 @@ import Dojo.Base
 
 
 -- | A CGI argument passed to the EventEdit node.
-data Arg 
+data Arg
         -- | Empty form field.
         = ArgEmpty
 
@@ -25,42 +25,42 @@ data Arg
 
         -- | Feedback details field was just updated
         | ArgDetailsUpdated
-                { argDeatilsField       :: String}
+        { argDeatilsField       :: String}
 
         -- | Details field is invalid
         | ArgDetailsInvalid
-                { argDetailsField       :: String 
-                , argDetailsString      :: String }
+        { argDetailsField       :: String
+        , argDetailsString      :: String }
 
         -- | Person search returned no matches.
         | ArgSearchFoundNone
-                { -- | Index of this search.
-                  argSearchIx           :: Integer
+        { -- | Index of this search.
+          argSearchIx           :: Integer
 
-                  -- | The search string.
-                , argSearchString       :: String }
+          -- | The search string.
+        , argSearchString       :: String }
 
         -- | Person search returned multiple matches,
         --   and here is the search string.
         | ArgSearchFoundMultiString
-                { -- | Index of this search.
-                  argSearchIx           :: Integer
+        { -- | Index of this search.
+          argSearchIx           :: Integer
 
-                  -- | The search string.
-                , argSearchString       :: String }
+          -- | The search string.
+        , argSearchString       :: String }
 
         -- | Person search returned multiple matches,
         --   and here is one of the indices that matched.
         | ArgSearchFoundMultiPersonId
-                { -- | Index of this search
-                  argSearchIx           :: Integer      
+        { -- | Index of this search
+          argSearchIx           :: Integer
 
-                  -- | PersonId that matched the string.
-                , argSearchPersonId     :: PersonId }
+          -- | PersonId that matched the string.
+        , argSearchPersonId     :: PersonId }
 
         -- | Feedback a new person was just added.
         | ArgPersonAdded
-                { argPersonId           :: PersonId }
+        { argPersonId           :: PersonId }
 
 
 -- | Take the field name from an ArgDetailsUpdated.
@@ -84,12 +84,12 @@ argOfKeyVal :: (String, String) -> Maybe Arg
 argOfKeyVal (key, val)
         -- Add Person
         | "addPerson"   <- key
-        = if null val 
+        = if null val
                 then Just $ ArgEmpty
                 else Just $ ArgAddPerson val
 
         -- Del person
-        | "delPerson"    <- key  
+        | "delPerson"    <- key
         , Right pid      <- parse val
         = Just $ ArgDelPerson pid
 
@@ -118,7 +118,7 @@ argOfKeyVal (key, val)
         , Right pid     <- parse val
         = Just $ ArgSearchFoundMultiPersonId (read ns) pid
 
-        | otherwise            
+        | otherwise
         = Just ArgEmpty                                                 -- TODO: better parsing
 
 
@@ -155,7 +155,7 @@ renumberSearchFeedback args
  where  go _ _ [] = []
 
         go ix alpha (ArgSearchFoundNone _ str : rest)
-         = ArgSearchFoundNone ix str 
+         = ArgSearchFoundNone ix str
          : go (ix + 1) alpha rest
 
         go ix alpha (ArgSearchFoundMultiString ixOld str : rest)
@@ -165,7 +165,7 @@ renumberSearchFeedback args
         go ix alpha (ArgSearchFoundMultiPersonId ixOld str : rest)
          = case lookup ixOld alpha of
             Nothing     -> error "renumberSearchFeedback: orphan multi pid"
-            Just ixNew  -> ArgSearchFoundMultiPersonId ixNew str 
+            Just ixNew  -> ArgSearchFoundMultiPersonId ixNew str
                         :  go ix alpha rest
 
         go ix alpha (arg : rest)

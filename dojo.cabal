@@ -11,10 +11,10 @@ Synopsis:       Aiki Dojo Web App
 
 Executable dojo
   Build-Depends:
-        base            == 4.13.*,
+        base            == 4.11.*,
         bytestring      == 0.10.*,
         random          == 1.1.*,
-        time            == 1.9.*,
+        time            == 1.8.*,
         pureMD5         == 2.1.*,
         convertible     == 1.1.*,
         blaze-html      == 0.9.*,
