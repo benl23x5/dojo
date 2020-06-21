@@ -10,7 +10,7 @@ Stability:      experimental
 Synopsis:       Aiki Dojo Web App
 
 Executable dojo
-  Build-Depends:
+  build-depends:
         base            == 4.11.*,
         bytestring      == 0.10.*,
         random          == 1.1.*,
@@ -25,10 +25,12 @@ Executable dojo
         HDBC-sqlite3    == 2.3.*
 
 
-  Main-is:
+  main-is:
         Main.hs
 
-  Other-modules:
+  hs-source-dirs: src/dojo
+
+  other-modules:
         Dojo.Data.Attendance
 
         Dojo.Data.Event.Base
