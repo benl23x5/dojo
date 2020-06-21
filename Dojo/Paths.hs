@@ -10,7 +10,7 @@ import Config
 -- The paths to show at the top of each page.
 pathsJump :: Session -> [Path]
 pathsJump ss
- = [ pathLogout, pathEventList ss, pathPersonList ss]
+ = [ pathPersonList ss, pathEventList ss, pathLogout]
 
 
 -- Session -------------------------------------------------------------------
@@ -46,29 +46,44 @@ pathPersonList ss
         , ("n", "pList")]
 
 
+pathPersonAdd :: Session -> Path
+pathPersonAdd ss
+ = Path "Add Person"
+        cgiName
+        [ ("s", show $ sessionHash ss)
+        , ("n", "pEdit")]
+
+
+pathPersonEdit :: Session -> Maybe PersonId -> Path
+pathPersonEdit ss (Just (PersonId pid))
+ = Path "Edit Person"
+        cgiName
+        [ ("s", show $ sessionHash ss)
+        , ("n", "pEdit")
+        , ("pid", show pid)]
+
+pathPersonEdit ss Nothing
+ = Path "Edit Person"
+        cgiName
+        [ ("s", show $ sessionHash ss)
+        , ("n", "pEdit") ]
+
+
 pathPersonView :: Session -> PersonId -> Path
 pathPersonView ss (PersonId pid)
- = Path "Done"
+ = Path "View Person"
         cgiName
         [ ("s", show $ sessionHash ss)
         , ("n", "pView")
         , ("pid", show pid)]
 
 
-pathPersonAdd :: Session -> Path
-pathPersonAdd ss
- = Path "Add Person"
+pathPersonDiscard :: Session -> PersonId -> Path
+pathPersonDiscard ss (PersonId pid)
+ = Path "Discard Change"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pAdd")]
-
-
-pathPersonEdit :: Session -> PersonId -> Path
-pathPersonEdit ss (PersonId pid)
- = Path "Edit Person"
-        cgiName
-        [ ("s", show $ sessionHash ss)
-        , ("n", "pEdit")
+        , ("n", "pView")
         , ("pid", show pid)]
 
 
@@ -99,12 +114,12 @@ pathEventAdd ss
 
 
 pathEventEdit :: Session -> Maybe EventId -> Path
-pathEventEdit ss (Just (EventId pid))
+pathEventEdit ss (Just (EventId eid))
  = Path "Edit Event"
         cgiName
         [ ("s",   show $ sessionHash ss)
         , ("n",   "eEdit")
-        , ("eid", show pid)]
+        , ("eid", show eid)]
 
 pathEventEdit ss Nothing
  = Path "Edit Event"

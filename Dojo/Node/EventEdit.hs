@@ -49,15 +49,13 @@ cgiEventEdit ss inputs
                                         , isUpper f ]
 
         -- People to delete from the event.
-        let pidsDel
-                = [ pid  | ArgDelPerson pid  <- args ]
+        let pidsDel  = [ pid  | ArgDelPerson pid  <- args ]
 
         -- People to add to this event.
-        let newNames
-                = [ name | ArgAddPerson name <- args ]
+        let newNames = [ name | ArgAddPerson name <- args ]
 
         -- Connect to the database.
-        conn    <- liftIO $ connectSqlite3 databasePath
+        conn <- liftIO $ connectSqlite3 databasePath
 
         -- If we have an existing eventId then load the existing event data,
         --  otherwise start with an empty event record,
@@ -162,8 +160,7 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
  = case loadEvent updates event of
     -- Some of the fields didn't parse.
     Left fieldErrs
-     -> redirect
-      $ flatten
+     -> redirect $ flatten
       $ pathEventEdit ss (Just eid)
                 <&> map keyValOfArg
                         [ ArgDetailsInvalid name str
@@ -175,7 +172,7 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
         -- Add the new details to the row and see if this changes anything.
         let diffFields          = diffEvent event   event'
 
-        -- Write the event deatils changes to the database.
+        -- Write the event details changes to the database.
         liftIO $ updateEvent conn event'
 
         -- Find and add attendees based on the supplied names.
@@ -189,8 +186,7 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
         liftIO $ disconnect conn
 
         -- Stay on the same page, but show what fields were updated.
-        redirect
-         $ flatten
+        redirect $ flatten
          $ pathEventEdit ss (Just eid)
                 <&> map keyValOfArg (map ArgDetailsUpdated diffFields)
                 <&> map keyValOfArg fsSearchFeedback

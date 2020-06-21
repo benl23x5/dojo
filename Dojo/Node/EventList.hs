@@ -28,7 +28,8 @@ cgiEventList_list ss eventList
  $ H.docTypeHtml
  $ do   pageHeader "Events"
         pageBody
-         $ do   tablePaths (pathsJump ss ++ [pathEventAdd ss])
+         $ do   tablePaths $ pathsJump ss
+                tablePaths [pathEventAdd ss]
                 tableEventList ss eventList
 
 

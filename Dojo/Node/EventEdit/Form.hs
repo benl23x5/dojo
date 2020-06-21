@@ -26,28 +26,24 @@ formEvent args path event attendance
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        -- Event details.
+        -- Save button with feedback on which fields were updated next to it.
+        let updatedFields    = [field | ArgDetailsUpdated field <- args]
+        when (not $ null updatedFields)
+         $ H.span ! A.class_ "updated"
+         $ H.toMarkup
+         $ " Updated: "
+                ++ intercalate ", "
+                         ( map (\(Just n) -> n)
+                         $ map niceNameOfEventField updatedFields)
+                ++ "."
+
         divEventDetails    args event
-
-        -- Which people attended the event.
         divEventAttendance args path event attendance
+        H.br
 
-        -- Save button,
-        --  with feedback on which fields were updated next to it.
-        table
-         $ tr $ td
-         $ do   input   ! A.type_ "submit"
-                        ! A.value "Save"
-
-                let updatedFields    = [field | ArgDetailsUpdated field <- args]
-                when (not $ null updatedFields)
-                 $ H.span ! A.class_ "updated"
-                 $ H.toMarkup
-                 $ " Updated: "
-                        ++ intercalate ", "
-                                 ( map (\(Just n) -> n)
-                                 $ map niceNameOfEventField updatedFields)
-                        ++ "."
+        input   ! A.type_  "submit"
+                ! A.class_ "buttonFull"
+                ! A.value  "Save"
 
 
 -- Event Details --------------------------------------------------------------

@@ -23,24 +23,25 @@ formPerson args path person
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        divPersonDetails args person
-
-        -- Save button,
-        --  with feedback on which fields were updated next to it.
-        table
-         $ tr $ td
-         $ do   input   ! A.type_ "submit"
-                        ! A.value "Save"
-
-                let updatedFields    = [field | ArgDetailsUpdated field <- args]
-                when (not $ null updatedFields)
-                 $ H.span ! A.class_ "updated"
+        -- Save button with feedback on which fields were updated next to it.
+        let updatedFields    = [field | ArgDetailsUpdated field <- args]
+        when (not $ null updatedFields)
+         $ do   H.br
+                H.span ! A.class_ "updated"
                  $ H.toMarkup
                  $ " Updated: "
-                        ++ intercalate ", "
-                                 ( map (\(Just n) -> n)
-                                 $ map niceNameOfPersonField updatedFields)
-                        ++ "."
+                       ++ intercalate ", "
+                                ( map (\(Just n) -> n)
+                                $ map niceNameOfPersonField updatedFields)
+                       ++ "."
+                H.br
+
+        divPersonDetails args person
+        H.br
+
+        input   ! A.type_  "submit"
+                ! A.class_ "buttonFull"
+                ! A.value  "Save"
 
 
 divPersonDetails :: [Arg] -> Person -> Html
@@ -50,23 +51,29 @@ divPersonDetails args person
  $ do   H.table
          $ do   tr $ do th' "FirstName"      "first"
                         th' "PreferredName"  "preferred"
-                        th' "MiddleName"     "middle"
-                        th' "FamilyName"     "family"
 
                 tr $ do tdF "FirstName"      (pretty $ personFirstName    person)
                         td' "PreferredName"  (pretty $ personPreferredName person)
-                        td' "MiddleName"     (pretty $ personMiddleName   person)
+
+        H.table
+         $ do   tr $ do th' "MiddleName"     "middle"
+                        th' "FamilyName"     "family"
+
+                tr $ do td' "MiddleName"     (pretty $ personMiddleName   person)
                         td' "FamilyName"     (pretty $ personFamilyName   person)
 
         H.table
          $ do   tr $ do th' "DateOfBirth"    "dob"
-                        th' "MemberId"       "member"
-                        th' "Mobile"         "mobile"
-                        th' "Email"          "email"
+                        th' "MemberId"       "member id"
 
                 tr $ do td' "DateOfBirth"    (pretty $ personDateOfBirth  person)
                         td' "MemberId"       (pretty $ personMemberId person)
-                        td' "Mobile"         (pretty $ personMobile   person)
+
+        H.table
+         $ do   tr $ do th' "Mobile"         "mobile"
+                        th' "Email"          "email"
+
+                tr $ do td' "Mobile"         (pretty $ personMobile   person)
                         td' "Email"          (pretty $ personEmail    person)
 
  where  -- Feedback which fields were just updated.

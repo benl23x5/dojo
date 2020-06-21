@@ -38,14 +38,14 @@ cgiPersonAdd_entry ss args
  $ H.docTypeHtml
  $ do   pageHeader "Add Person"
         pageBody
-         $ do   H.h1 "Add Person"
-                tablePaths $ pathsJump ss
+         $ do   tablePaths $ pathsJump ss
                 formPerson args (pathPersonAdd ss) (zeroPerson "(required)")
 
 
 -- If we have at least the first name then we can add it to the database.
 cgiPersonAdd_insert ss _args inputs firstName
  = case loadPerson inputs (zeroPerson firstName) of
+
     -- All the fields parsed.
     Right person'
      -> do

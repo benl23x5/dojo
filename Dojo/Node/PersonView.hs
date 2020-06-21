@@ -47,7 +47,8 @@ cgiPersonView_page ss person events
  $ H.docTypeHtml
  $ do   pageHeader $ personDisplayName person
         pageBody
-         $ do   tablePaths (pathsJump ss ++ [pathPersonEdit ss $ personId person])
+         $ do   tablePaths $ pathsJump ss
+                tablePaths $ [pathPersonEdit ss $ Just $ personId person]
                 divPersonView ss person events
 
 
@@ -65,14 +66,14 @@ divPersonDetails :: Person -> Html
 divPersonDetails person
  = H.div ! A.id "person-details-view"
  $ do   H.table
-         $ do   tr $ do th "short"; th "first"; th "middle"; th "family"
-                tr $ do td (H.toMarkup $ personPreferredName person)
-                        td (H.toMarkup $ personFirstName    person)
+         $ do   tr $ do th "first"; th "pref"; th "middle"; th "family"
+                tr $ do td (H.toMarkup $ personFirstName    person)
+                        td (H.toMarkup $ personPreferredName person)
                         td (H.toMarkup $ personMiddleName   person)
                         td (H.toMarkup $ personFamilyName   person)
 
         H.table
-         $ do   tr $ do th "dob"; th "id"
+         $ do   tr $ do th "dob"; th "member id"
                 tr $ do td (H.toMarkup $ personDateOfBirth  person)
                         td (H.toMarkup $ personMemberId person)
 

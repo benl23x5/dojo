@@ -77,7 +77,10 @@ formLogin path
                         td $ input ! A.name  "password"
                                    ! A.type_ "password"
 
-        input ! A.type_ "submit"   ! A.value "Login"
+        H.br
+        input   ! A.type_  "submit"
+                ! A.class_ "buttonFull"
+                ! A.value  "Login"
 
 
 -------------------------------------------------------------------------------

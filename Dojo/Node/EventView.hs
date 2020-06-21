@@ -45,7 +45,8 @@ cgiEventView_page ss event attendance
  $ H.docTypeHtml
  $ do   pageHeader $ pretty $ eventDisplayName event
         pageBody
-         $ do   tablePaths (pathsJump ss ++ [pathEventEdit ss $ Just $ eventId event])
+         $ do   tablePaths $ pathsJump ss
+                tablePaths $ [pathEventEdit ss $ Just $ eventId event]
                 divEventView ss event attendance
 
 

@@ -5,25 +5,6 @@ html {
        font-size: 42px;
 }
 
-/*
-@media screen and (min-width: 600px) {
- html {
-       font-size: 42px;
- }
- body {
-        background-color: rgb(200,93,139);
- }
-}
-
-@media screen and (min-width: 1280px) {
- html {
-       font-size: 16px;
- }
- body {
-        background-color: rgb(19,93,139);
- }
-}
-*/
 
 #container
 {
@@ -67,10 +48,41 @@ th
 
 td
 {       text-align:     left;
-        padding-right:  1ex;
         height:         1em;
 }
 
+input
+{       height:         1.1em;
+        font-size:      1em;
+        width:          100%;
+}
+
+.buttonFull
+{       box-shadow:     inset 0px 1px 0px 0px #ffffff;
+	background:     linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
+	background-color:#ffffff;
+	border-radius:  6px;
+	border:         1px solid #dcdcdc;
+	display:        inline-block;
+	cursor:         pointer;
+	color:          #666666;
+	font-size:      1em;
+	font-weight:    bold;
+	padding:        6px 24px;
+	text-decoration:none;
+	text-shadow:    0px 1px 0px #ffffff;
+        height:         2em;
+        width:          100%;
+}
+
+.buttonFull:hover
+{       background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
+	background-color:#f6f6f6;
+}
+.buttonFull:active
+{       position:relative;
+	top:1px;
+}
 
 /* Field feedback *****************************************/
 .invalid
@@ -81,15 +93,13 @@ td
 {       color:          #080
 }
 
-
 table {
-        margin-top:     0.4em;
+        margin-top:     0.5em;
 }
 
 /* Person and Event Lists *********************************/
 .list table
-{      min-width:      50%;
-       width:          100%;
+{      width:          100%;
 }
 
 .list tbody .link
@@ -120,8 +130,7 @@ table {
 }
 
 .paths td
-{       margin: 0ex;
-        padding-right:  1ex;
+{       padding-right:  1ex;
 }
 
 /* Person List ********************************************/
@@ -132,11 +141,6 @@ table {
 /* Person View/Edit **************************************/
 
 /* View Mode */
-#person-details-edit input
-{       height:         1.1em;
-        width:          90%;
-}
-
 .person-attendance .Date        { width: 6em;  }
 .person-attendance .Time        { width: 4em;  }
 .person-attendance .Location    { min-width: 10em;   }
@@ -158,16 +162,8 @@ table {
 #event-details-view .Location   { width: 8em; }
 #event-details-view .Type       { width: 8em; }
 
-
 /* Edit Mode */
-#event-details-edit input
-{
-        height:         1.1em;
-        width:          90%;
-}
-
 #event-details-edit .EventId    { width: 3em; }
-#event-details-edit input       { width: 90%; }
 
 #event-attendance-cur .index    { width: 3em; }
 #event-attandance-cur .name     { width: 10em; }
@@ -176,18 +172,5 @@ table {
 #event-attendance-new .index    { width: 3em; }
 
 #event-attendance-new input
-{       height:         1.1em;
-        font-size:      1em;
-        width:          10em;
+{       width: 10em;
 }
-
-/*
-@media screen and (min-width: 320px) {
- #event-details-edit .Location   { width: 50%; }
- #event-details-edit .Type       { width: 50%; }
-}
-*/
-/* #event-attendance-new .name     { width: 10em; } */
-
-
-

@@ -27,7 +27,8 @@ cgiPersonList_list ss people
  $ H.docTypeHtml
  $ do   pageHeader "People"
         pageBody
-         $ do   tablePaths (pathsJump ss ++ [pathPersonAdd ss])
+         $ do   tablePaths $ pathsJump ss
+                tablePaths $ [pathPersonAdd ss]
                 tablePeople ss people
 
 

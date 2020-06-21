@@ -100,4 +100,5 @@ Executable dojo
         MultiParamTypeClasses
         ScopedTypeVariables
         FlexibleContexts
+        MultiWayIf
 

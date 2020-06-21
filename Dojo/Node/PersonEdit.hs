@@ -53,17 +53,14 @@ cgiPersonEdit ss inputs
               -> do     let person      = zeroPerson "(required)"
                         return   (Nothing, person)
 
-        let result
-                -- Update person details.
+        if      -- Update person details.
                 | not $ null fieldUpdates
-                = cgiPersonEdit_update  ss conn mpid person inputs
+                -> cgiPersonEdit_update  ss conn mpid person inputs
 
                 -- Show the form and wait for entry.
                 | otherwise
-                = do    liftIO $ disconnect conn
+                -> do   liftIO $ disconnect conn
                         cgiPersonEdit_entry ss args mpid person
-
-        result
 
 
 -------------------------------------------------------------------------------
@@ -75,7 +72,7 @@ cgiPersonEdit_update ss conn mPid person inputs
     Left fieldErrs
      | Just pid <- mPid
      -> redirect $ flatten
-      $ pathPersonEdit ss pid
+      $ pathPersonEdit ss (Just pid)
                 <&> map keyValOfArg
                         [ ArgDetailsInvalid name str
                         | (name, str, _) <- fieldErrs ]
@@ -108,31 +105,18 @@ cgiPersonEdit_update ss conn mPid person inputs
 
         -- Stay on the same page, but show what fields were updated.
         redirect $ flatten
-         $ pathPersonEdit ss pid
+         $ pathPersonEdit ss (Just pid)
                 <&> map keyValOfArg (map ArgDetailsUpdated diffFields)
 
 
 -------------------------------------------------------------------------------
 -- We haven't got any updates yet, so show the entry form.
-cgiPersonEdit_entry ss args Nothing person
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader $ "Adding Person"
-        pageBody
-         $ do   H.h1 "Adding Person"
-                tablePaths (pathsJump ss)
-
-                -- Main entry form.
-                formPerson args (pathPersonAdd ss) person
-
-
-cgiPersonEdit_entry ss args (Just pid) person
+cgiPersonEdit_entry ss args mpid person
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ "Editing Person"
         pageBody
-         $ do   tablePaths (pathsJump ss ++ [pathPersonView ss $ personId person])
-
-                -- Main entry form.
-                formPerson args (pathPersonEdit ss pid) person
+         $ do   tablePaths $ pathsJump ss
+                tablePaths [pathPersonView ss $ personId person]
+                formPerson args (pathPersonEdit ss mpid) person
 
