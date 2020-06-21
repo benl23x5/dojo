@@ -62,15 +62,9 @@ divEventView ss event attendance
 -- | Event details.
 divEventDetails :: Event -> Html
 divEventDetails event
- = do
-        H.div ! A.id "event-details-view" $ table
-         $ do   col' "Location"; col' "Type"
-                tr $ do th' "location"; th' "type"
-
-                tr $ do td' (eventLocation event)
-                        td' (eventType     event)
-
-        H.div ! A.id "event-details-view" $ table
+ = H.div ! A.id "event-details-view" ! A.class_ "details"
+ $ do
+        H.table
          $ do   col' "EventId"; col' "Date"; col' "Time"
                 tr $ do th' "id"; th' "date"; th' "time"
 
@@ -78,7 +72,12 @@ divEventDetails event
                         td' (eventDate     event)
                         td' (eventTime     event)
 
+        H.table
+         $ do   col' "Location"; col' "Type"
+                tr $ do th' "location"; th' "type"
 
+                tr $ do td' (eventLocation event)
+                        td' (eventType     event)
 
  where  col' c  = col ! A.class_ c
         th' val = th val

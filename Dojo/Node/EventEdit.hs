@@ -170,7 +170,7 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
     Right event'
      -> do
         -- Add the new details to the row and see if this changes anything.
-        let diffFields          = diffEvent event   event'
+        let diffFields = diffEvent event   event'
 
         -- Write the event details changes to the database.
         liftIO $ updateEvent conn event'

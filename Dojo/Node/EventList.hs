@@ -38,8 +38,8 @@ tableEventList :: Session -> [(Event, Int)] -> Html
 tableEventList ss eventList
  = H.div ! A.class_ "list event-list"
  $ H.table
- $ do   col' "Date"; col' "Time"; col' "Location"; col' "People"
-        tr $ do th "date"; th "time"; th "location"; th "people"
+ $ do   col' "Date"; col' "Time"; col' "Location"; col' "Pax"
+        tr $ do th "date"; th "time"; th "location"; th "pax"
 
         mapM_ (trEvent ss) eventList
 

@@ -15,10 +15,10 @@ html {
 }
 
 #content
-{      background-color: #ffffff;
-       padding:         0.5ex;
-       padding-left:    1em;
-       padding-right:   1em;
+{       background-color: #ffffff;
+        padding:         0.5ex;
+        padding-left:    1em;
+        padding-right:   1em;
 }
 
 h1
@@ -37,6 +37,18 @@ body
         font-family:    "Helvetica", "Arial", Sans-Serif;
 }
 
+/* Tables *******************************************/
+table {
+        margin-top:     0.5em;
+}
+
+/* show table borders, for debugging.
+table, td, td {
+        border: 1px solid black;
+        border-collapse: collapse;
+}
+*/
+
 th
 {       text-align:     left;
         font-weight:    bold;
@@ -52,9 +64,9 @@ td
 }
 
 input
-{       height:         1.1em;
-        font-size:      1em;
+{       font-size:      1em;
         width:          100%;
+        box-sizing:     border-box;
 }
 
 .buttonFull
@@ -93,13 +105,16 @@ input
 {       color:          #080
 }
 
-table {
-        margin-top:     0.5em;
+/* Entity Details  ****************************************/
+.details table
+{       width:          100%;
 }
 
-/* Person and Event Lists *********************************/
+
+
+/* Entity Lists *******************************************/
 .list table
-{      width:          100%;
+{       width:          100%;
 }
 
 .list tbody .link
@@ -149,27 +164,26 @@ table {
 .event-list .Date               { width: 6em;   }
 .event-list .Time               { width: 4em;   }
 .event-list .Location           { min-width: 6em;  }
-.event-list .People             { width: 3em;   }
+.event-list .Pax                { width: 2em;   }
 
 
 /* Event View/Edit ******************************************/
 
 /* View Mode */
-#event-details-view .EventId    { width: 3em; }
+#event-details-view .EventId    { width: 2em; }
 #event-details-view .Date       { width: 8em; }
+
+#event-details-view .Location   { width: 10em; }
+/*
 #event-details-view .Time       { width: 5em; }
-#event-details-view .Location   { width: 8em; }
 #event-details-view .Type       { width: 8em; }
+*/
 
 /* Edit Mode */
 #event-details-edit .EventId    { width: 3em; }
 
 #event-attendance-cur .index    { width: 3em; }
-#event-attandance-cur .name     { width: 10em; }
-#event-attendance-cur .actions  { width: 1em; }
+#event-attendance-cur .actions  { width: 1ex; }
 
 #event-attendance-new .index    { width: 3em; }
 
-#event-attendance-new input
-{       width: 10em;
-}

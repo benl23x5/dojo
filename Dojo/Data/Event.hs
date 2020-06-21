@@ -1,5 +1,5 @@
 
-module Dojo.Data.Event 
+module Dojo.Data.Event
         ( Event                 (..)
         , EventId               (..)
         , EventType             (..)
@@ -64,9 +64,9 @@ diffEvent e1 e2
 -- | Build an event from some key, value pairs.
 --   If there is something wrong with the fields then return a list of
 --    field names and associated errors.
-loadEvent 
-        :: [(String, String)] 
-        -> Event 
+loadEvent
+        :: [(String, String)]
+        -> Event
         -> Either [(String, String, ParseError)] Event
 
 loadEvent inputs event
@@ -77,10 +77,10 @@ loadEvent inputs event
                                 Right val       -> Right val
                                 Left err        -> Left [(name, str, err)]
    in do
-        etype   <- load "Type"          (eventType      event)
-        eloc    <- load "Location"      (eventLocation  event)
-        edate   <- load "Date"          (eventDate      event)
-        etime   <- load "Time"          (eventTime      event)
+        eloc    <- load "Location" (eventLocation  event)
+        etype   <- load "Type"     (eventType      event)
+        edate   <- load "Date"     (eventDate      event)
+        etime   <- load "Time"     (eventTime      event)
 
         return  $ event
                 { eventType     = etype

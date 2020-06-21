@@ -64,7 +64,7 @@ divPersonView ss person events
 -- | Person Details
 divPersonDetails :: Person -> Html
 divPersonDetails person
- = H.div ! A.id "person-details-view"
+ = H.div ! A.id "person-details-view" ! A.class_ "details"
  $ do   H.table
          $ do   tr $ do th "first"; th "pref"; th "middle"; th "family"
                 tr $ do td (H.toMarkup $ personFirstName    person)
@@ -73,14 +73,20 @@ divPersonDetails person
                         td (H.toMarkup $ personFamilyName   person)
 
         H.table
-         $ do   tr $ do th "dob"; th "member id"
-                tr $ do td (H.toMarkup $ personDateOfBirth  person)
-                        td (H.toMarkup $ personMemberId person)
+         $ do   tr $ th "date of birth"
+                tr $ td (H.toMarkup $ personDateOfBirth  person)
 
         H.table
-         $ do   tr $ do th "mobile"; th "email"
-                tr $ do td (H.toMarkup $ personMobile   person)
-                        td (H.toMarkup $ personEmail    person)
+         $ do   tr $ th "member id"
+                tr $ td (H.toMarkup $ personMemberId person)
+
+        H.table
+         $ do   tr $ th "mobile"
+                tr $ td (H.toMarkup $ personMobile   person)
+
+        H.table
+         $ do   tr $ th "email"
+                tr $ td (H.toMarkup $ personEmail    person)
 
 
 -- | Events that a person attended.

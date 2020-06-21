@@ -46,48 +46,42 @@ formPerson args path person
 
 divPersonDetails :: [Arg] -> Person -> Html
 divPersonDetails args person
- = H.div ! A.id "person-details-edit"
- $ H.table
- $ do   H.table
-         $ do   tr $ do th' "FirstName"      "first"
-                        th' "PreferredName"  "preferred"
+ = H.div ! A.id "person-details-edit" ! A.class_ "details"
+ $ do
+        fieldWithFocus
+                "FirstName"     "first name (required)"
+                (pretty $ personFirstName person)
 
-                tr $ do tdF "FirstName"      (pretty $ personFirstName    person)
-                        td' "PreferredName"  (pretty $ personPreferredName person)
+        field   "PreferredName" "preferred name"
+                (pretty $ personPreferredName person)
 
-        H.table
-         $ do   tr $ do th' "MiddleName"     "middle"
-                        th' "FamilyName"     "family"
+        field   "MiddleName"    "middle name"
+                (pretty $ personMiddleName person)
 
-                tr $ do td' "MiddleName"     (pretty $ personMiddleName   person)
-                        td' "FamilyName"     (pretty $ personFamilyName   person)
+        field   "FamilyName"    "family name"
+                (pretty $ personFamilyName person)
 
-        H.table
-         $ do   tr $ do th' "DateOfBirth"    "dob"
-                        th' "MemberId"       "member id"
+        field   "DateOfBirth"   "date of birth (dd-mm-yyyy)"
+                (pretty $ personDateOfBirth person)
 
-                tr $ do td' "DateOfBirth"    (pretty $ personDateOfBirth  person)
-                        td' "MemberId"       (pretty $ personMemberId person)
+        field   "MemberId"      "member id"
+                (pretty $ personMemberId person)
 
-        H.table
-         $ do   tr $ do th' "Mobile"         "mobile"
-                        th' "Email"          "email"
+        field   "Mobile"        "mobile number"
+                (pretty $ personMobile person)
 
-                tr $ do td' "Mobile"         (pretty $ personMobile   person)
-                        td' "Email"          (pretty $ personEmail    person)
+        field   "Email"         "email address"
+                (pretty $ personEmail person)
 
- where  -- Feedback which fields were just updated.
-        updateds = mapMaybe takeDetailsUpdated args
+ where
+        -- Fedeback about updated and invalid fields.
+        rsUpdateds = mapMaybe takeDetailsUpdated args
+        rsInvalids = mapMaybe takeDetailsInvalid args
 
-        -- Feedback which fields have invalid values.
-        invalids = mapMaybe takeDetailsInvalid args
+        fieldWithFocus sClass sLabel sValue
+         = H.table $ trInputWithFocus rsUpdateds rsInvalids sClass sLabel sValue
 
-        th' fieldName niceName
-         = thInputFeedback updateds invalids fieldName niceName
+        field sClass sLabel sValue
+         = H.table $ trInput rsUpdateds rsInvalids sClass sLabel sValue
 
-        tdF name val = tdInput True  name val
-        td' name val = tdInput False name val
-
-        tdInput focus name val
-         = tdInputFeedback focus invalids name val
 

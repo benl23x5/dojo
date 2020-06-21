@@ -1,16 +1,40 @@
 
 module Dojo.Framework.Form
-        ( thInputFeedback
+        ( trInput
+        , trInputWithFocus
+        , thInputFeedback
         , tdInputFeedback)
 where
 import Dojo.Base
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
+type ReplyUpdated = [String]
+type ReplyInvalid = [(String, String)]
+
+
+-- | Construct a table for a single input field.
+trInput :: ReplyUpdated -> ReplyInvalid
+        -> String -> String -> String -> Html
+
+trInput rsUpdate rsInvalid sClassName sDisplayLabel sValue
+ = do   tr $ thInputFeedback rsUpdate rsInvalid sClassName sDisplayLabel
+        tr $ tdInputFeedback False rsInvalid sClassName sValue
+
+
+-- | Construct a table for a single input field.
+trInputWithFocus
+        :: ReplyUpdated -> ReplyInvalid
+        -> String -> String -> String -> Html
+
+trInputWithFocus rsUpdate rsInvalid sClassName sDisplayLabel sValue
+ = do   tr $ thInputFeedback rsUpdate rsInvalid sClassName sDisplayLabel
+        tr $ tdInputFeedback True rsInvalid sClassName sValue
+
 
 -- | Column header in event details.
 thInputFeedback :: [String] -> [(String, String)] -> String -> String -> Html
-thInputFeedback fieldsUpdated fieldValsInvalid fieldName niceName 
+thInputFeedback fieldsUpdated fieldValsInvalid fieldName niceName
 
  -- Feedback entry field was just updated.
  | elem fieldName fieldsUpdated
@@ -32,18 +56,18 @@ thInputFeedback fieldsUpdated fieldValsInvalid fieldName niceName
 -- | Field of event details.
 --      If the field contains invalid data then continue displaying
 --      this date, but focus on the field.
-tdInputFeedback 
-        :: ToValue a 
+tdInputFeedback
+        :: ToValue a
         => Bool
-        -> [(String, String)] 
-        -> String 
-        -> a 
+        -> [(String, String)]
+        -> String
+        -> a
         -> Html
 
 tdInputFeedback takeFocus fieldValsInvalid fieldName val
 
  -- Feedback entry field contains invalid value.
- | Just badVal <- lookup fieldName fieldValsInvalid 
+ | Just badVal <- lookup fieldName fieldValsInvalid
  = td   $ input !  A.name   (H.toValue fieldName)
                 !  A.autocomplete "off"
                 !  A.value  (H.toValue badVal)

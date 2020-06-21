@@ -50,7 +50,7 @@ cgiPersonEdit ss inputs
                         return  (Just pid, person)
 
              Nothing
-              -> do     let person      = zeroPerson "(required)"
+              -> do     let person = zeroPerson "(required)"
                         return   (Nothing, person)
 
         if      -- Update person details.

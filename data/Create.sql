@@ -5,7 +5,7 @@ CREATE TABLE Person
         , PreferedName          TEXT
         , FirstName             TEXT    NOT NULL
         , MiddleName            TEXT
-        , FamilyName            TEXT    
+        , FamilyName            TEXT
         , DateOfBirth           DATE
         , Mobile                TEXT
         , Email                 TEXT);
@@ -13,8 +13,8 @@ CREATE TABLE Person
 CREATE TABLE Event
         ( EventId               INTEGER PRIMARY KEY
         , Type                  STRING
-        , Location              STRING   NOT NULL
-        , Time                  DATETIME NOT NULL);
+        , Location              STRING
+        , Time                  DATETIME);
 
 CREATE TABLE Attendance
         ( PersonId              INTEGER
