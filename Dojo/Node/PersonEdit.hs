@@ -26,7 +26,7 @@ cgiPersonEdit
         -> CGI CGIResult
 
 cgiPersonEdit ss inputs
- = do   
+ = do
         -- Normalize incoming arguments.
         let Just args
                 = sequence
@@ -36,7 +36,7 @@ cgiPersonEdit ss inputs
         let fieldUpdates
                 = [ (field, value)      | (field@(f : _), value) <- inputs
                                         , isUpper f ]
-        
+
         -- Connect to the database.
         conn    <- liftIO $ connectSqlite3 databasePath
 
@@ -61,7 +61,7 @@ cgiPersonEdit ss inputs
                 -- Show the form and wait for entry.
                 | otherwise
                 = do    liftIO $ disconnect conn
-                        cgiPersonEdit_entry ss args mpid person 
+                        cgiPersonEdit_entry ss args mpid person
 
         result
 
@@ -74,8 +74,7 @@ cgiPersonEdit_update ss conn mPid person inputs
     -- Some of the fields didn't parse.
     Left fieldErrs
      | Just pid <- mPid
-     -> redirect
-      $ flatten
+     -> redirect $ flatten
       $ pathPersonEdit ss pid
                 <&> map keyValOfArg
                         [ ArgDetailsInvalid name str
@@ -84,15 +83,14 @@ cgiPersonEdit_update ss conn mPid person inputs
 
     -- All the fields parsed, insert new person.
      | Nothing  <- mPid
-     -> do     
+     -> do
         -- Insert the new person.
         liftIO $ insertPerson conn person
         liftIO $ commit conn
-        
 
         liftIO $ disconnect conn
 
-        -- Say 
+        -- Say
         redirect $ flatten $ pathPersonList ss
 
 
@@ -109,8 +107,7 @@ cgiPersonEdit_update ss conn mPid person inputs
         liftIO $ disconnect conn
 
         -- Stay on the same page, but show what fields were updated.
-        redirect
-         $ flatten 
+        redirect $ flatten
          $ pathPersonEdit ss pid
                 <&> map keyValOfArg (map ArgDetailsUpdated diffFields)
 
@@ -124,20 +121,17 @@ cgiPersonEdit_entry ss args Nothing person
         pageBody
          $ do   H.h1 "Adding Person"
                 tablePaths (pathsJump ss)
-                H.br
 
                 -- Main entry form.
                 formPerson args (pathPersonAdd ss) person
 
 
-cgiPersonEdit_entry ss args (Just pid) person 
- = outputFPS $ renderHtml 
+cgiPersonEdit_entry ss args (Just pid) person
+ = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ "Editing Person"
         pageBody
-         $ do   H.h1 "Editing Person"
-                tablePaths (pathsJump ss ++ [pathPersonView ss $ personId person])
-                H.br
+         $ do   tablePaths (pathsJump ss ++ [pathPersonView ss $ personId person])
 
                 -- Main entry form.
                 formPerson args (pathPersonEdit ss pid) person

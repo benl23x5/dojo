@@ -1,5 +1,5 @@
 
-module Dojo.Data.Person 
+module Dojo.Data.Person
         ( Person                (..)
         , PersonId              (..)
         , PersonMemberId        (..)
@@ -13,6 +13,7 @@ module Dojo.Data.Person
 
         -- * Projections
         , personFieldNames
+        , personShortName
         , personDisplayName
 
         -- * Database
@@ -47,11 +48,11 @@ diffPerson p1 p2
  = concat
         [ comp "PersonId"       personId
         , comp "MemberId"       personMemberId
-        , comp "PreferedName"   personPreferedName 
+        , comp "PreferredName"  personPreferredName
         , comp "FirstName"      personFirstName
         , comp "MiddleName"     personMiddleName
         , comp "FamilyName"     personFamilyName
-        , comp "DateOfBirth"    personDateOfBirth 
+        , comp "DateOfBirth"    personDateOfBirth
         , comp "Mobile"         personMobile
         , comp "Email"          personEmail ]
 
@@ -61,7 +62,7 @@ diffPerson p1 p2
 
 -- Loading --------------------------------------------------------------------
 loadPerson
-        :: [(String, String)] 
+        :: [(String, String)]
         -> Person
         -> Either [(String, String, ParseError)] Person
 
@@ -74,7 +75,7 @@ loadPerson inputs person
                                 Left err        -> Left [(name, str, err)]
    in do
         mid     <- load "MemberId"      (personMemberId     person)
-        pname   <- load "PreferedName"  (personPreferedName person)
+        pname   <- load "PreferredName" (personPreferredName person)
         fname   <- load "FirstName"     (personFirstName    person)
         mname   <- load "MiddleName"    (personMiddleName   person)
         lname   <- load "FamilyName"    (personFamilyName   person)
@@ -84,7 +85,7 @@ loadPerson inputs person
 
         return  $ person
                 { personMemberId        = mid
-                , personPreferedName    = pname
+                , personPreferredName   = pname
                 , personFirstName       = fname
                 , personMiddleName      = mname
                 , personFamilyName      = lname

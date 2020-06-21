@@ -23,14 +23,11 @@ cgiPersonList sid _inputs
         cgiPersonList_list sid people
 
 cgiPersonList_list ss people
- = outputFPS $ renderHtml 
+ = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader "People"
         pageBody
-         $ do   H.h1 "People"
-                tablePaths (pathsJump ss ++ [pathPersonAdd ss])
-                H.br
-
+         $ do   tablePaths (pathsJump ss ++ [pathPersonAdd ss])
                 tablePeople ss people
 
 
@@ -39,18 +36,10 @@ tablePeople :: Session -> [Person] -> H.Html
 tablePeople ss people
  = H.div ! A.class_ "list person-list"
  $ H.table
- $ do   col ! A.class_ "FirstName"
+ $ do   col ! A.class_ "ShortName"
         col ! A.class_ "FamilyName"
         col ! A.class_ "Mobile"
-        col ! A.class_ "Email"
-        col ! A.class_ "MemberId"
-        col ! A.class_ "actions"
-
-        tr $ do th "first"
-                th "family"
-                th "mobile"
-                th "email"
-                th "member"
+        tr $ do th "first / preferred"; th "family"; th "mobile"
 
         mapM_ (trPerson ss) people
 
@@ -60,7 +49,7 @@ trPerson :: Session -> Person -> H.Html
 trPerson ss person
  = tr
  $ do   -- Clicking on any column takes us to the person view page.
-        let pathView     
+        let pathView
                 = pathPersonView ss $ personId person
 
         -- Person data.
@@ -68,14 +57,7 @@ trPerson ss person
              = td $ (a ! A.href (H.toValue pathView))
                     (H.toMarkup val)
 
-        tdField (personFirstName   person)  
-        tdField (personFamilyName  person)  
-        tdField (personMobile      person)  
-        tdField (personEmail       person)  
-        tdField (personMemberId    person)  
-
-        -- View links.
-        td $    a ! A.href (H.toValue pathView)
-                  ! A.class_ "link"
-                  $ "view"
+        tdField (personShortName person)
+        tdField (personFamilyName  person)
+        tdField (personMobile      person)
 

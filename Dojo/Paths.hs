@@ -10,7 +10,7 @@ import Config
 -- The paths to show at the top of each page.
 pathsJump :: Session -> [Path]
 pathsJump ss
- = [ pathLogout, pathPersonList ss, pathEventList ss ]
+ = [ pathLogout, pathEventList ss, pathPersonList ss]
 
 
 -- Session -------------------------------------------------------------------
@@ -32,7 +32,7 @@ pathLogout
 pathMain :: Session -> Path
 pathMain ss
  = Path "Main"
-        cgiName 
+        cgiName
         [ ("s", show $ sessionHash ss)
         , ("n", "main") ]
 
@@ -41,7 +41,7 @@ pathMain ss
 pathPersonList :: Session -> Path
 pathPersonList ss
  = Path "People"
-        cgiName 
+        cgiName
         [ ("s", show $ sessionHash ss)
         , ("n", "pList")]
 
@@ -76,7 +76,7 @@ pathPersonEdit ss (PersonId pid)
 pathEventList :: Session -> Path
 pathEventList ss
  = Path "Events"
-        cgiName 
+        cgiName
         [ ("s", show $ sessionHash ss)
         , ("n", "eList")]
 

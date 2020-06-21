@@ -14,7 +14,7 @@ import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Framework
 import Dojo.Base hiding (main)
-import Config
+import qualified Config
 import qualified Network.CGI            as CGI
 
 
@@ -28,14 +28,14 @@ cgiTop
  = do   inputs  <- CGI.getInputs
 
         -- Grab the current session details.
-        let mHash       = lookup "s" inputs
+        let mHash = lookup "s" inputs
         mSession
          <- case mHash of
                 Nothing
                  -> return Nothing
 
                 Just hash
-                 -> do  conn    <- liftIO $ connectSqlite3 databasePath
+                 -> do  conn    <- liftIO $ connectSqlite3 Config.databasePath
                         ss      <- liftIO $ getSessionByHash conn (SessionHash hash)
                         liftIO $ disconnect conn
                         return $ Just ss

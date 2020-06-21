@@ -2,6 +2,11 @@
 module Config where
 
 
+-- | Name of site displayed in at login screen.
+siteName        :: String
+siteName        = "Aiki Kai Australia"
+
+
 -- | Name of the top-level cgi script.
 cgiName         :: String
 cgiName         = "dojo.cgi"

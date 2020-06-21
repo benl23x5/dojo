@@ -1,5 +1,5 @@
 
-module Dojo.Data.Person.Database 
+module Dojo.Data.Person.Database
         ( -- * Constructors
           personOfSqlValues
 
@@ -61,14 +61,14 @@ personOfSqlValues
         , preferedName, firstName, middleName, familyName, dateOfBirth
         , mobile, email ]
 
-        = Person 
+        = Person
         { personId              = fromSql pid
         , personMemberId        = fromSql memberId
-        , personPreferedName    = fromSql preferedName
+        , personPreferredName   = fromSql preferedName
         , personFirstName       = fromSql firstName
         , personMiddleName      = fromSql middleName
         , personFamilyName      = fromSql familyName
-        , personDateOfBirth     = fromSql dateOfBirth 
+        , personDateOfBirth     = fromSql dateOfBirth
         , personMobile          = fromSql mobile
         , personEmail           = fromSql email }
 
@@ -83,7 +83,7 @@ getPeople conn
                 , ",PreferedName,FirstName,MiddleName,FamilyName"
                 , ",DateOfBirth"
                 , ",Mobile,Email"
-                , "FROM Person" 
+                , "FROM Person"
                 , "ORDER BY FamilyName"]) []
 
         return $ map personOfSqlValues valuess
@@ -92,7 +92,7 @@ getPeople conn
 -- | Get the person with the given id.
 getPerson  :: IConnection conn => conn -> PersonId -> IO Person
 getPerson conn userId
- = do   [values] <- quickQuery' conn (unlines 
+ = do   [values] <- quickQuery' conn (unlines
                 [ "SELECT PersonId,MemberId"
                 , ",PreferedName,FirstName,MiddleName,FamilyName"
                 , ",DateOfBirth"
@@ -116,14 +116,14 @@ insertPerson conn person
                 , "VALUES (?,?,?,?,?,?,?,?)" ]
 
         execute stmt
-                [ toSql (personMemberId     person)
-                , toSql (personPreferedName person)
-                , toSql (personFirstName    person)
-                , toSql (personMiddleName   person)
-                , toSql (personFamilyName   person)
-                , toSql (personDateOfBirth  person) 
-                , toSql (personMobile       person) 
-                , toSql (personEmail        person) ]
+                [ toSql (personMemberId      person)
+                , toSql (personPreferredName person)
+                , toSql (personFirstName     person)
+                , toSql (personMiddleName    person)
+                , toSql (personFamilyName    person)
+                , toSql (personDateOfBirth   person)
+                , toSql (personMobile        person)
+                , toSql (personEmail         person) ]
 
 
 -- | Update a person.
@@ -138,12 +138,12 @@ updatePerson conn person
                 , "WHERE PersonId=?"]
 
         execute stmt
-         $      [ toSql (personMemberId     person)
-                , toSql (personPreferedName person)
-                , toSql (personFirstName    person)
-                , toSql (personMiddleName   person)
-                , toSql (personFamilyName   person)
-                , toSql (personDateOfBirth  person) 
-                , toSql (personMobile       person) 
-                , toSql (personEmail        person) 
-                , toSql (personId           person) ]
+         $      [ toSql (personMemberId      person)
+                , toSql (personPreferredName person)
+                , toSql (personFirstName     person)
+                , toSql (personMiddleName    person)
+                , toSql (personFamilyName    person)
+                , toSql (personDateOfBirth   person)
+                , toSql (personMobile        person)
+                , toSql (personEmail         person)
+                , toSql (personId            person) ]

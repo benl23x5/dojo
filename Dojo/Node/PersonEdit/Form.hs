@@ -16,7 +16,7 @@ import qualified Text.Blaze.Html5.Attributes    as A
 formPerson :: [Arg] -> Path -> Person -> Html
 formPerson args path person
  = form ! A.action (H.toValue path)
- $ do   
+ $ do
         mapM_   (\(fieldName, fieldData)
                  -> input ! A.type_ "hidden"
                           ! A.name  (H.toValue fieldName)
@@ -25,22 +25,20 @@ formPerson args path person
 
         divPersonDetails args person
 
-        br
-
-        -- Save button, 
+        -- Save button,
         --  with feedback on which fields were updated next to it.
         table
-         $ tr $ td 
-         $ do   input   ! A.type_ "submit" 
+         $ tr $ td
+         $ do   input   ! A.type_ "submit"
                         ! A.value "Save"
 
                 let updatedFields    = [field | ArgDetailsUpdated field <- args]
                 when (not $ null updatedFields)
                  $ H.span ! A.class_ "updated"
                  $ H.toMarkup
-                 $ " Updated: " 
-                        ++ intercalate ", " 
-                                 ( map (\(Just n) -> n) 
+                 $ " Updated: "
+                        ++ intercalate ", "
+                                 ( map (\(Just n) -> n)
                                  $ map niceNameOfPersonField updatedFields)
                         ++ "."
 
@@ -50,25 +48,24 @@ divPersonDetails args person
  = H.div ! A.id "person-details-edit"
  $ H.table
  $ do   H.table
-         $ do   tr $ do th' "PreferedName"   "prefered name"
-                        th' "FirstName"      "first name"
-                        th' "MiddleName"     "middle name"
-                        th' "FamilyName"     "family name"
-                        th' "DateOfBirth"    "date of birth"
+         $ do   tr $ do th' "FirstName"      "first"
+                        th' "PreferredName"  "preferred"
+                        th' "MiddleName"     "middle"
+                        th' "FamilyName"     "family"
 
-                tr $ do tdF "PreferedName"   (pretty $ personPreferedName person)
-                        td' "FirstName"      (pretty $ personFirstName    person)
+                tr $ do tdF "FirstName"      (pretty $ personFirstName    person)
+                        td' "PreferredName"  (pretty $ personPreferredName person)
                         td' "MiddleName"     (pretty $ personMiddleName   person)
                         td' "FamilyName"     (pretty $ personFamilyName   person)
-                        td' "DateOfBirth"    (pretty $ personDateOfBirth  person)
 
-        br
         H.table
-         $ do   tr $ do th' "MemberId"       "member id"
-                        th' "Mobile"         "mobile number"
-                        th' "Email"          "email address"
+         $ do   tr $ do th' "DateOfBirth"    "dob"
+                        th' "MemberId"       "member"
+                        th' "Mobile"         "mobile"
+                        th' "Email"          "email"
 
-                tr $ do td' "MemberId"       (pretty $ personMemberId person)
+                tr $ do td' "DateOfBirth"    (pretty $ personDateOfBirth  person)
+                        td' "MemberId"       (pretty $ personMemberId person)
                         td' "Mobile"         (pretty $ personMobile   person)
                         td' "Email"          (pretty $ personEmail    person)
 

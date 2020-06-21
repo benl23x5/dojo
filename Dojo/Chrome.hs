@@ -17,7 +17,7 @@ pageHeader name
 
 pageBody :: Html -> Html
 pageBody content
-        = H.body 
+        = H.body
         $ H.div ! A.id "container"
         $ H.div ! A.id "content"
         $ content
@@ -25,10 +25,11 @@ pageBody content
 
 tablePaths :: [Path] -> Html
 tablePaths paths
- = H.table
+ = H.div ! A.class_ "paths"
+ $ H.table
  $ H.tr $ mapM_ tdPath paths
 
  where  tdPath path
          = H.td
-         $ H.a  ! A.href (H.toValue path) 
+         $ H.a  ! A.href (H.toValue path)
                 $ H.toMarkup $ pathName path

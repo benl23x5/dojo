@@ -1,5 +1,5 @@
 
-module Dojo.Node.EventEdit 
+module Dojo.Node.EventEdit
         (cgiEventEdit)
 where
 import Dojo.Node.EventEdit.Form
@@ -26,7 +26,7 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --      The 'updated' fields are passed if a previous action just updated
 --      the event record. Display UI feedback for these.
 --
---    ?eEdit ... &addPerson=STRING ...   
+--    ?eEdit ... &addPerson=STRING ...
 --      (action) Add people as attendees to this event,
 --               then show the entry form.
 --
@@ -36,11 +36,11 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --
 cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventEdit ss inputs
- = do   
+ = do
         -- Normalise incoming arguments.
-        let Just args   
+        let Just args
                 = liftM renumberSearchFeedback
-                $ sequence 
+                $ sequence
                 $ map argOfKeyVal inputs
 
         -- Field of the event description to update.
@@ -49,20 +49,18 @@ cgiEventEdit ss inputs
                                         , isUpper f ]
 
         -- People to delete from the event.
-        let pidsDel     
-                = [ pid         | ArgDelPerson pid  <- args ]
+        let pidsDel
+                = [ pid  | ArgDelPerson pid  <- args ]
 
         -- People to add to this event.
-        let newNames    
-                = [ name        | ArgAddPerson name <- args ]
-
+        let newNames
+                = [ name | ArgAddPerson name <- args ]
 
         -- Connect to the database.
         conn    <- liftIO $ connectSqlite3 databasePath
 
-
         -- If we have an existing eventId then load the existing event data,
-        --  otherwise start with an empty event record, 
+        --  otherwise start with an empty event record,
         --  using the current time as a placeholder.
         (meid, event, attendance)
           <- case lookup "eid" inputs of
@@ -72,11 +70,11 @@ cgiEventEdit ss inputs
                         attendance <- liftIO $ getAttendance conn (EventId eid)
                         return  (Just (eventId event), event, attendance)
 
-              Nothing 
+              Nothing
                -> do    -- Use the current time as a placeholder until we have
                         -- the real time.
                         zonedTime       <- liftIO $ Time.getZonedTime
-                        let (edate, etime) 
+                        let (edate, etime)
                                         = splitEventLocalTime
                                         $ Time.zonedTimeToLocalTime zonedTime
 
@@ -91,21 +89,21 @@ cgiEventEdit ss inputs
 
                  -- Update the event details or add new people as attendees.
                  | (not $ null fieldUpdates) || (not $ null newNames)
-                 =      cgiEventEdit_update 
+                 =      cgiEventEdit_update
                                 ss conn meid event fieldUpdates newNames
 
                  -- Show the form and wait for entry.
                  | otherwise
                  = do   liftIO $ disconnect conn
-                        cgiEventEdit_entry  
-                                ss args meid event attendance 
+                        cgiEventEdit_entry
+                                ss args meid event attendance
 
         result
 
 
 -------------------------------------------------------------------------------
 -- Delete some people from the event.
-cgiEventEdit_del 
+cgiEventEdit_del
         :: IConnection conn
         => Session
         -> conn
@@ -118,7 +116,7 @@ cgiEventEdit_del ss conn meid pids
         -- If we have no eid then the initial event record hasn't been added
         -- to the database yet. It doesn't have any attendance on it, so we
         -- can just return without doing anything.
-        Nothing 
+        Nothing
          -> do  liftIO   $ disconnect conn
                 redirect $ flatten $ pathEventEdit ss Nothing
 
@@ -145,11 +143,11 @@ cgiEventEdit_update
         -> [String]             -- Names of people to add as attendees.
         -> CGI CGIResult
 
--- If the event we want to edit doesn't exist in the database yet, 
+-- If the event we want to edit doesn't exist in the database yet,
 -- then add it and look it up again to get its event Id.
 -- NOTE: We rely on the local time in this event being a globally unique event key.
 cgiEventEdit_update ss conn Nothing event updates newNames
- = do   
+ = do
         liftIO $ insertEvent conn event
         liftIO $ commit conn
 
@@ -179,12 +177,12 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
 
         -- Write the event deatils changes to the database.
         liftIO $ updateEvent conn event'
-                                
+
         -- Find and add attendees based on the supplied names.
-        fsSearchFeedback        
+        fsSearchFeedback
                 <- liftM concat
-                $  liftIO 
-                $  zipWithM (searchAddPerson conn (eventId event)) 
+                $  liftIO
+                $  zipWithM (searchAddPerson conn (eventId event))
                         [0..] newNames
 
         liftIO $ commit conn
@@ -192,7 +190,7 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
 
         -- Stay on the same page, but show what fields were updated.
         redirect
-         $ flatten 
+         $ flatten
          $ pathEventEdit ss (Just eid)
                 <&> map keyValOfArg (map ArgDetailsUpdated diffFields)
                 <&> map keyValOfArg fsSearchFeedback
@@ -201,7 +199,7 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
 -- | Find and add attendees based on the new names.
 --   The returned arguments contain feedback as to whether we found a unique person
 --   based on these search terms.
-searchAddPerson 
+searchAddPerson
         :: IConnection conn
         => conn
         -> EventId      -- Id of the event to edit.
@@ -214,12 +212,12 @@ searchAddPerson conn eid ix names
 
         case found of
          -- Found a unique person based on these terms.
-         FoundOk person  
+         FoundOk person
           -> do  insertAttendance conn eid person
                  return [ArgPersonAdded (personId person)]
 
          -- Didn't find any people for these terms.
-         FoundNone       
+         FoundNone
           -> return [ArgSearchFoundNone ix names]
 
          -- Found multiple people for these terms.
@@ -230,7 +228,7 @@ searchAddPerson conn eid ix names
 
 -------------------------------------------------------------------------------
 -- | We haven't got any updates yet, so show the entry form.
-cgiEventEdit_entry 
+cgiEventEdit_entry
         :: Session
         -> [Arg]
         -> Maybe EventId        -- If we're editing a pre-existing event
@@ -240,21 +238,17 @@ cgiEventEdit_entry
         -> CGI CGIResult
 
 cgiEventEdit_entry ss args meid event attendance
- = outputFPS $ renderHtml 
+ = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader "Editing Event"
         pageBody
-         $ do   H.h1 "Editing Event"
-
-                (if isJust meid
+         $ do   (if isJust meid
                   then tablePaths (pathsJump ss ++ [pathEventView ss $ eventId event])
                   else tablePaths (pathsJump ss))
-                
-                H.br
 
                 -- Main entry form.
                 H.div   ! A.class_ "event"
-                        $ formEvent args 
+                        $ formEvent args
                                 (pathEventEdit ss meid)
                                 event attendance
 

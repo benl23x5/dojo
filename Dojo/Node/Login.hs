@@ -9,7 +9,7 @@ import Dojo.Chrome
 import Dojo.Framework
 import Dojo.Paths
 import Dojo.Base
-import Config
+import qualified Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified System.Random                  as R
@@ -28,7 +28,7 @@ cgiLogin inputs
  , Just password <- lookup "password" inputs
  = do
         -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 databasePath
+        conn    <- liftIO $ connectSqlite3 Config.databasePath
 
         -- Try to get the user record with this name.
         mUser   <- liftIO $ getMaybeUser conn (UserName username)
@@ -49,7 +49,7 @@ cgiLogin inputs
  $ H.docTypeHtml
  $ do   pageHeader "Login"
         pageBody
-         $ do   H.h1 "Aiki Dojo"
+         $ do   H.h1 $ H.string $ Config.siteName
                 formLogin pathLogin
 
 
@@ -135,7 +135,7 @@ loginActivate user
                                 startTime
 
         -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 databasePath
+        conn    <- liftIO $ connectSqlite3 $ Config.databasePath
 
         -- Insert the new session
         _       <- liftIO $ insertSession conn session

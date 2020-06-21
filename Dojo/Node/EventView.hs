@@ -19,7 +19,7 @@ cgiEventView :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventView ss inputs
  | Just strEventId      <- lookup "eid" inputs
  , Right eid            <- parse strEventId
- = do   
+ = do
         -- Connect to database.
         conn    <- liftIO $ connectSqlite3 databasePath
 
@@ -35,7 +35,7 @@ cgiEventView ss inputs
  = error $ "cgiEventView: bad inputs " ++ show inputs
 
 
-cgiEventView_page 
+cgiEventView_page
         :: Session
         -> Event -> [Person]
         -> CGI CGIResult
@@ -44,11 +44,8 @@ cgiEventView_page ss event attendance
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ pretty $ eventDisplayName event
-        pageBody 
-         $ do   H.h1 (H.toMarkup $ eventDisplayName event)
-                tablePaths (pathsJump ss ++ [pathEventEdit ss $ Just $ eventId event])
-                H.br
-
+        pageBody
+         $ do   tablePaths (pathsJump ss ++ [pathEventEdit ss $ Just $ eventId event])
                 divEventView ss event attendance
 
 
@@ -56,36 +53,31 @@ cgiEventView_page ss event attendance
 divEventView :: Session -> Event -> [Person] -> Html
 divEventView ss event attendance
  = H.div ! A.id "event-view"
- $ do   
+ $ do
         divEventDetails event
-        br
-
         divPersonList ss attendance
 
 
 -- | Event details.
 divEventDetails :: Event -> Html
 divEventDetails event
- = H.div ! A.id "event-details-view"
- $ table
- $ do   
-        col' "EventId"
-        col' "Location"
-        col' "Type"
-        col' "Date"
-        col' "Time"
+ = do
+        H.div ! A.id "event-details-view" $ table
+         $ do   col' "Location"; col' "Type"
+                tr $ do th' "location"; th' "type"
 
-        tr $ do th' "id"
-                th' "location"
-                th' "type"
-                th' "date"
-                th' "time"
+                tr $ do td' (eventLocation event)
+                        td' (eventType     event)
 
-        tr $ do td' (eventId       event)
-                td' (eventLocation event)
-                td' (eventType     event)
-                td' (eventDate     event)
-                td' (eventTime     event)
+        H.div ! A.id "event-details-view" $ table
+         $ do   col' "EventId"; col' "Date"; col' "Time"
+                tr $ do th' "id"; th' "date"; th' "time"
+
+                tr $ do td' (eventId       event)
+                        td' (eventDate     event)
+                        td' (eventTime     event)
+
+
 
  where  col' c  = col ! A.class_ c
         th' val = th val
@@ -121,11 +113,7 @@ trPerson ss ix person
 
         -- Person name
         td $ H.a
-                ! A.href (H.toValue path)
-                $ H.toMarkup $ personDisplayName person
+           ! A.href (H.toValue path)
+           $ H.toMarkup $ personDisplayName person
 
-        -- View link
-        td $ a  ! A.href  (H.toValue path)
-                ! A.class_ "link"
-                $ "view"
 

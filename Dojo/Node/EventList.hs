@@ -24,14 +24,11 @@ cgiEventList ss _inputs
 
 
 cgiEventList_list ss eventList
- = outputFPS $ renderHtml 
+ = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader "Events"
         pageBody
-         $ do   H.h1 "Events"
-                tablePaths (pathsJump ss ++ [pathEventAdd ss])
-                H.br
-
+         $ do   tablePaths (pathsJump ss ++ [pathEventAdd ss])
                 tableEventList ss eventList
 
 
@@ -39,19 +36,9 @@ cgiEventList_list ss eventList
 tableEventList :: Session -> [(Event, Int)] -> Html
 tableEventList ss eventList
  = H.div ! A.class_ "list event-list"
- $ H.table 
- $ do   col' "Date"
-        col' "Time"
-        col' "Location"
-        col' "Type"
-        col' "People"
-        col' "actions"
-
-        tr $ do th "date"
-                th "time"
-                th "location"
-                th "type"
-                th "people"
+ $ H.table
+ $ do   col' "Date"; col' "Time"; col' "Location"; col' "People"
+        tr $ do th "date"; th "time"; th "location"; th "people"
 
         mapM_ (trEvent ss) eventList
 
@@ -66,13 +53,7 @@ trEvent ss (event, peopleCount)
         td' (eventDate      event)
         td' (eventTime      event)
         td' (eventLocation  event)
-        td' (eventType      event)
         td' peopleCount
-
-        -- View links.
-        td $ a  ! A.href  (H.toValue pathView)
-                ! A.class_ "link"
-                $ "view"
 
  where  -- Clicking on any column takes us to the Event View page.
         pathView = pathEventView ss $ eventId event

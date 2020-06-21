@@ -15,7 +15,7 @@ import qualified Text.Blaze.Html5               as H
 -- | Add a new person, using a vertical form.
 cgiPersonAdd
         :: Session
-        -> [(String, String)] 
+        -> [(String, String)]
         -> CGI CGIResult
 
 cgiPersonAdd ss inputs
@@ -26,7 +26,7 @@ cgiPersonAdd ss inputs
                 $ map argOfKeyVal inputs
 
         case lookup "FirstName" inputs of
-         Just firstName 
+         Just firstName
            -> cgiPersonAdd_insert ss args inputs firstName
 
          _ -> cgiPersonAdd_entry  ss args
@@ -40,8 +40,6 @@ cgiPersonAdd_entry ss args
         pageBody
          $ do   H.h1 "Add Person"
                 tablePaths $ pathsJump ss
-                H.br
-
                 formPerson args (pathPersonAdd ss) (zeroPerson "(required)")
 
 
@@ -50,7 +48,7 @@ cgiPersonAdd_insert ss _args inputs firstName
  = case loadPerson inputs (zeroPerson firstName) of
     -- All the fields parsed.
     Right person'
-     -> do   
+     -> do
         -- Connect to the database.
         conn    <- liftIO $ connectSqlite3 databasePath
 

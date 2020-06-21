@@ -9,6 +9,7 @@ module Dojo.Data.Person.Base
         , PersonEmail           (..)
         , zeroPerson
         , personFieldNames
+        , personShortName
         , personDisplayName)
 where
 import qualified Data.Time      as Time
@@ -22,10 +23,10 @@ data Person
           personId              :: PersonId     -- PRIMARY KEY
 
           -- | Aikikai membership number.
-        , personMemberId        :: PersonMemberId 
+        , personMemberId        :: PersonMemberId
 
-          -- | Prefered, short name.
-        , personPreferedName    :: PersonName
+          -- | Preferred, short name.
+        , personPreferredName   :: PersonName
 
           -- | If a person only has one name then use that as the "first name"
           --   and leave the others empty.
@@ -46,7 +47,7 @@ data Person
           -- | Email address.
         , personEmail           :: PersonEmail }
 
-data PersonId           
+data PersonId
         = PersonId Integer
         deriving (Eq, Ord)
 
@@ -54,11 +55,11 @@ data PersonMemberId
         = PersonMemberId Integer
         deriving Eq
 
-data PersonName         
-        = PersonName String         
+data PersonName
+        = PersonName String
         deriving Eq
 
-data PersonDateOfBirth  
+data PersonDateOfBirth
         = PersonDateOfBirth (Maybe Time.Day)
         deriving Eq
 
@@ -78,7 +79,7 @@ zeroPerson firstName
         = Person
         { personId              = PersonId 0
         , personMemberId        = PersonMemberId 0
-        , personPreferedName    = PersonName    ""
+        , personPreferredName   = PersonName    ""
         , personFirstName       = PersonName firstName
         , personMiddleName      = PersonName    ""
         , personFamilyName      = PersonName    ""
@@ -102,18 +103,28 @@ personFieldNames
         , "Email" ]
 
 
+-- | Get the short name of a Person,
+--   which is a perferred name if we have one, otherwise the first name.
+personShortName :: Person -> String
+personShortName person
+ = if sPreferred == "" then sFirst else sPreferred
+ where
+        PersonName sPreferred   = personPreferredName person
+        PersonName sFirst       = personFirstName person
+
+
 -- | Get the standard display name of a Person.
 --   We use the prefered name if set, and ignore middle names.
 personDisplayName :: Person -> String
 personDisplayName person
  = first ++ " " ++ family
- where  
+ where
         PersonName family   = personFamilyName person
 
-        PersonName first   
-         | personPreferedName person == PersonName ""
+        PersonName first
+         | personPreferredName person == PersonName ""
          = personFirstName person
 
          | otherwise
-         = personPreferedName person
+         = personPreferredName person
 

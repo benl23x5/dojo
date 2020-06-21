@@ -1,40 +1,74 @@
 
 /* Defaults and Layout ************************************/
-body 
+
+html {
+       font-size: 42px;
+}
+
+/*
+@media screen and (min-width: 600px) {
+ html {
+       font-size: 42px;
+ }
+ body {
+        background-color: rgb(200,93,139);
+ }
+}
+
+@media screen and (min-width: 1280px) {
+ html {
+       font-size: 16px;
+ }
+ body {
+        background-color: rgb(19,93,139);
+ }
+}
+*/
+
+#container
 {
-        background-color: rgb(0,80,150);
+        min-width:      320px;
+        max-width:      1400px;
+        margin-left:    auto;
+        margin-right:   auto;
+}
+
+#content
+{      background-color: #ffffff;
+       padding:         0.5ex;
+       padding-left:    1em;
+       padding-right:   1em;
+}
+
+h1
+{       font-size:      1.2em;
+        line-height:    0.1em;
+        margin-bottom:  0.8em;
+}
+
+h2
+{       font-size:      1.0em;
+        line-height:    0.8em;
+}
+
+body
+{
         font-family:    "Helvetica", "Arial", Sans-Serif;
-        font-size:      14px;
 }
 
 th
 {       text-align:     left;
         font-weight:    bold;
-        font-size:      12px;
+        font-size:      0.8em;
+        height:         1.2em;
+        min-width:      4em;
+        border-bottom:  2px solid rgb(0,80,150);
 }
 
-
-#container 
-{       min-width:      500px;
-        max-width:      1000px;
-        margin-left:    auto;
-        margin-right:   auto;
-}
-
-
-#content
-{      background-color: #ffffff;
-       padding:         10px;
-       padding-left:    20px;
-       padding-right:   20px;
-}
-
-h1
-{       font-size:      18px;
-}
-
-h2
-{       font-size:      16px;
+td
+{       text-align:     left;
+        padding-right:  1ex;
+        height:         1em;
 }
 
 
@@ -48,17 +82,21 @@ h2
 }
 
 
-/* Person and Event Lists *********************************/
-.list table
-{       width:          100%;
+table {
+        margin-top:     0.4em;
 }
 
+/* Person and Event Lists *********************************/
+.list table
+{      min-width:      50%;
+       width:          100%;
+}
 
 .list tbody .link
 {       text-decoration: underline;
 }
 
-/* The whole list row is a link to the edit page, 
+/* The whole list row is a link to the edit page,
    so we don't need to underline it separately. */
 .list tbody tr:hover a
 {       color: #00f;
@@ -76,40 +114,45 @@ h2
         text-decoration: none;
 }
 
-.list th
-{       text-align:     left;
-        border-bottom:  2px solid rgb(0,80,150);
-        height:         1.8em;
+.paths table
+{
+        border-collapse: collapse;
 }
 
-.list td
-{       text-align:     left;
-        height:         1.5em;
+.paths td
+{       margin: 0ex;
+        padding-right:  1ex;
 }
+
+/* Person List ********************************************/
+.person-list .ShortName         { width: 8em; }
+.person-list .FamilyName        { width: 10em; }
+
+
+/* Person View/Edit **************************************/
+
+/* View Mode */
+#person-details-edit input
+{       height:         1.1em;
+        width:          90%;
+}
+
+.person-attendance .Date        { width: 6em;  }
+.person-attendance .Time        { width: 4em;  }
+.person-attendance .Location    { min-width: 10em;   }
 
 
 /* Event List *********************************************/
-.event-list .Date               { width: 8em;  }
-.event-list .Time               { width: 8em;  }
-.event-list .Type               { width: 8em;   }
+.event-list .Date               { width: 6em;   }
+.event-list .Time               { width: 4em;   }
+.event-list .Location           { min-width: 6em;  }
 .event-list .People             { width: 3em;   }
-.event-list .actions            { width: 3em;   }
 
 
 /* Event View/Edit ******************************************/
 
 /* View Mode */
-#event-details-view             { width: 100%;  }
-#event-details-view th
-{       height:         2em;
-        border-bottom:  2px solid rgb(0,80,150);
-}
-
-#event-details-view td
-{       height:         1.8em;
-}
-
-#event-details-view .EventId    { width: 3em;   }
+#event-details-view .EventId    { width: 3em; }
 #event-details-view .Date       { width: 8em; }
 #event-details-view .Time       { width: 5em; }
 #event-details-view .Location   { width: 8em; }
@@ -117,60 +160,34 @@ h2
 
 
 /* Edit Mode */
-#event-details-edit             { width: 100%;  }
-#event-details-edit th
-{       height:         2em;
-        border-bottom:  2px solid rgb(0,80,150);
-}
-
-#event-details-edit input            
-{       height:         1.8em;
+#event-details-edit input
+{
+        height:         1.1em;
+        width:          90%;
 }
 
 #event-details-edit .EventId    { width: 3em; }
-#event-details-edit .Date       { width: 10em; }
-#event-details-edit .Time       { width: 7em; }
-#event-details-edit .Location   { width: 10em; }
-#event-details-edit .Type       { width: 10em; }
-#event-details-edit input       { width: 95%; }
+#event-details-edit input       { width: 90%; }
 
-#event-attendance-cur .index    { width: 3em;}
-#event-attendance-cur .actions  { width: 3em;}
+#event-attendance-cur .index    { width: 3em; }
+#event-attandance-cur .name     { width: 10em; }
+#event-attendance-cur .actions  { width: 1em; }
+
 #event-attendance-new .index    { width: 3em; }
 
-
-/* Person List ********************************************/
-.person-list .Mobile            { width: 10em; }
-.person-list .MemberId          { width: 3em; }
-.person-list .actions           { width: 3em; }
-
-
-/* Person View/Edit **************************************/
-
-/* View Mode */
-#person-details-view th
-{       height:         1.7em;
-        min-width:      8em;
-        border-bottom:  2px solid rgb(0,80,150);
+#event-attendance-new input
+{       height:         1.1em;
+        font-size:      1em;
+        width:          10em;
 }
 
-
-/* Edit Mode */
-#person-details-edit th
-{       height:         1.7em;
-        min-width:      8em;
-        border-bottom:  2px solid rgb(0,80,150);
+/*
+@media screen and (min-width: 320px) {
+ #event-details-edit .Location   { width: 50%; }
+ #event-details-edit .Type       { width: 50%; }
 }
+*/
+/* #event-attendance-new .name     { width: 10em; } */
 
-#person-details-edit input
-{       height:         1.7em;
-}
-
-#person-details-edit .Email     { width: 20em; }
-
-.person-attendance .Date        { width: 8em;  }
-.person-attendance .Time        { width: 8em;  }
-.person-attendance .Type        { width: 8em;   }
-.person-attendance .actions     { width: 3em;   }
 
 
