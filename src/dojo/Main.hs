@@ -14,14 +14,39 @@ import Dojo.Paths
 import Dojo.Framework
 import Dojo.Base hiding (main)
 import qualified Config
-import qualified Network.CGI            as CGI
+import qualified Network.CGI                            as CGI
+import qualified Control.Exception                      as Control
+import qualified Text.Blaze.Html5                       as H
+import qualified Text.Blaze.Html5.Attributes            as A
+import qualified Text.Blaze.Html.Renderer.String        as S
 
 
 main :: IO ()
 main
- = CGI.runCGI (CGI.handleErrors cgiTop)
+ = Control.catch (CGI.runCGI (CGI.handleErrors cgiTop))
+ $ (\(e :: Control.SomeException) -> sorry e)
 
 
+-- | Redirect all hard errors to the issue tracker.
+sorry :: Control.SomeException -> IO ()
+sorry e
+ = putStrLn $ S.renderHtml $ H.docTypeHtml
+ $ do   H.string "Internal error in dojo server."
+        H.br
+        H.string "The dojo server issue tracker is at: "
+        (H.a ! A.href (H.toValue sTracker))
+                (H.string $ sTracker)
+        H.br
+        H.br
+        H.string "Please include the following message in new bug reports:"
+        H.br
+        H.string $ show e
+
+
+ where  sTracker = "http://github.com/benl23x5/dojo/issues"
+
+
+-- | Top level CGI action.
 cgiTop :: CGI CGIResult
 cgiTop
  = do   inputs  <- CGI.getInputs
@@ -39,18 +64,17 @@ cgiTop
                         liftIO $ disconnect conn
                         return $ Just ss
 
-        -- Dispatch on the node id.
-        let mNode       = lookup "n" inputs
-
+        -- Dispatch on the node id argument.
+        let mNode = lookup "n" inputs
         case (mSession, mNode) of
-         (_,            Just "login")  -> cgiLogin         inputs
-         (_,            Just "logout") -> cgiLogout        inputs
-         (Just ss,      Just "main")   -> cgiMain       ss inputs
-         (Just ss,      Just "pList")  -> cgiPersonList ss inputs
-         (Just ss,      Just "pView")  -> cgiPersonView ss inputs
-         (Just ss,      Just "pEdit")  -> cgiPersonEdit ss inputs
-         (Just ss,      Just "eList")  -> cgiEventList  ss inputs
-         (Just ss,      Just "eView")  -> cgiEventView  ss inputs
-         (Just ss,      Just "eEdit")  -> cgiEventEdit  ss inputs
+         (_,       Just "login")  -> cgiLogin         inputs
+         (_,       Just "logout") -> cgiLogout        inputs
+         (Just ss, Just "main")   -> cgiMain       ss inputs
+         (Just ss, Just "pList")  -> cgiPersonList ss inputs
+         (Just ss, Just "pView")  -> cgiPersonView ss inputs
+         (Just ss, Just "pEdit")  -> cgiPersonEdit ss inputs
+         (Just ss, Just "eList")  -> cgiEventList  ss inputs
+         (Just ss, Just "eView")  -> cgiEventView  ss inputs
+         (Just ss, Just "eEdit")  -> cgiEventEdit  ss inputs
 
          _              -> CGI.redirect $ flatten $ pathLogin

@@ -169,7 +169,7 @@ divAttendanceNew args event curStudents
                 = not $ null [x | ArgDetailsInvalid x _ <- args]
 
         mapM_ (trNewAttendance args takeFocus hasInvalidFields curStudents)
-                [0 .. 9]
+                [0 .. 4]
 
  where  col' c  = col ! A.class_ c
 

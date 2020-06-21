@@ -66,10 +66,9 @@ divPersonDetails :: Person -> Html
 divPersonDetails person
  = H.div ! A.id "person-details-view" ! A.class_ "details"
  $ do   H.table
-         $ do   tr $ do th "first"; th "pref"; th "middle"; th "family"
+         $ do   tr $ do th "first"; th "pref"; th "family"
                 tr $ do td (H.toMarkup $ personFirstName    person)
                         td (H.toMarkup $ personPreferredName person)
-                        td (H.toMarkup $ personMiddleName   person)
                         td (H.toMarkup $ personFamilyName   person)
 
         H.table
@@ -81,11 +80,11 @@ divPersonDetails person
                 tr $ td (H.toMarkup $ personMemberId person)
 
         H.table
-         $ do   tr $ th "mobile"
+         $ do   tr $ th "mobile phone"
                 tr $ td (H.toMarkup $ personMobile   person)
 
         H.table
-         $ do   tr $ th "email"
+         $ do   tr $ th "email address"
                 tr $ td (H.toMarkup $ personEmail    person)
 
 

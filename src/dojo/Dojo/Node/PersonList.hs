@@ -40,7 +40,7 @@ tablePeople ss people
  $ do   col ! A.class_ "ShortName"
         col ! A.class_ "FamilyName"
         col ! A.class_ "Mobile"
-        tr $ do th "pref / first"; th "family"; th "mobile"
+        tr $ do th "pref / first"; th "family"; th "phone"
 
         mapM_ (trPerson ss) people
 

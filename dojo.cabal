@@ -84,13 +84,13 @@ Executable dojo
 
         Config
 
-  GHC-options:
+  ghc-options:
         -Wall
         -fno-warn-orphans
         -fno-warn-missing-signatures
         -fno-warn-unused-do-bind
 
-  Extensions:
+  extensions:
         BangPatterns
         PatternGuards
         ParallelListComp
@@ -102,3 +102,31 @@ Executable dojo
         FlexibleContexts
         MultiWayIf
 
+Executable load
+  build-depends:
+        base            == 4.11.*,
+        bytestring      == 0.10.*,
+        csv             == 0.1.*
+
+  main-is:
+        Main.hs
+
+  hs-source-dirs: src/load
+
+  ghc-options:
+        -Wall
+        -fno-warn-orphans
+        -fno-warn-missing-signatures
+        -fno-warn-unused-do-bind
+
+  extensions:
+        BangPatterns
+        PatternGuards
+        ParallelListComp
+        OverloadedStrings
+        TypeSynonymInstances
+        FlexibleInstances
+        MultiParamTypeClasses
+        ScopedTypeVariables
+        FlexibleContexts
+        MultiWayIf
