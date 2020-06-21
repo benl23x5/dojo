@@ -7,12 +7,6 @@ which events, etc. Uses a SqLite3 backend database.
 
 ## Setup
 
-```
-```
-
-```
-data/$
-```
 
 ## Server Build
 
