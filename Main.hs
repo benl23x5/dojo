@@ -4,7 +4,6 @@ import Dojo.Node.Login
 import Dojo.Node.Logout
 import Dojo.Node.Main
 import Dojo.Node.PersonList
-import Dojo.Node.PersonAdd
 import Dojo.Node.PersonView
 import Dojo.Node.PersonEdit
 import Dojo.Node.EventList
@@ -48,7 +47,6 @@ cgiTop
          (_,            Just "logout") -> cgiLogout        inputs
          (Just ss,      Just "main")   -> cgiMain       ss inputs
          (Just ss,      Just "pList")  -> cgiPersonList ss inputs
-         (Just ss,      Just "pAdd")   -> cgiPersonAdd  ss inputs
          (Just ss,      Just "pView")  -> cgiPersonView ss inputs
          (Just ss,      Just "pEdit")  -> cgiPersonEdit ss inputs
          (Just ss,      Just "eList")  -> cgiEventList  ss inputs

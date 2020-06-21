@@ -88,14 +88,13 @@ divEventList :: Session -> [Event] -> Html
 divEventList ss events
  = H.div ! A.class_ "list person-attendance"
  $ H.table
- $ do   col' "Date"; col' "Time"; col' "Location"; col' "Type"
-        tr $ do th "date"; th "time"; th "location"; th "type"
+ $ do   col' "Date"; col' "Time"; col' "Location"
+        tr $ do th "date"; th "time"; th "location"
 
         forM_ events $ \event -> tr $ do
          td' event (eventDate      event)
          td' event (eventTime      event)
          td' event (eventLocation  event)
-         td' event (eventType      event)
 
  where  col' c   = col ! A.class_ c
 
