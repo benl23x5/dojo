@@ -51,17 +51,21 @@ divEventDetails :: [Arg] -> Event -> Html
 divEventDetails args event
  = H.div ! A.id "event-details-edit" ! A.class_ "details"
  $ do
-        H.div ! A.id "event-details-edit" $ table
-         $ do   tr $ do th' "EventId"; th' "Date"; th' "Time"
+        H.table
+         $ do   tr $ do th' "EventId"   "id"
+                        th' "Date"      "date (dd-mm-yyyy)"
+                        th' "Time"      "time (hh:mm 24hr)"
+
                 tr $ do td $ H.toMarkup $ pretty $ eventId event
-                        td' False     "Date"     (pretty $ eventDate event)
-                        td' False     "Time"     (pretty $ eventTime event)
+                        td' "Date"     (pretty $ eventDate event)
+                        td' "Time"     (pretty $ eventTime event)
 
-        fieldWithFocus
-                "Location"      "location (required)"
-                (pretty $ eventLocation event)
+        H.table $ fieldWithFocus
+                 "Location"      "location (required)"
+                 (pretty $ eventLocation event)
 
-        field   "Type"          "type (required)"
+        H.table $ field
+                "Type"          "type (required) (dojo, ttc)"
                 (pretty $ eventType event)
 
 {-
@@ -81,17 +85,16 @@ divEventDetails args event
         rsInvalids = mapMaybe takeDetailsInvalid args
 
         fieldWithFocus sClass sLabel sValue
-         = H.table $ trInputWithFocus rsUpdateds rsInvalids sClass sLabel sValue
+         = trInputWithFocus rsUpdateds rsInvalids sClass sLabel sValue
 
         field sClass sLabel sValue
-         = H.table $ trInput rsUpdateds rsInvalids sClass sLabel sValue
+         = trInput rsUpdateds rsInvalids sClass sLabel sValue
 
-        th' fieldName
-         = let  Just niceName = niceNameOfEventField fieldName
-           in   thInputFeedback rsUpdateds rsInvalids fieldName niceName
+        th' fieldName niceName
+         =      thInputFeedback rsUpdateds rsInvalids fieldName niceName
 
-        td' focus fieldName val
-         =      tdInputFeedback focus rsInvalids fieldName val
+        td' fieldName val
+         =      tdInputFeedback False rsInvalids fieldName val
 
 -- Event Attendance -----------------------------------------------------------
 divEventAttendance :: [Arg] -> Path -> Event -> [Person] -> Html

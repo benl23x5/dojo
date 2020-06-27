@@ -98,7 +98,7 @@ pathEventList ss
 
 pathEventView :: Session -> EventId -> Path
 pathEventView ss (EventId eid)
- = Path "Done"
+ = Path "View Event"
         cgiName
         [ ("s", show $ sessionHash ss)
         , ("n", "eView")

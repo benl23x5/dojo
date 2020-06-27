@@ -1,5 +1,5 @@
 
-module Dojo.Data.Person.Presentation 
+module Dojo.Data.Person.Presentation
         ( niceNameOfPersonField)
 where
 import Dojo.Data.Person.Base
@@ -26,7 +26,7 @@ instance Pretty PersonMobile where
 
 instance Pretty PersonEmail where
  pretty (PersonEmail  email)    = email
- 
+
 
 -- Parse ----------------------------------------------------------------------
 instance Parse PersonId where
@@ -56,7 +56,7 @@ niceNameOfPersonField str
  = case str of
         "PersonId"      -> Just "id"
         "MemberId"      -> Just "member id"
-        "PreferedName"  -> Just "prefered name"
+        "PreferredName" -> Just "preferred name"
         "FirstName"     -> Just "first name"
         "FamilyName"    -> Just "family name"
         "MiddleName"    -> Just "middle name"

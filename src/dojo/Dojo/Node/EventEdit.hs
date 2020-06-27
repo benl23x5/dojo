@@ -239,8 +239,9 @@ cgiEventEdit_entry ss args meid event attendance
  $ do   pageHeader "Editing Event"
         pageBody
          $ do   (if isJust meid
-                  then tablePaths (pathsJump ss ++ [pathEventView ss $ eventId event])
-                  else tablePaths (pathsJump ss))
+                  then do tablePaths $ pathsJump ss
+                          tablePaths [pathEventView ss $ eventId event]
+                  else do tablePaths (pathsJump ss))
 
                 -- Main entry form.
                 H.div   ! A.class_ "event"

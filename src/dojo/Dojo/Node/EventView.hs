@@ -66,7 +66,9 @@ divEventDetails event
  $ do
         H.table
          $ do   col' "EventId"; col' "Date"; col' "Time"
-                tr $ do th' "id"; th' "date"; th' "time"
+                tr $ do th' "id"
+                        th' "date (dd-mm-yyyy)"
+                        th' "time (hh:mm 24hr)"
 
                 tr $ do td' (eventId       event)
                         td' (eventDate     event)
@@ -74,7 +76,8 @@ divEventDetails event
 
         H.table
          $ do   col' "Location"; col' "Type"
-                tr $ do th' "location"; th' "type"
+                tr $ do th' "location"
+                        th' "type (dojo, ttc)"
 
                 tr $ do td' (eventLocation event)
                         td' (eventType     event)

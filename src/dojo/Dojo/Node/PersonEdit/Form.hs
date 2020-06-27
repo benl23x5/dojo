@@ -30,9 +30,9 @@ formPerson args path person
                 H.span ! A.class_ "updated"
                  $ H.toMarkup
                  $ " Updated: "
-                       ++ intercalate ", "
-                                ( map (\(Just n) -> n)
-                                $ map niceNameOfPersonField updatedFields)
+                       ++ (intercalate ", "
+                            [ fromMaybe s $ niceNameOfPersonField s
+                            | s <- updatedFields ])
                        ++ "."
                 H.br
 
@@ -55,8 +55,8 @@ divPersonDetails args person
         field   "PreferredName" "preferred name"
                 (pretty $ personPreferredName person)
 
-        field   "MiddleName"    "middle name"
-                (pretty $ personMiddleName person)
+--        field   "MiddleName"    "middle name"
+--                (pretty $ personMiddleName person)
 
         field   "FamilyName"    "family name"
                 (pretty $ personFamilyName person)
