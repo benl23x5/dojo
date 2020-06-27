@@ -73,12 +73,12 @@ cgiPersonEdit_update ss conn mPid person inputs
      | Just pid <- mPid
      -> redirect $ flatten
       $ pathPersonEdit ss (Just pid)
-                <&> map keyValOfArg
-                        [ ArgDetailsInvalid name str
-                        | (name, str, _) <- fieldErrs ]
+        <&> map keyValOfArg
+                [ ArgDetailsInvalid name str err
+                | (name, str, ParseError err) <- fieldErrs ]
 
-
-    -- All the fields parsed, insert new person.
+     -- All the fields parsed, insert new person.
+     -- TODO: don't update person with errors.
      | Nothing  <- mPid
      -> do
         -- Insert the new person.
@@ -99,7 +99,7 @@ cgiPersonEdit_update ss conn mPid person inputs
         let diffFields  = diffPerson person person'
 
         -- Write the changes to the database.
-        _       <- liftIO $ updatePerson conn person'
+        _ <- liftIO $ updatePerson conn person'
         liftIO $ commit conn
         liftIO $ disconnect conn
 

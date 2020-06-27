@@ -65,3 +65,22 @@ Add an `index.html` to automatically redirect to the cgi script.
 ```
 dojo$ cp data/index.html /srv/dojo/test/aikikai-australia/data/www
 ```
+
+### Setup HTTPS
+
+Follow instructions on
+
+```
+https://certbot.eff.org/lets-encrypt/debianbuster-apache
+```
+
+```
+$ sudo apt-get install certbot python-certbot-apache
+$ sudo certbot --apache
+```
+
+The key certificate is installed in
+```
+/etc/letsencrypt/live/DOMAIN/
+```
+

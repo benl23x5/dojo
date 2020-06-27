@@ -1,5 +1,6 @@
 
 -- | Setup the top-level namespace for web development.
+--   All external dependencies are imported via this module.
 module Dojo.Base
         ( module Network.CGI
         , module Database.HDBC
@@ -13,7 +14,8 @@ module Dojo.Base
         , module Data.Convertible
         , module Control.Monad
         , module Prelude
-        , (!?))
+        , (!?)
+        , takeHead)
 where
 import Network.CGI
         (CGI, CGIResult, liftIO, outputFPS, redirect)
@@ -52,4 +54,8 @@ import Prelude
         | enable        = x ! attr v
         | otherwise     = x
 
+
+takeHead :: [a] -> Maybe a
+takeHead [] = Nothing
+takeHead (x : _) = Just x
 

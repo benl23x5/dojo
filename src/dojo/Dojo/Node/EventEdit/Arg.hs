@@ -1,8 +1,7 @@
 
 module Dojo.Node.EventEdit.Arg
         ( Arg (..)
-        , takeDetailsUpdated
-        , takeDetailsInvalid
+        , takeFeedForm
         , argOfKeyVal
         , keyValOfArg
         , renumberSearchFeedback)
@@ -30,7 +29,8 @@ data Arg
         -- | Details field is invalid
         | ArgDetailsInvalid
         { argDetailsField       :: String
-        , argDetailsString      :: String }
+        , argDetailsString      :: String
+        , argDetailsError       :: String }
 
         -- | Person search returned no matches.
         | ArgSearchFoundNone
@@ -63,20 +63,17 @@ data Arg
         { argPersonId           :: PersonId }
 
 
--- | Take the field name from an ArgDetailsUpdated.
-takeDetailsUpdated :: Arg -> Maybe String
-takeDetailsUpdated arg
+-- | Take feedback details from an argument.
+takeFeedForm :: Arg -> Maybe FeedForm
+takeFeedForm arg
  = case arg of
-        ArgDetailsUpdated field         -> Just field
-        _                               -> Nothing
+        ArgDetailsUpdated f
+         -> Just $ FeedFormUpdated f
 
+        ArgDetailsInvalid f c e
+         -> Just $ FeedFormInvalid f c e
 
--- | Take the field and value from an ArgDetailsInvalid
-takeDetailsInvalid :: Arg -> Maybe (String, String)
-takeDetailsInvalid arg
- = case arg of
-        ArgDetailsInvalid field val     -> Just (field, val)
-        _                               -> Nothing
+        _ -> Nothing
 
 
 -- | Convert a CGI key value pair to an argument.
@@ -104,7 +101,8 @@ argOfKeyVal (key, val)
 
         -- Details field invalid
         | Just fieldName <- stripPrefix "i" key
-        = Just $ ArgDetailsInvalid fieldName val
+        , (sContents, '|' : sError) <- break (== '|') val
+        = Just $ ArgDetailsInvalid fieldName sContents sError
 
         -- Search Found None
         | Just ns       <- stripPrefix  "sn" key
@@ -132,7 +130,7 @@ keyValOfArg arg
         ArgPersonAdded pid
          -> ("a",   pretty pid)
 
-        ArgDetailsInvalid field str
+        ArgDetailsInvalid field str _err
          -> ("i" ++ field, str)
 
         ArgSearchFoundNone ix str

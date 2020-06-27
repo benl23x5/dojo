@@ -1,16 +1,16 @@
 
 module Dojo.Node.PersonEdit.Arg
         ( Arg (..)
-        , takeDetailsUpdated
-        , takeDetailsInvalid
+        , takeFeedForm
         , argOfKeyVal
         , keyValOfArg)
 where
+import Dojo.Framework
 import Dojo.Base
 
 
 -- | A CGI argument passed to the EventEdit node.
-data Arg 
+data Arg
         -- | Empty form field.
         = ArgEmpty
 
@@ -20,24 +20,22 @@ data Arg
 
         -- | Details field is invalid
         | ArgDetailsInvalid
-                { argDetailsField       :: String 
-                , argDetailsString      :: String }
+                { argDetailsField       :: String
+                , argDetailsContents    :: String
+                , argDetailsError       :: String }
 
 
--- | Take the field name from an ArgDetailsUpdated.
-takeDetailsUpdated :: Arg -> Maybe String
-takeDetailsUpdated arg
+-- | Take feedback details from an argument.
+takeFeedForm :: Arg -> Maybe FeedForm
+takeFeedForm arg
  = case arg of
-        ArgDetailsUpdated field         -> Just field
-        _                               -> Nothing
+        ArgDetailsUpdated f
+         -> Just $ FeedFormUpdated f
 
+        ArgDetailsInvalid f c e
+         -> Just $ FeedFormInvalid f c e
 
--- | Take the field and value from an ArgDetailsInvalid
-takeDetailsInvalid :: Arg -> Maybe (String, String)
-takeDetailsInvalid arg
- = case arg of
-        ArgDetailsInvalid field val     -> Just (field, val)
-        _                               -> Nothing
+        _ -> Nothing
 
 
 -- | Convert a CGI key value pair to an argument.
@@ -48,10 +46,12 @@ argOfKeyVal (key, val)
         = Just $ ArgDetailsUpdated val
 
         -- Details field invalid
+        --  encoded as iFIELD=CONTENTS|ERROR
         | Just fieldName <- stripPrefix "i" key
-        = Just $ ArgDetailsInvalid fieldName val
+        , (sContents, '|' : sError) <- break (== '|') val
+        = Just $ ArgDetailsInvalid fieldName sContents sError
 
-        | otherwise            
+        | otherwise
         = Just ArgEmpty                                                 -- TODO: better parsing
 
 
@@ -62,7 +62,7 @@ keyValOfArg arg
         ArgDetailsUpdated field
          -> ("p",   field)
 
-        ArgDetailsInvalid field str
-         -> ("i" ++ field, str)
+        ArgDetailsInvalid field str pe
+         -> ("i" ++ field, str ++ "|" ++ pe)
 
         _ -> error "EventEdit.keyValOfArg: nope"

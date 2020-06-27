@@ -163,8 +163,8 @@ cgiEventEdit_update ss conn (Just eid) event updates newNames
      -> redirect $ flatten
       $ pathEventEdit ss (Just eid)
                 <&> map keyValOfArg
-                        [ ArgDetailsInvalid name str
-                        | (name, str, _) <- fieldErrs ]
+                        [ ArgDetailsInvalid name str err
+                        | (name, str, ParseError err) <- fieldErrs ]
 
     -- All the fields parsed.
     Right event'

@@ -81,20 +81,19 @@ divEventDetails args event
 
 
  where  -- Feedback about updated and invalid fields.
-        rsUpdateds = mapMaybe takeDetailsUpdated args
-        rsInvalids = mapMaybe takeDetailsInvalid args
+        fsFeed = mapMaybe takeFeedForm args
 
         fieldWithFocus sClass sLabel sValue
-         = trInputWithFocus rsUpdateds rsInvalids sClass sLabel sValue
+         = trInputWithFocus fsFeed sClass sLabel sValue
 
         field sClass sLabel sValue
-         = trInput rsUpdateds rsInvalids sClass sLabel sValue
+         = trInput fsFeed sClass sLabel sValue
 
         th' fieldName niceName
-         =      thInputFeedback rsUpdateds rsInvalids fieldName niceName
+         =      thInputFeedback fsFeed fieldName niceName
 
         td' fieldName val
-         =      tdInputFeedback False rsInvalids fieldName val
+         =      tdInputFeedback False fsFeed fieldName val
 
 -- Event Attendance -----------------------------------------------------------
 divEventAttendance :: [Arg] -> Path -> Event -> [Person] -> Html
@@ -169,7 +168,7 @@ divAttendanceNew args event curStudents
         -- When the form has invalid details field then prevent input
         -- of more attendees.
         let hasInvalidFields
-                = not $ null [x | ArgDetailsInvalid x _ <- args]
+                = not $ null [x | ArgDetailsInvalid x _ _ <- args]
 
         mapM_ (trNewAttendance args takeFocus hasInvalidFields curStudents)
                 [0 .. 4]
