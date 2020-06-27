@@ -30,20 +30,6 @@ formPerson fsFeed path person
         -- Feedback about which fields have been updated.
         htmlFeedForm fsFeed niceNameOfPersonField
 
-{-
-
-        let updatedFields = [field | FeedFormUpdated field <- fsFeed]
-        when (not $ null updatedFields)
-         $ do   H.br
-                H.span ! A.class_ "updated"
-                 $ H.toMarkup
-                 $ " Updated: "
-                       ++ (intercalate ", "
-                            [ fromMaybe s $ niceNameOfPersonField s
-                            | s <- updatedFields ])
-                       ++ "."
-                H.br
--}
         -- Person details.
         divPersonDetails fsFeed person
         H.br
@@ -58,9 +44,11 @@ divPersonDetails :: [FeedForm] -> Person -> Html
 divPersonDetails fsFeed person
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
-        fieldWithFocus
-                "FirstName"     "first name (required)"
+        H.table
+         $ trInputWithFocus fsFeed
+                "FirstName"     "first name"
                 (pretty $ personFirstName person)
+                (Just "(required)")
 
         field   "PreferredName" "preferred name"
                 (pretty $ personPreferredName person)
@@ -81,9 +69,6 @@ divPersonDetails fsFeed person
                 (pretty $ personEmail person)
 
  where
-        fieldWithFocus sClass sLabel sValue
-         = H.table $ trInputWithFocus fsFeed sClass sLabel sValue
-
         field sClass sLabel sValue
          = H.table $ trInput fsFeed sClass sLabel sValue
 

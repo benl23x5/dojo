@@ -71,7 +71,7 @@ divEventDetails args event
 {-
          $ do   tr $ do th' "Location"; th' "Type"
 
-                -- When this is a new event put focus non the first details field.
+                -- When this is a new event put focus on the first details field.
                 let EventId eid = eventId event
                 let takeFocus   = eid == 0
 
@@ -84,7 +84,7 @@ divEventDetails args event
         fsFeed = mapMaybe takeFeedForm args
 
         fieldWithFocus sClass sLabel sValue
-         = trInputWithFocus fsFeed sClass sLabel sValue
+         = trInputWithFocus fsFeed sClass sLabel sValue Nothing
 
         field sClass sLabel sValue
          = trInput fsFeed sClass sLabel sValue
@@ -93,7 +93,7 @@ divEventDetails args event
          =      thInputFeedback fsFeed fieldName niceName
 
         td' fieldName val
-         =      tdInputFeedback False fsFeed fieldName val
+         =      tdInputFeedback False fsFeed fieldName val Nothing
 
 -- Event Attendance -----------------------------------------------------------
 divEventAttendance :: [Arg] -> Path -> Event -> [Person] -> Html

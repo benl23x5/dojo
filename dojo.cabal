@@ -101,6 +101,7 @@ Executable dojo
         ScopedTypeVariables
         FlexibleContexts
         MultiWayIf
+        EmptyDataDecls
 
 Executable load
   build-depends:

@@ -9,7 +9,7 @@
 module Dojo.Framework.Form
         ( FeedForm(..)
         , trInput
-        , trInputWithFocus
+        , trInputWithFocus, trInputWithFocus_
         , thInputFeedback
         , tdInputFeedback
         , htmlFeedForm)
@@ -44,15 +44,25 @@ type FieldValue = String
 trInput :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
 trInput fsFeed sClassName sDisplayLabel sValue
  = do   tr $ thInputFeedback fsFeed sClassName sDisplayLabel
-        tr $ tdInputFeedback False fsFeed sClassName sValue
+        tr $ tdInputFeedback False fsFeed sClassName sValue Nothing
 
 
 -- | Construct a table for a single input field.
-trInputWithFocus
+trInputWithFocus_
         :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
-trInputWithFocus fsFeed sClassName sDisplayLabel sValue
+trInputWithFocus_ fsFeed sClassName sDisplayLabel sValue
+ = do   trInputWithFocus fsFeed sClassName sDisplayLabel sValue Nothing
+
+
+trInputWithFocus
+        :: [FeedForm]
+        -> FieldClass -> FieldLabel -> FieldValue
+        -> Maybe String
+        -> Html
+
+trInputWithFocus fsFeed sClassName sDisplayLabel sValue mPlaceholder
  = do   tr $ thInputFeedback fsFeed sClassName sDisplayLabel
-        tr $ tdInputFeedback True fsFeed sClassName sValue
+        tr $ tdInputFeedback True fsFeed sClassName sValue mPlaceholder
 
 
 -- | Column header in field details.
@@ -87,9 +97,10 @@ tdInputFeedback
         -> [FeedForm]   -- ^ Feedback to add to the field/
         -> FieldClass
         -> a            -- ^ Field value.
+        -> Maybe String -- ^ Placeholder text.
         -> Html
 
-tdInputFeedback bHintFocus fsFeed fieldName val
+tdInputFeedback bHintFocus fsFeed fieldName val mPlaceholder
 
  -- Feedback entry field contains invalid value.
  | Just sValue  <- takeHead
@@ -108,9 +119,20 @@ tdInputFeedback bHintFocus fsFeed fieldName val
         let bTakeFocus
              = bHintFocus && not bOtherErrors
 
-        td   $ input ! A.name   (H.toValue fieldName)
+        case mPlaceholder of
+         Nothing
+          -> td $ input
+                ! A.name   (H.toValue fieldName)
                 ! A.autocomplete "off"
                 ! A.value  (H.toValue val)
+                !? (bTakeFocus, A.autofocus, "on")
+
+         Just sPlaceholder
+          -> td $ input
+                ! A.name   (H.toValue fieldName)
+                ! A.autocomplete "off"
+                ! A.value  (H.toValue val)
+                ! A.placeholder (H.toValue sPlaceholder)
                 !? (bTakeFocus, A.autofocus, "on")
 
 
@@ -141,5 +163,3 @@ htmlFeedForm fsFeed fNiceName
                             | s <- fsUpdated ])
                        ++ "."
                 H.br
-
-

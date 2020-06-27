@@ -80,7 +80,7 @@ divPersonDetails person
                 tr $ td (H.toMarkup $ personMemberId person)
 
         H.table
-         $ do   tr $ th "mobile phone"
+         $ do   tr $ th "mobile number"
                 tr $ td (H.toMarkup $ personMobile   person)
 
         H.table

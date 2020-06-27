@@ -12,6 +12,7 @@ import Config
 import qualified Text.Blaze.Html5               as H
 
 
+-------------------------------------------------------------------------------
 -- | Edit a single person, using a vertical form.
 --      ?pEdit [&pid=INT] [... &p=FIELDNAME ...]
 --      Edit an existing person, with an id and list of updated fields.
@@ -34,8 +35,9 @@ cgiPersonEdit ss inputs
 
         -- Field of the user entry to update.
         let fieldUpdates
-                = [ (field, value)      | (field@(f : _), value) <- inputs
-                                        , isUpper f ]
+                = [ (field, value)
+                  | (field@(f : _), value) <- inputs
+                  , isUpper f ]
 
         -- Connect to the database.
         conn    <- liftIO $ connectSqlite3 databasePath
@@ -73,19 +75,9 @@ cgiPersonEdit_entry ss person
 --  Update the database and show the updated form.
 cgiPersonEdit_update ss conn personOld ePersonNew
 
- -- Some of the fields didn't parse.
- -- Just keep showing the form with current values and feedback.
- | Left fieldErrors <- ePersonNew
- = do
-        let fsFeed =
-                [ FeedFormInvalid sField sValue sError
-                | (sField, sValue, ParseError sError) <- fieldErrors ]
-
-        outputFPS $ renderHtml $ htmlPersonEdit ss personOld fsFeed
-
+ -- Fields parsed, so updated the database record.
  | Right personNew <- ePersonNew
- = do   -- Write the changes to the database.
-        _ <- liftIO $ updatePerson conn personNew
+ = do   _ <- liftIO $ updatePerson conn personNew
         liftIO $ commit conn
         liftIO $ disconnect conn
 
@@ -95,6 +87,18 @@ cgiPersonEdit_update ss conn personOld ePersonNew
 
         outputFPS $ renderHtml $ htmlPersonEdit ss personNew fsFeed
 
+ -- Some of the fields didn't parse,
+ --  so redisplay the form with invalid field feedback.
+ | Left fieldErrors <- ePersonNew
+ = do   let fsFeed =
+                [ FeedFormInvalid sField sValue sError
+                | (sField, sValue, ParseError sError) <- fieldErrors ]
+
+        outputFPS $ renderHtml $ htmlPersonEdit ss personOld fsFeed
+
+
+-------------------------------------------------------------------------------
+-- | Html for person edit page.
 htmlPersonEdit :: Session -> Person -> [FeedForm] -> Html
 htmlPersonEdit ss person fsFeed
  = H.docTypeHtml
