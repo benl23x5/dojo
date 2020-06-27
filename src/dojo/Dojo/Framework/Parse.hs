@@ -25,37 +25,49 @@ instance Parse Integer where
   = Left  (ParseError "must be an integer")
 
 
--- Parse a day. We require year portion to be within the last hundred years
--- or so to ensure we don't write dates to the database that can't be represented
--- with the various Haskell epoch based date formats.
+-- Parse a day. We require year portion to be within the last hundred
+-- years or so to ensure we don't write dates to the database that can't
+-- be represented with the various Haskell epoch based date formats.
 instance Parse Time.Day where
  parse str
-  | (nDay,   '-' : str1) <- span isDigit str
-  , (nMonth, '-' : str2) <- span isDigit str1
-  , (nYear,  [])         <- span isDigit str2
-  , length nDay   > 0
-  , length nMonth > 0
-  , length nYear  > 0
-  , year                 <- read nYear
-  , Just day             <- Time.fromGregorianValid
-                                year (read nMonth) (read nDay)
-  , year >= 1900
-  , year <  2100
-  = Right day
+  | (sDay,   '-' : str1) <- span isDigit str
+  , (sMonth, '-' : str2) <- span isDigit str1
+  , (sYear,  [])         <- span isDigit str2
+  , length sDay   > 0
+  , length sMonth > 0
+  , length sYear  > 0
+  = check (read sDay) (read sMonth) (read sYear)
 
   | otherwise
-  = Left  (ParseError "must be a date with format DD-MM-YYYY")
+  = Left  (ParseError "date must have format dd-mm-yyyy")
+
+  where check nDay nMonth nYear
+         | not $ nYear >= 1900
+         = Left (ParseError "date must be after 1900")
+
+         | not $ nYear <  2100
+         = Left (ParseError "date must be before 2100")
+
+         | otherwise
+         = case Time.fromGregorianValid nYear nMonth nDay of
+            Just date -> Right date
+            Nothing   -> Left (ParseError "date must be valid in Gregorian calendar")
+
 
 
 instance Parse Time.TimeOfDay where
  parse str
-  | (nHour, ':' : str1) <- span isDigit str
-  , (nMin,  [])         <- span isDigit str1
-  , length nHour > 0
-  , length nMin  > 0
-  , Just tod            <- Time.makeTimeOfDayValid
-                                (read nHour) (read nMin) (fromIntegral (0 :: Int))
-  = Right tod
+  | (sHour, ':' : str1) <- span isDigit str
+  , (sMin,  [])         <- span isDigit str1
+  , length sHour > 0
+  , length sMin  > 0
+  = check (read sHour) (read sMin)
 
   | otherwise
-  = Left  (ParseError "must be a time with format HH:MM")
+  = Left  (ParseError "time must have format hh:mm")
+
+  where check nHour nMin
+         = case Time.makeTimeOfDayValid nHour nMin (fromIntegral (0 :: Int)) of
+                Just tod -> Right tod
+                Nothing  -> Left (ParseError "time must be valid in 24hr range")
+

@@ -11,13 +11,15 @@ module Dojo.Framework.Form
         , trInput
         , trInputWithFocus
         , thInputFeedback
-        , tdInputFeedback)
+        , tdInputFeedback
+        , htmlFeedForm)
 where
 import Dojo.Base
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
+-------------------------------------------------------------------------------
 -- | Feedback to add to a displayed form.
 data FeedForm
         -- ^ Feedback that a field has been updated.
@@ -28,7 +30,7 @@ data FeedForm
         | FeedFormInvalid
         { feedField     :: String       -- ^ Name of the field.
         , feedValue     :: String       -- ^ Current contents of field.
-        , feedError     :: String       -- ^ Error describing why value is invalid
+        , feedError     :: String       -- ^ Description of error.
         }
         deriving Show
 
@@ -37,6 +39,7 @@ type FieldLabel = String
 type FieldValue = String
 
 
+-------------------------------------------------------------------------------
 -- | Construct a table for a single input field.
 trInput :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
 trInput fsFeed sClassName sDisplayLabel sValue
@@ -69,7 +72,6 @@ thInputFeedback fsFeed fieldName niceName
  = th   ! A.class_ (H.toValue ("updated "  ++ fieldName))
         $ (H.toMarkup $ niceName ++ " (ok)")
 
-
  -- Regular column header.
  | otherwise
  = th   ! A.class_ (H.toValue fieldName)
@@ -87,7 +89,7 @@ tdInputFeedback
         -> a            -- ^ Field value.
         -> Html
 
-tdInputFeedback takeFocus fsFeed fieldName val
+tdInputFeedback bHintFocus fsFeed fieldName val
 
  -- Feedback entry field contains invalid value.
  | Just sValue  <- takeHead
@@ -95,13 +97,49 @@ tdInputFeedback takeFocus fsFeed fieldName val
                  , sName == fieldName]
  = td   $ input !  A.name   (H.toValue fieldName)
                 !  A.autocomplete "off"
+                !  A.autofocus "on"
                 !  A.value  (H.toValue sValue)
-                !? (takeFocus, A.autofocus, "on")
 
- -- Just show the entry field.
  | otherwise
- = td   $ input ! A.name   (H.toValue fieldName)
+ = do   let bOtherErrors
+             = not $ null
+             $ [sName | FeedFormInvalid sName _ _ <- fsFeed]
+
+        let bTakeFocus
+             = bHintFocus && not bOtherErrors
+
+        td   $ input ! A.name   (H.toValue fieldName)
                 ! A.autocomplete "off"
                 ! A.value  (H.toValue val)
-                !? (takeFocus, A.autofocus, "on")
+                !? (bTakeFocus, A.autofocus, "on")
+
+
+-------------------------------------------------------------------------------
+htmlFeedForm :: [FeedForm] -> (String -> Maybe String) -> Html
+htmlFeedForm fsFeed fNiceName
+ = do   let fsInvalid = [sField | FeedFormInvalid sField _ _sErr <- fsFeed]
+        let fsUpdated = [sField | FeedFormUpdated sField <- fsFeed]
+
+        when (not $ null fsInvalid)
+         $ do   H.br
+                H.span ! A.class_ "invalid"
+                 $ H.toMarkup
+                 $ " Invalid: "
+                        ++ (intercalate ", "
+                            [ fromMaybe s $ fNiceName s
+                            | s <- fsInvalid ])
+                       ++ "."
+                H.br
+
+        when (not $ null fsUpdated)
+         $ do   H.br
+                H.span ! A.class_ "updated"
+                 $ H.toMarkup
+                 $ " Updated: "
+                        ++ (intercalate ", "
+                            [ fromMaybe s $ fNiceName s
+                            | s <- fsUpdated ])
+                       ++ "."
+                H.br
+
 

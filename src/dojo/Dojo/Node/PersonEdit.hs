@@ -27,8 +27,8 @@ cgiPersonEdit
 
 cgiPersonEdit ss inputs
  = do
-        -- Normalize incoming arguments.
-        let Just args
+        -- TODO: check incoming arguments.
+        let Just _args
                 = sequence
                 $ map argOfKeyVal inputs
 
@@ -40,83 +40,69 @@ cgiPersonEdit ss inputs
         -- Connect to the database.
         conn    <- liftIO $ connectSqlite3 databasePath
 
-        -- If we have an existing personId then load the existing person data,
-        --   otherwise start with an empty person record.
-        (mpid, person)
-         <- case lookup "pid" inputs of
-             Just strPersonId
-              -> do     let (Right pid) = parse strPersonId
-                        person  <- liftIO $ getPerson conn pid
-                        return  (Just pid, person)
+        -- See if we were given an existing person id.
+        case lookup "pid" inputs of
+         -- Try to load existing person record.
+         Just strPersonId
+          -> do -- TODO: better parsing.
+                let (Right pid) = parse strPersonId
+                person  <- liftIO $ getPerson conn pid
 
-             Nothing
-              -> do     let person = zeroPerson "(required)"
-                        return   (Nothing, person)
+                if | null fieldUpdates
+                   -> do liftIO $ disconnect conn
+                         cgiPersonEdit_entry ss person
 
-        if      -- Update person details.
-                | not $ null fieldUpdates
-                -> cgiPersonEdit_update  ss conn mpid person inputs
+                   | otherwise
+                   -> do cgiPersonEdit_update ss conn
+                          person (loadPerson inputs person)
+         --
+         Nothing
+          -> do let person = zeroPerson ""
+                cgiPersonEdit_entry ss person
 
-                -- Show the form and wait for entry.
-                | otherwise
-                -> do   liftIO $ disconnect conn
-                        cgiPersonEdit_entry ss args mpid person
+
+-------------------------------------------------------------------------------
+-- | We haven't got any updates yet, so show the entry form.
+cgiPersonEdit_entry ss person
+ = outputFPS $ renderHtml
+ $ htmlPersonEdit ss person []
 
 
 -------------------------------------------------------------------------------
 -- We got some updates.
 --  Update the database and show the updated form.
-cgiPersonEdit_update ss conn mPid person inputs
- = case loadPerson inputs person of
-    -- Some of the fields didn't parse.
-    Left fieldErrs
-     | Just pid <- mPid
-     -> redirect $ flatten
-      $ pathPersonEdit ss (Just pid)
-        <&> map keyValOfArg
-                [ ArgDetailsInvalid name str err
-                | (name, str, ParseError err) <- fieldErrs ]
+cgiPersonEdit_update ss conn personOld ePersonNew
 
-     -- All the fields parsed, insert new person.
-     -- TODO: don't update person with errors.
-     | Nothing  <- mPid
-     -> do
-        -- Insert the new person.
-        liftIO $ insertPerson conn person
-        liftIO $ commit conn
+ -- Some of the fields didn't parse.
+ -- Just keep showing the form with current values and feedback.
+ | Left fieldErrors <- ePersonNew
+ = do
+        let fsFeed =
+                [ FeedFormInvalid sField sValue sError
+                | (sField, sValue, ParseError sError) <- fieldErrors ]
 
-        liftIO $ disconnect conn
+        outputFPS $ renderHtml $ htmlPersonEdit ss personOld fsFeed
 
-        -- Say
-        redirect $ flatten $ pathPersonList ss
-
-
-    -- All the fields parsed, update existing person.
-    Right person'
-     | Just pid <- mPid
-     -> do
-        -- See if anything has changed.
-        let diffFields  = diffPerson person person'
-
-        -- Write the changes to the database.
-        _ <- liftIO $ updatePerson conn person'
+ | Right personNew <- ePersonNew
+ = do   -- Write the changes to the database.
+        _ <- liftIO $ updatePerson conn personNew
         liftIO $ commit conn
         liftIO $ disconnect conn
 
-        -- Stay on the same page, but show what fields were updated.
-        redirect $ flatten
-         $ pathPersonEdit ss (Just pid)
-                <&> map keyValOfArg (map ArgDetailsUpdated diffFields)
+        let fsFeed =
+                [ FeedFormUpdated sField
+                | sField <- diffPerson personOld personNew ]
 
+        outputFPS $ renderHtml $ htmlPersonEdit ss personNew fsFeed
 
--------------------------------------------------------------------------------
--- We haven't got any updates yet, so show the entry form.
-cgiPersonEdit_entry ss args mpid person
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader $ "Editing Person"
+htmlPersonEdit :: Session -> Person -> [FeedForm] -> Html
+htmlPersonEdit ss person fsFeed
+ = H.docTypeHtml
+ $ do   let pid = personId person
+        pageHeader "Editing Person"
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths [pathPersonView ss $ personId person]
-                formPerson args (pathPersonEdit ss mpid) person
+                tablePaths [pathPersonView ss pid]
+                formPerson fsFeed (pathPersonEdit ss (Just pid)) person
+
 

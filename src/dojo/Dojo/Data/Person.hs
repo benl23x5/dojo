@@ -61,6 +61,7 @@ diffPerson p1 p2
 
 
 -- Loading --------------------------------------------------------------------
+-- TODO: collect multiple errors.
 loadPerson
         :: [(String, String)]
         -> Person

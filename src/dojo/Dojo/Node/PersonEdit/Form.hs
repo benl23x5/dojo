@@ -2,7 +2,6 @@
 module Dojo.Node.PersonEdit.Form
         (formPerson)
 where
-import Dojo.Node.PersonEdit.Arg
 import Dojo.Data.Person
 import Dojo.Framework
 import Dojo.Base
@@ -11,13 +10,15 @@ import qualified Text.Blaze.Html5.Attributes    as A
 
 
 -- | Form to change the details of a single person.
---      We don't allow the userid to be edited because this is the primary
---      key for the person table.
+--    We don't allow the userid to be edited because this is the primary
+--    key for the person table.
 formPerson
-        :: [Arg]
-        -> Path
-        -> Person -> Html
-formPerson args path person
+        :: [FeedForm]   -- ^ Feedback to add to current form.
+        -> Path         -- ^ Path to submit form.
+        -> Person       -- ^ Person details to populate form.
+        -> Html
+
+formPerson fsFeed path person
  = form ! A.action (H.toValue path)
  $ do
         mapM_   (\(fieldName, fieldData)
@@ -27,7 +28,11 @@ formPerson args path person
                 (pathFields path)
 
         -- Feedback about which fields have been updated.
-        let updatedFields = [field | ArgDetailsUpdated field <- args]
+        htmlFeedForm fsFeed niceNameOfPersonField
+
+{-
+
+        let updatedFields = [field | FeedFormUpdated field <- fsFeed]
         when (not $ null updatedFields)
          $ do   H.br
                 H.span ! A.class_ "updated"
@@ -38,9 +43,9 @@ formPerson args path person
                             | s <- updatedFields ])
                        ++ "."
                 H.br
-
+-}
         -- Person details.
-        divPersonDetails args person
+        divPersonDetails fsFeed person
         H.br
 
         -- Save button.
@@ -49,8 +54,8 @@ formPerson args path person
                 ! A.value  "Save"
 
 
-divPersonDetails :: [Arg] -> Person -> Html
-divPersonDetails args person
+divPersonDetails :: [FeedForm] -> Person -> Html
+divPersonDetails fsFeed person
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
         fieldWithFocus
@@ -76,9 +81,6 @@ divPersonDetails args person
                 (pretty $ personEmail person)
 
  where
-        -- Fedeback about updated and invalid fields.
-        fsFeed = mapMaybe takeFeedForm args
-
         fieldWithFocus sClass sLabel sValue
          = H.table $ trInputWithFocus fsFeed sClass sLabel sValue
 
