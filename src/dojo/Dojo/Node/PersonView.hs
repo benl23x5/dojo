@@ -72,7 +72,7 @@ divPersonDetails person
                         td (H.toMarkup $ personFamilyName   person)
 
         H.table
-         $ do   tr $ th "date of birth (dd-mm-yyyy)"
+         $ do   tr $ th "date of birth"
                 tr $ td (H.toMarkup $ personDateOfBirth  person)
 
         H.table
