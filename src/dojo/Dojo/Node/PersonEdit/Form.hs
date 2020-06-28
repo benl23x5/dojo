@@ -9,6 +9,7 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
+-------------------------------------------------------------------------------
 -- | Form to change the details of a single person.
 --    We don't allow the userid to be edited because this is the primary
 --    key for the person table.
@@ -21,13 +22,14 @@ formPerson
 formPerson fsFeed path person
  = form ! A.action (H.toValue path)
  $ do
+        -- Stash args from the target path as hidden fields.
         mapM_   (\(fieldName, fieldData)
                  -> input ! A.type_ "hidden"
                           ! A.name  (H.toValue fieldName)
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        -- Feedback about which fields have been updated.
+        -- Feedback about updated and invalid fields.
         htmlFeedForm fsFeed niceNameOfPersonField
 
         -- Person details.
@@ -40,12 +42,12 @@ formPerson fsFeed path person
                 ! A.value  "Save"
 
 
+-------------------------------------------------------------------------------
 divPersonDetails :: [FeedForm] -> Person -> Html
 divPersonDetails fsFeed person
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
-        H.table
-         $ trInputWithFocus fsFeed
+        H.table $ trInputWithFocus fsFeed
                 "FirstName"     "first name"
                 (pretty $ personFirstName person)
                 (Just "(required)")
@@ -70,6 +72,6 @@ divPersonDetails fsFeed person
 
  where
         field sClass sLabel sValue
-         = H.table $ trInput fsFeed sClass sLabel sValue
+         = H.table $ trInput_ fsFeed sClass sLabel sValue
 
 

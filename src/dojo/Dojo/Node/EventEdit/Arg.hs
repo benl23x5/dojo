@@ -16,21 +16,15 @@ data Arg
         -- | Empty form field.
         = ArgEmpty
 
+        -- | Feedback that a field has been updated.
+        | ArgFeedFormUpdated
+        { argDetailsFeed        :: String}
+
         -- | Add a person to the attendance record.
         | ArgAddPerson          String
 
         -- | Delete a person from the attendance record.
         | ArgDelPerson          PersonId
-
-        -- | Feedback details field was just updated
-        | ArgDetailsUpdated
-        { argDeatilsField       :: String}
-
-        -- | Details field is invalid
-        | ArgDetailsInvalid
-        { argDetailsField       :: String
-        , argDetailsString      :: String
-        , argDetailsError       :: String }
 
         -- | Person search returned no matches.
         | ArgSearchFoundNone
@@ -67,11 +61,8 @@ data Arg
 takeFeedForm :: Arg -> Maybe FeedForm
 takeFeedForm arg
  = case arg of
-        ArgDetailsUpdated f
+        ArgFeedFormUpdated f
          -> Just $ FeedFormUpdated f
-
-        ArgDetailsInvalid f c e
-         -> Just $ FeedFormInvalid f c e
 
         _ -> Nothing
 
@@ -79,6 +70,10 @@ takeFeedForm arg
 -- | Convert a CGI key value pair to an argument.
 argOfKeyVal :: (String, String) -> Maybe Arg
 argOfKeyVal (key, val)
+        -- Details field just updated
+        | "u" <- key
+        = Just $ ArgFeedFormUpdated val
+
         -- Add Person
         | "addPerson"   <- key
         = if null val
@@ -90,19 +85,10 @@ argOfKeyVal (key, val)
         , Right pid      <- parse val
         = Just $ ArgDelPerson pid
 
-        -- Details field just updated
-        | "p" <- key
-        = Just $ ArgDetailsUpdated val
-
         -- A person with this pid was just added
         | "a"           <- key
         , Right pid     <- parse val
         = Just $ ArgPersonAdded pid
-
-        -- Details field invalid
-        | Just fieldName <- stripPrefix "i" key
-        , (sContents, '|' : sError) <- break (== '|') val
-        = Just $ ArgDetailsInvalid fieldName sContents sError
 
         -- Search Found None
         | Just ns       <- stripPrefix  "sn" key
@@ -124,14 +110,11 @@ argOfKeyVal (key, val)
 keyValOfArg :: Arg -> (String, String)
 keyValOfArg arg
  = case arg of
-        ArgDetailsUpdated field
-         -> ("p",   field)
+        ArgFeedFormUpdated field
+         -> ("u",   field)
 
         ArgPersonAdded pid
          -> ("a",   pretty pid)
-
-        ArgDetailsInvalid field str _err
-         -> ("i" ++ field, str)
 
         ArgSearchFoundNone ix str
          -> ("sn" ++ show ix, str)

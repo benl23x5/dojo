@@ -43,7 +43,7 @@ pathPersonList ss
  = Path "People"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pList")]
+        , ("n", "pl")]
 
 
 pathPersonAdd :: Session -> Path
@@ -51,7 +51,7 @@ pathPersonAdd ss
  = Path "Add Person"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pEdit")]
+        , ("n", "pe")]
 
 
 pathPersonEdit :: Session -> Maybe PersonId -> Path
@@ -59,14 +59,14 @@ pathPersonEdit ss (Just (PersonId pid))
  = Path "Edit Person"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pEdit")
+        , ("n", "pe")
         , ("pid", show pid)]
 
 pathPersonEdit ss Nothing
  = Path "Edit Person"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pEdit") ]
+        , ("n", "pe") ]
 
 
 pathPersonView :: Session -> PersonId -> Path
@@ -74,7 +74,7 @@ pathPersonView ss (PersonId pid)
  = Path "View Person"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pView")
+        , ("n", "pv")
         , ("pid", show pid)]
 
 
@@ -83,7 +83,7 @@ pathPersonDiscard ss (PersonId pid)
  = Path "Discard Change"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "pView")
+        , ("n", "pv")
         , ("pid", show pid)]
 
 
@@ -93,7 +93,7 @@ pathEventList ss
  = Path "Events"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "eList")]
+        , ("n", "el")]
 
 
 pathEventView :: Session -> EventId -> Path
@@ -101,7 +101,7 @@ pathEventView ss (EventId eid)
  = Path "View Event"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "eView")
+        , ("n", "ev")
         , ("eid", show eid)]
 
 
@@ -110,7 +110,7 @@ pathEventAdd ss
  = Path "Add Event"
         cgiName
         [ ("s", show $ sessionHash ss)
-        , ("n", "eEdit")]
+        , ("n", "ee")]
 
 
 pathEventEdit :: Session -> Maybe EventId -> Path
@@ -118,13 +118,13 @@ pathEventEdit ss (Just (EventId eid))
  = Path "Edit Event"
         cgiName
         [ ("s",   show $ sessionHash ss)
-        , ("n",   "eEdit")
+        , ("n",   "ee")
         , ("eid", show eid)]
 
 pathEventEdit ss Nothing
  = Path "Edit Event"
         cgiName
-        [ ("s", show $ sessionHash ss)
-        , ("n", "eEdit")]
+        [ ("s",   show $ sessionHash ss)
+        , ("n",   "ee")]
 
 

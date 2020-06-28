@@ -11,12 +11,12 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
--- Forms ----------------------------------------------------------------------
+-------------------------------------------------------------------------------
 -- | Form to change the details of a single event.
---      We don't allow the eventid to be edited because this is the primary
---      key for the person table.
-formEvent :: [Arg] -> Path -> Event -> [Person] -> Html
-formEvent args path event attendance
+--    We don't allow the eventid to be edited because this is the primary
+--    key for the person table.
+formEvent :: [FeedForm] -> Path -> Event -> [Person] -> Html
+formEvent fsFeed path event attendance
  = form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
@@ -26,86 +26,65 @@ formEvent args path event attendance
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        -- Save button with feedback on which fields were updated next to it.
-        let updatedFields    = [field | ArgDetailsUpdated field <- args]
-        when (not $ null updatedFields)
-         $ H.span ! A.class_ "updated"
-         $ H.toMarkup
-         $ " Updated: "
-                ++ intercalate ", "
-                         ( map (\(Just n) -> n)
-                         $ map niceNameOfEventField updatedFields)
-                ++ "."
+        -- Feedback about updated and invalid fields.
+        htmlFeedForm fsFeed niceNameOfEventField
 
-        divEventDetails    args event
-        divEventAttendance args path event attendance
+        -- Event details.
+        divEventDetails    fsFeed event
+        divEventAttendance fsFeed [] path event attendance
         H.br
 
+        -- Save button.
         input   ! A.type_  "submit"
                 ! A.class_ "buttonFull"
                 ! A.value  "Save"
 
 
--- Event Details --------------------------------------------------------------
-divEventDetails :: [Arg] -> Event -> Html
-divEventDetails args event
+-------------------------------------------------------------------------------
+divEventDetails :: [FeedForm] -> Event -> Html
+divEventDetails fsFeed event
  = H.div ! A.id "event-details-edit" ! A.class_ "details"
  $ do
-        H.table
-         $ do   tr $ do th' "EventId"   "id"
-                        th' "Date"      "date (dd-mm-yyyy)"
-                        th' "Time"      "time (hh:mm 24hr)"
+        H.table $ trInput fsFeed
+         "Date" "date (dd-mm-yyyy)"
+         (pretty $ eventDate event) (Just "(required)")
 
-                tr $ do td $ H.toMarkup $ pretty $ eventId event
-                        td' "Date"     (pretty $ eventDate event)
-                        td' "Time"     (pretty $ eventTime event)
+        H.table $ trInput fsFeed
+         "Time" "time (hh:mm 24hr)"
+         (pretty $ eventTime event) (Just "(required)")
 
-        H.table $ fieldWithFocus
-                 "Location"      "location (required)"
-                 (pretty $ eventLocation event)
+        -- When this is a new event put focus on the location input field,
+        -- otherwise allow focus to be taken by the last person entry field.
+        let EventId eid = eventId event
+        let takeFocus   = eid == 0
 
-        H.table $ field
-                "Type"          "type (required) (dojo, ttc)"
-                (pretty $ eventType event)
+        if | takeFocus
+           -> H.table $ trInputWithFocus fsFeed
+                 "Location" "location"
+                 (pretty $ eventLocation event) (Just "(required)")
 
-{-
-         $ do   tr $ do th' "Location"; th' "Type"
+           | otherwise
+           -> H.table $ trInput fsFeed
+                 "Location" "location"
+                 (pretty $ eventLocation event) (Just "(required)")
 
-                -- When this is a new event put focus on the first details field.
-                let EventId eid = eventId event
-                let takeFocus   = eid == 0
-
-                tr $ do td' takeFocus "Location" (pretty $ eventLocation event)
-                        td' False     "Type"     (pretty $ eventType event)
--}
+        H.table $ trInput fsFeed
+         "Type" "type (dojo, ttc)"
+         (pretty $ eventType event) (Just "(required)")
 
 
- where  -- Feedback about updated and invalid fields.
-        fsFeed = mapMaybe takeFeedForm args
-
-        fieldWithFocus sClass sLabel sValue
-         = trInputWithFocus fsFeed sClass sLabel sValue Nothing
-
-        field sClass sLabel sValue
-         = trInput fsFeed sClass sLabel sValue
-
-        th' fieldName niceName
-         =      thInputFeedback fsFeed fieldName niceName
-
-        td' fieldName val
-         =      tdInputFeedback False fsFeed fieldName val Nothing
-
--- Event Attendance -----------------------------------------------------------
-divEventAttendance :: [Arg] -> Path -> Event -> [Person] -> Html
-divEventAttendance args path event attendance
+-------------------------------------------------------------------------------
+divEventAttendance :: [FeedForm] -> [Arg] -> Path -> Event -> [Person] -> Html
+divEventAttendance fsFeed _args path event attendance
  = do
-        divAttendanceCur args path attendance
+        -- TODO: fix people added feedback
+        divAttendanceCur [] path attendance
 
         let curStudents = fromIntegral $ length attendance
-        divAttendanceNew args event curStudents
+        divAttendanceNew fsFeed [] event curStudents
 
 
--- Current Attendance Field ---------------------------------------------------
+-------------------------------------------------------------------------------
 -- | Table of people currently listed as attending the event.
 divAttendanceCur args path attendance
  = H.div ! A.id     "event-attendance-cur"
@@ -143,16 +122,18 @@ trCurAttendance pidsAdded path ix person
                  $ "X"
 
 
--- New Attendance Field -------------------------------------------------------
+-------------------------------------------------------------------------------
+-- | New Attendance inputs.
 divAttendanceNew
-        :: [Arg]        -- ^ Pass back args to we can display search feedback
+        :: [FeedForm]   -- ^ Form feedback
+        -> [Arg]        -- ^ Pass back args to we can display search feedback
                         --   In the entry fields for terms that didn't resolve
                         --   to a single person.
         -> Event        -- ^ Event that the new people will be attached to.
         -> Integer      -- ^ Number of current students already added.
         -> Html
 
-divAttendanceNew args event curStudents
+divAttendanceNew fsFeed args event curStudents
  = H.div ! A.id     "event-attendance-new"
          ! A.class_ "list"
  $ H.table
@@ -168,7 +149,7 @@ divAttendanceNew args event curStudents
         -- When the form has invalid details field then prevent input
         -- of more attendees.
         let hasInvalidFields
-                = not $ null [x | ArgDetailsInvalid x _ _ <- args]
+                = not $ null [x | FeedFormInvalid x _ _ <- fsFeed]
 
         mapM_ (trNewAttendance args takeFocus hasInvalidFields curStudents)
                 [0 .. 4]

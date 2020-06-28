@@ -23,7 +23,7 @@ import Network.CGI
 import Database.HDBC
         ( SqlValue, toSql, fromSql
         , IConnection
-        , commit, disconnect, prepare, execute, quickQuery')
+        , withTransaction, commit, disconnect, prepare, execute, quickQuery')
 
 import Database.HDBC.Sqlite3
         (connectSqlite3)

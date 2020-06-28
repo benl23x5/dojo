@@ -8,7 +8,7 @@
 --
 module Dojo.Framework.Form
         ( FeedForm(..)
-        , trInput
+        , trInput, trInput_
         , trInputWithFocus, trInputWithFocus_
         , thInputFeedback
         , tdInputFeedback
@@ -39,19 +39,25 @@ type FieldLabel  = String
 type FieldValue  = String
 type FieldHolder = String
 
+
 -------------------------------------------------------------------------------
--- | A table for a sigle input field
-trInput :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
-trInput fsFeed sClassName sDisplayLabel sValue
+-- | A table for a single input field,
+--   with optional placholder text.
+trInput :: [FeedForm]
+        -> FieldClass -> FieldLabel -> FieldValue
+        -> Maybe FieldHolder
+        -> Html
+
+trInput fsFeed sClassName sDisplayLabel sValue mPlaceholder
  = do   tr $ thInputFeedback fsFeed sClassName sDisplayLabel
-        tr $ tdInputFeedback False fsFeed sClassName sValue Nothing
+        tr $ tdInputFeedback False fsFeed sClassName sValue mPlaceholder
 
 
--- | A table row for a single input field, with no placeholder text.
-trInputWithFocus_
-        :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
-trInputWithFocus_ fsFeed sClassName sDisplayLabel sValue
- = do   trInputWithFocus fsFeed sClassName sDisplayLabel sValue Nothing
+-- | A table for a single input field,
+--   without placeholder text.
+trInput_ :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
+trInput_ fsFeed sClassName sDisplayLabel sValue
+ = do   trInput fsFeed sClassName sDisplayLabel sValue Nothing
 
 
 -- | A focused table row for a single input field,
@@ -67,6 +73,15 @@ trInputWithFocus fsFeed sClassName sDisplayLabel sValue mPlaceholder
         tr $ tdInputFeedback True fsFeed sClassName sValue mPlaceholder
 
 
+-- | A table row for a single input field,
+--   without placeholder text.
+trInputWithFocus_
+        :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
+trInputWithFocus_ fsFeed sClassName sDisplayLabel sValue
+ = do   trInputWithFocus fsFeed sClassName sDisplayLabel sValue Nothing
+
+
+-------------------------------------------------------------------------------
 -- | Column header in field details.
 thInputFeedback
         :: [FeedForm] -> FieldClass -> FieldLabel -> Html

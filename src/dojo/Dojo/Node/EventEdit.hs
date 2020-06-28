@@ -19,18 +19,18 @@ import qualified Text.Blaze.Html5.Attributes    as A
 
 -- | Edit a single event, using a vertical form.
 --
---    ?eEdit [&eid=INT] [... &p=FIELDNAME ...]
+--    ?ee [&eid=INT] [... &u=FIELDNAME ...]
 --      Show the form to edit or add an event.
 --      When there is no eid argument then we add a new event.
 --
 --      The 'updated' fields are passed if a previous action just updated
 --      the event record. Display UI feedback for these.
 --
---    ?eEdit ... &addPerson=STRING ...
+--    ?ee ... &addPerson=STRING ...
 --      (action) Add people as attendees to this event,
 --               then show the entry form.
 --
---    ?eEdit ... &delPerson=PersonId ...
+--    ?ee ... &delPerson=PersonId ...
 --      (action) Delete people as attendees to this event,
 --               then show the entry form.
 --
@@ -43,10 +43,13 @@ cgiEventEdit ss inputs
                 $ sequence
                 $ map argOfKeyVal inputs
 
+        -- Load form feedback from arguments.
+        let fsFeed   = mapMaybe takeFeedForm args
+
         -- Field of the event description to update.
         let fieldUpdates
-                = [ (field, value)      | (field@(f : _), value) <- inputs
-                                        , isUpper f ]
+                = [ (field, value) | (field@(f : _), value) <- inputs
+                                   , isUpper f ]
 
         -- People to delete from the event.
         let pidsDel  = [ pid  | ArgDelPerson pid  <- args ]
@@ -60,43 +63,39 @@ cgiEventEdit ss inputs
         -- If we have an existing eventId then load the existing event data,
         --  otherwise start with an empty event record,
         --  using the current time as a placeholder.
-        (meid, event, attendance)
+        (meid, event, psAttend)
           <- case lookup "eid" inputs of
               Just strEventId
                 -> do   let eid    =  read strEventId
                         event      <- liftIO $ getEvent      conn (EventId eid)
-                        attendance <- liftIO $ getAttendance conn (EventId eid)
-                        return  (Just (eventId event), event, attendance)
+                        psAttend   <- liftIO $ getAttendance conn (EventId eid)
+                        return  (Just (eventId event), event, psAttend)
 
               Nothing
-               -> do    -- Use the current time as a placeholder until we have
-                        -- the real time.
-                        zonedTime       <- liftIO $ Time.getZonedTime
+               -> do    -- Use the current time as a placeholder until the
+                        -- client provides the real event time.
+                        zonedTime <- liftIO $ Time.getZonedTime
                         let (edate, etime)
-                                        = splitEventLocalTime
-                                        $ Time.zonedTimeToLocalTime zonedTime
+                                = splitEventLocalTime
+                                $ Time.zonedTimeToLocalTime zonedTime
 
-                        let event       = zeroEvent edate etime
+                        let event = zeroEvent edate etime
                         return  (Nothing, event, [])
 
-        let result
-                 -- Delete some people from the event.
-                 | not $ null pidsDel
-                 =      cgiEventEdit_del
-                                ss conn meid pidsDel
+        if      -- Delete some people from the event.
+                | not $ null pidsDel
+                ->  cgiEventEdit_del ss conn meid pidsDel
 
                  -- Update the event details or add new people as attendees.
                  | (not $ null fieldUpdates) || (not $ null newNames)
-                 =      cgiEventEdit_update
-                                ss conn meid event fieldUpdates newNames
+                 -> cgiEventEdit_update
+                        ss conn meid event psAttend fieldUpdates newNames
 
                  -- Show the form and wait for entry.
                  | otherwise
-                 = do   liftIO $ disconnect conn
-                        cgiEventEdit_entry
-                                ss args meid event attendance
-
-        result
+                 -> do  liftIO $ disconnect conn
+                        outputFPS $ renderHtml
+                         $ htmlEventEdit ss meid event psAttend fsFeed
 
 
 -------------------------------------------------------------------------------
@@ -137,59 +136,54 @@ cgiEventEdit_update
         -> Maybe EventId        -- If we're editing a pre-existing event
                                 --  then just its eventId.
         -> Event                -- Event data to edit, shown in form.
+        -> [Person]             -- Current attendance
         -> [(String, String)]   -- Fields to update.
         -> [String]             -- Names of people to add as attendees.
         -> CGI CGIResult
 
 -- If the event we want to edit doesn't exist in the database yet,
--- then add it and look it up again to get its event Id.
--- NOTE: We rely on the local time in this event being a globally unique event key.
-cgiEventEdit_update ss conn Nothing event updates newNames
- = do
-        liftIO $ insertEvent conn event
-        liftIO $ commit conn
-
-        let EventLocalTime ltime        = eventLocalTime event
-        event'  <- liftIO $ getEventOfLocalTime conn ltime
-        cgiEventEdit_update ss conn (Just $ eventId event') event' updates newNames
+-- then add now to create the event id.
+cgiEventEdit_update ss conn Nothing event psAttend updates newNames
+ = do   event' <- liftIO $ insertEvent conn event
+        cgiEventEdit_update ss conn
+                (Just $ eventId event') event' psAttend
+                updates newNames
 
 -- Edit an event already in the database.
-cgiEventEdit_update ss conn (Just eid) event updates newNames
+cgiEventEdit_update ss conn (Just eid) eventOld psAttend updates newNames
+ = case loadEvent updates eventOld of
+        -- Some of the fields didn't parse.
+        Left fieldErrors
+         -> do  let fsFeed
+                        = [ FeedFormInvalid sField sValue sError
+                          | (sField, sValue, ParseError sError) <- fieldErrors ]
 
- -- Try to parse the new details
- = case loadEvent updates event of
-    -- Some of the fields didn't parse.
-    Left fieldErrs
-     -> redirect $ flatten
-      $ pathEventEdit ss (Just eid)
-                <&> map keyValOfArg
-                        [ ArgDetailsInvalid name str err
-                        | (name, str, ParseError err) <- fieldErrs ]
+                outputFPS $ renderHtml
+                 $ htmlEventEdit ss (Just eid) eventOld psAttend fsFeed
 
-    -- All the fields parsed.
-    Right event'
-     -> do
-        -- Add the new details to the row and see if this changes anything.
-        let diffFields = diffEvent event   event'
+        -- All the fields parsed.
+        Right eventNew
+         -> do  -- Add the new details to the row and see if this changes anything.
+                let diffFields = diffEvent eventOld eventNew
 
-        -- Write the event details changes to the database.
-        liftIO $ updateEvent conn event'
+                -- Write the event details changes to the database.
+                liftIO $ updateEvent conn eventNew
+                liftIO $ commit conn
 
-        -- Find and add attendees based on the supplied names.
-        fsSearchFeedback
-                <- liftM concat
-                $  liftIO
-                $  zipWithM (searchAddPerson conn (eventId event))
-                        [0..] newNames
+                -- Find and add attendees based on the supplied names.
+                fsSearchFeedback
+                 <- liftM concat $ liftIO
+                  $  zipWithM (searchAddPerson conn (eventId eventNew))
+                              [0..] newNames
 
-        liftIO $ commit conn
-        liftIO $ disconnect conn
+                liftIO $ disconnect conn
 
-        -- Stay on the same page, but show what fields were updated.
-        redirect $ flatten
-         $ pathEventEdit ss (Just eid)
-                <&> map keyValOfArg (map ArgDetailsUpdated diffFields)
-                <&> map keyValOfArg fsSearchFeedback
+                -- Redirect to the same page with a clean path,
+                --  that includes updated feedback.
+                redirect $ flatten
+                 $ pathEventEdit ss (Just eid)
+                        <&> map keyValOfArg (map ArgFeedFormUpdated diffFields)
+                        <&> map keyValOfArg fsSearchFeedback
 
 
 -- | Find and add attendees based on the new names.
@@ -223,29 +217,24 @@ searchAddPerson conn eid ix names
 
 
 -------------------------------------------------------------------------------
--- | We haven't got any updates yet, so show the entry form.
-cgiEventEdit_entry
+-- | Html for event edit page.
+htmlEventEdit
         :: Session
-        -> [Arg]
-        -> Maybe EventId        -- If we're editing a pre-existing event
-                                --   then just its eventId.
-        -> Event                -- Event data to edit, shown in form.
-        -> [Person]             -- Current attendance to this event.
-        -> CGI CGIResult
+        -> Maybe EventId -> Event
+        -> [Person]
+        -> [FeedForm] -> Html
 
-cgiEventEdit_entry ss args meid event attendance
- = outputFPS $ renderHtml
- $ H.docTypeHtml
+htmlEventEdit ss mEid event psAttend fsFeed
+ = H.docTypeHtml
  $ do   pageHeader "Editing Event"
         pageBody
-         $ do   (if isJust meid
+         $ do   (if isJust mEid
                   then do tablePaths $ pathsJump ss
                           tablePaths [pathEventView ss $ eventId event]
                   else do tablePaths (pathsJump ss))
 
                 -- Main entry form.
                 H.div   ! A.class_ "event"
-                        $ formEvent args
-                                (pathEventEdit ss meid)
-                                event attendance
-
+                        $ formEvent fsFeed
+                                (pathEventEdit ss mEid)
+                                event psAttend

@@ -70,11 +70,11 @@ cgiTop
          (_,       Just "login")  -> cgiLogin         inputs
          (_,       Just "logout") -> cgiLogout        inputs
          (Just ss, Just "main")   -> cgiMain       ss inputs
-         (Just ss, Just "pList")  -> cgiPersonList ss inputs
-         (Just ss, Just "pView")  -> cgiPersonView ss inputs
-         (Just ss, Just "pEdit")  -> cgiPersonEdit ss inputs
-         (Just ss, Just "eList")  -> cgiEventList  ss inputs
-         (Just ss, Just "eView")  -> cgiEventView  ss inputs
-         (Just ss, Just "eEdit")  -> cgiEventEdit  ss inputs
+         (Just ss, Just "pl")     -> cgiPersonList ss inputs
+         (Just ss, Just "pv")     -> cgiPersonView ss inputs
+         (Just ss, Just "pe")     -> cgiPersonEdit ss inputs
+         (Just ss, Just "el")     -> cgiEventList  ss inputs
+         (Just ss, Just "ev")     -> cgiEventView  ss inputs
+         (Just ss, Just "ee")     -> cgiEventEdit  ss inputs
 
          _              -> CGI.redirect $ flatten $ pathLogin

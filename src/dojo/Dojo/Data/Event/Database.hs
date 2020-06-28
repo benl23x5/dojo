@@ -98,18 +98,18 @@ getEvent conn eid
  = do   [values] <- quickQuery' conn (unlines
                 [ "SELECT EventId,Type,Location,Time"
                 , "FROM  Event"
-                , "WHERE EventId=?" ]) 
+                , "WHERE EventId=?" ])
                 [toSql eid]
 
         return $ eventOfSqlValues values
 
 
 -- | Get the event with the given time.
-getEventOfLocalTime 
-        :: IConnection conn 
+getEventOfLocalTime
+        :: IConnection conn
         => conn -> Time.LocalTime -> IO Event
 
-getEventOfLocalTime conn ttime 
+getEventOfLocalTime conn ttime
  = do   [values] <- quickQuery' conn (unlines
                 [ "SELECT EventId,Type,Location,Time"
                 , "FROM   Event"
@@ -126,7 +126,7 @@ getAttendance conn eid
                 [ "SELECT " ++ intercalate "," (map ("Person." ++) personFieldNames)
                 , "FROM  Person,Attendance"
                 , "WHERE Person.PersonId = Attendance.PersonId"
-                , "  AND EventId=?" 
+                , "  AND EventId=?"
                 , "ORDER BY FamilyName"])
                 [toSql eid]
 
@@ -172,10 +172,12 @@ deleteAttendance conn eid pid
                 , toSql pid ]
 
 
--- | Insert an event.
-insertEvent :: IConnection conn => conn -> Event -> IO Integer
-insertEvent conn event
- = do   stmt    <- prepare conn $ unlines
+-- | Insert an event,
+--   returning a copy of the event with the new event id added.
+insertEvent :: IConnection conn => conn -> Event -> IO Event
+insertEvent conn_ event
+ = withTransaction conn_ $ \conn
+ -> do  stmt    <- prepare conn $ unlines
                 [  "INSERT INTO Event"
                 ,  "(Type,Location,Time)"
                 ,  "VALUES (?,?,?)" ]
@@ -184,6 +186,13 @@ insertEvent conn event
                 [ toSql (eventType      event)
                 , toSql (eventLocation  event)
                 , toSql (eventLocalTime event) ]
+
+        [[v]]   <- quickQuery' conn (unlines
+                [ "SELECT last_insert_rowid()"])
+                []
+
+        let Right iEventId = safeConvert v
+        return event { eventId = iEventId }
 
 
 -- | Update an event.
@@ -197,6 +206,6 @@ updateEvent conn event
         execute stmt
                 [ toSql (eventType      event)
                 , toSql (eventLocation  event)
-                , toSql (eventLocalTime event) 
+                , toSql (eventLocalTime event)
                 , toSql (eventId        event) ]
 
