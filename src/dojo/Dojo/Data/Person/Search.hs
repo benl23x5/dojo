@@ -27,7 +27,7 @@ data Found a
 mapFoundIO  :: (a -> IO b) -> Found a -> IO (Found b)
 mapFoundIO f ff
  = case ff of
-        FoundOk x       
+        FoundOk x
          -> do  x'      <- f x
                 return  $ FoundOk x'
 
@@ -42,17 +42,22 @@ mapFoundIO f ff
 -- Search ---------------------------------------------------------------------
 -- | Find a person based on a search string.
 findPerson
-        :: IConnection conn 
+        :: IConnection conn
         => conn -> String -> IO (Found Person)
 
 findPerson conn strSearch
  = do   let strWords    = words strSearch
 
-        hitssPreferedName <- mapM (searchPeopleFromField conn "PreferedName") strWords
-        hitssFirstName    <- mapM (searchPeopleFromField conn "FirstName")    strWords
-        hitssFamilyName   <- mapM (searchPeopleFromField conn "FamilyName")   strWords
+        hitssPreferedName
+         <- mapM (searchPeopleFromField conn "PreferedName") strWords
 
-        let pidFound     = discriminateResults 
+        hitssFirstName
+         <- mapM (searchPeopleFromField conn "FirstName")    strWords
+
+        hitssFamilyName
+         <- mapM (searchPeopleFromField conn "FamilyName")   strWords
+
+        let pidFound     = discriminateResults
                                 hitssPreferedName
                                 hitssFirstName
                                 hitssFamilyName
@@ -60,19 +65,19 @@ findPerson conn strSearch
         mapFoundIO (getPerson conn) pidFound
 
 
-discriminateResults 
+discriminateResults
         :: [[PersonId]]         -- ^ Hits from prefered names.
         -> [[PersonId]]         -- ^ Hits from first names.
         -> [[PersonId]]         -- ^ Hits from family names.
         -> Found PersonId
 
 discriminateResults hitsPrefered hitsFirst hitsFamily
- = let  allPids = Set.unions 
+ = let  allPids = Set.unions
                 [ Set.unions $ map Set.fromList hitsPrefered
                 , Set.unions $ map Set.fromList hitsFirst
                 , Set.unions $ map Set.fromList hitsFamily ]
 
-        result 
+        result
          | Set.size allPids == 0
          = FoundNone
 
@@ -88,6 +93,8 @@ discriminateResults hitsPrefered hitsFirst hitsFamily
 
 
 -- | Get the list of personIds that have the given value for a field.
+--
+--   Hard coded limit to 5 results.
 searchPeopleFromField
         :: IConnection conn
         => conn -> String -> String -> IO [PersonId]
@@ -97,7 +104,8 @@ searchPeopleFromField conn fieldName name
         $ quickQuery' conn (unlines
                 [ "SELECT PersonId"
                 , "FROM   Person"
-                , "WHERE  UPPER(" ++ fieldName ++ ")=UPPER(?)"])
+                , "WHERE  UPPER(" ++ fieldName ++ ")=UPPER(?)"
+                , "LIMIT  5"])
                 [toSql name]
 
 
@@ -106,5 +114,5 @@ convertResult valuess
  = map (\vs -> case vs of
                 [spid]  -> fromSql spid
                 _       -> error "convertResult: unexpected result") valuess
- 
+
 

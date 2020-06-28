@@ -69,9 +69,15 @@ takeKeyValOfFeedEvent fe
         FeedEventSearchFoundMultiPersonId ix pid
          -> Just ("sp" ++ show ix, pretty pid)
 
+        -- FoundMultiPerson is generated from FoundMultiPersonId
+        -- interally and does not need to be passed back as an argument.
+        FeedEventSearchFoundMultiPerson{}
+         -> Nothing
+
 
 -- | Parse a CGI key/value pair as a `FeedEvent`
 --   TODO: safe read.
+--   TODO: error on unrecognized
 takeFeedEventOfKeyVal :: (String, String) -> Maybe FeedEvent
 takeFeedEventOfKeyVal (key, val)
         -- Details field of this name was updated.

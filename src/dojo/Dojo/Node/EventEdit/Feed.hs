@@ -1,10 +1,11 @@
 
 module Dojo.Node.EventEdit.Feed
         ( FeedEvent(..)
-        , renumberSearchFeedback)
+        , renumberSearchFeedback
+        , expandMultiPersonId)
 where
 import Dojo.Data.Person
-
+import Dojo.Base
 
 -- | Feedback for event edit form.
 --
@@ -47,6 +48,16 @@ data FeedEvent
           -- | PersonId that matched the string.
         , feedSearchPersonId    :: PersonId }
 
+        -- | Person search returned multiple matches,
+        --   and here is full details of a record that matched.
+        --   These are an expanded form of "MultiPersonId".
+        | FeedEventSearchFoundMultiPerson
+        { -- | Index of this search
+          feedSearchIx          :: Integer
+
+          -- | Full person record that matched.
+        , feedSearchPerson      :: Person }
+
 
 -- | Renumber args that provide search feedback so all the attendance
 --   entries that did not match are packed to the front of the form.
@@ -73,3 +84,20 @@ renumberSearchFeedback args
 
         go ix alpha (arg : rest)
          = arg : go ix alpha rest
+
+
+-- | Look up details of FoundMultiPersonId and add matching
+--   FoundMultiPerson records.
+expandMultiPersonId
+        :: IConnection conn
+        => conn
+        -> FeedEvent
+        -> IO [FeedEvent]
+
+expandMultiPersonId conn fe
+ = case fe of
+        FeedEventSearchFoundMultiPersonId ix pid
+         -> do  person <- getPerson conn pid
+                return [fe, FeedEventSearchFoundMultiPerson ix person]
+
+        _ -> return [fe]

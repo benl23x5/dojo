@@ -39,13 +39,22 @@ import qualified Text.Blaze.Html5.Attributes    as A
 cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventEdit ss inputs
  = do
+        -- Connect to the database.
+        conn <- liftIO $ connectSqlite3 databasePath
+
         -- Normalise incoming arguments.
         let Just args   = sequence $ map argOfKeyVal inputs
 
         -- Load form feedback from arguments.
         let fsForm      = mapMaybe takeFeedFormOfArg args
-        let fsEvent     = renumberSearchFeedback
-                        $ [fe | ArgFeedEvent fe <- args]
+
+        -- TODO: the renumbering doesn't work properly,
+        -- field indices are broken.
+        fsEvent
+         <- liftIO $ fmap concat
+         $  mapM (expandMultiPersonId conn)
+--       $  renumberSearchFeedback
+         $  [fe | ArgFeedEvent fe <- args]
 
         -- Extract fields to update from the arguments.
         -- TODO: load this from normalized arguments.
@@ -59,8 +68,6 @@ cgiEventEdit ss inputs
         -- People to add to this event.
         let newNames = [ name | ArgAddPerson name <- args ]
 
-        -- Connect to the database.
-        conn <- liftIO $ connectSqlite3 databasePath
 
         -- If we have an existing eventId then load the existing event data,
         --  otherwise start with an empty event record, using the current
@@ -84,21 +91,22 @@ cgiEventEdit ss inputs
                         let event = zeroEvent edate etime
                         return  (Nothing, event, [])
 
-        if      -- Delete some people from the event.
-                | not $ null pidsDel
-                ->  cgiEventEdit_del ss conn meid pidsDel
+        if
+         -- Delete some people from the event.
+         | not $ null pidsDel
+         ->     cgiEventEdit_del ss conn meid pidsDel
 
-                 -- Update the event details or add new people as attendees.
-                 | (not $ null fieldUpdates) || (not $ null newNames)
-                 -> cgiEventEdit_update
-                        ss conn fsForm fsEvent
-                        meid event psAttend fieldUpdates newNames
+         -- Update the event details or add new people as attendees.
+         | (not $ null fieldUpdates) || (not $ null newNames)
+         -> cgiEventEdit_update
+                ss conn fsForm fsEvent
+                meid event psAttend fieldUpdates newNames
 
-                 -- Show the form and wait for entry.
-                 | otherwise
-                 -> do  liftIO $ disconnect conn
-                        outputFPS $ renderHtml
-                         $ htmlEventEdit ss fsForm fsEvent meid event psAttend
+         -- Show the form and wait for entry.
+         | otherwise
+         -> do  liftIO $ disconnect conn
+                outputFPS $ renderHtml
+                 $ htmlEventEdit ss fsForm fsEvent meid event psAttend
 
 
 -------------------------------------------------------------------------------
@@ -212,7 +220,7 @@ searchAddPerson
         -> IO [FeedEvent]
 
 searchAddPerson conn event psAttend ix sQuery
- = do   found   <- findPerson conn sQuery
+ = do   found <- findPerson conn sQuery
         case found of
          -- Found a unique person based on these terms.
          FoundOk person

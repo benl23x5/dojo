@@ -167,14 +167,19 @@ trNewAttendance fsEvent takeFocus disable curStudents ix
                      , ix == ix' ]
  = tr
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
-        tdFeedback disable (takeFocus && ix == 0) names "(no matches)"
+        tdFeedback disable (takeFocus && ix == 0)
+                names ["(no matches)"]
 
  -- Search feedback, where multiple matches were found.
- | [str]   <- [names | FeedEventSearchFoundMultiString ix' names <- fsEvent
-                     , ix == ix' ]
+ | [str]   <- [names  | FeedEventSearchFoundMultiString ix' names  <- fsEvent
+                      , ix == ix' ]
+ , psMatch <- [pMatch | FeedEventSearchFoundMultiPerson ix' pMatch <- fsEvent
+                      , ix == ix' ]
  = tr
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
-        tdFeedback disable (takeFocus && ix == 0) str   "(multiple matches)"
+        tdFeedback disable (takeFocus && ix == 0) str
+         $  [ "multiple matches" ]
+         ++ [ "- " ++ personDisplayName pMatch | pMatch <- psMatch ]
 
  -- Empty field.
  | otherwise
@@ -192,7 +197,8 @@ tdEmpty disable focus
                 !? (disable, A.disabled,  "on")
 
 
-tdFeedback disable focus names msg
+tdFeedback :: Bool -> Bool -> String -> [String] -> Html
+tdFeedback disable focus names ssMsg
  = td $ do
         input   ! A.type_        "text"
                 ! A.name         "addPerson"
@@ -200,5 +206,11 @@ tdFeedback disable focus names msg
                 ! A.value        (H.toValue names)
                 !? (focus,   A.autofocus, "on")
                 !? (disable, A.disabled,  "on")
-        msg
+
+        forM_ ssMsg $ \s -> do
+                string s
+                H.br
+
+
+
 
