@@ -34,30 +34,32 @@ data FeedForm
         }
         deriving Show
 
-type FieldClass = String
-type FieldLabel = String
-type FieldValue = String
-
+type FieldClass  = String
+type FieldLabel  = String
+type FieldValue  = String
+type FieldHolder = String
 
 -------------------------------------------------------------------------------
--- | Construct a table for a single input field.
+-- | A table for a sigle input field
 trInput :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
 trInput fsFeed sClassName sDisplayLabel sValue
  = do   tr $ thInputFeedback fsFeed sClassName sDisplayLabel
         tr $ tdInputFeedback False fsFeed sClassName sValue Nothing
 
 
--- | Construct a table for a single input field.
+-- | A table row for a single input field, with no placeholder text.
 trInputWithFocus_
         :: [FeedForm] -> FieldClass -> FieldLabel -> FieldValue -> Html
 trInputWithFocus_ fsFeed sClassName sDisplayLabel sValue
  = do   trInputWithFocus fsFeed sClassName sDisplayLabel sValue Nothing
 
 
+-- | A focused table row for a single input field,
+--   with optional placeholder text.
 trInputWithFocus
         :: [FeedForm]
         -> FieldClass -> FieldLabel -> FieldValue
-        -> Maybe String
+        -> Maybe FieldHolder
         -> Html
 
 trInputWithFocus fsFeed sClassName sDisplayLabel sValue mPlaceholder
@@ -93,11 +95,11 @@ thInputFeedback fsFeed fieldName niceName
 --    the contents and take the focus.
 tdInputFeedback
         :: ToValue a
-        => Bool         -- ^ Whether to take focus
-        -> [FeedForm]   -- ^ Feedback to add to the field/
+        => Bool                 -- ^ Whether to take focus
+        -> [FeedForm]           -- ^ Feedback to add to the field/
         -> FieldClass
-        -> a            -- ^ Field value.
-        -> Maybe String -- ^ Placeholder text.
+        -> a                    -- ^ Field value.
+        -> Maybe FieldHolder    -- ^ Placeholder text.
         -> Html
 
 tdInputFeedback bHintFocus fsFeed fieldName val mPlaceholder
@@ -112,10 +114,14 @@ tdInputFeedback bHintFocus fsFeed fieldName val mPlaceholder
                 !  A.value  (H.toValue sValue)
 
  | otherwise
- = do   let bOtherErrors
+ = do   -- Whether any of the other fields had errors.
+        let bOtherErrors
              = not $ null
              $ [sName | FeedFormInvalid sName _ _ <- fsFeed]
 
+        -- Only take focus if there were no errors in other fields.
+        -- If there was an error in another field we want to focus
+        -- on that one instead.
         let bTakeFocus
              = bHintFocus && not bOtherErrors
 

@@ -66,7 +66,7 @@ divPersonDetails :: Person -> Html
 divPersonDetails person
  = H.div ! A.id "person-details-view" ! A.class_ "details"
  $ do   H.table
-         $ do   tr $ do th "first"; th "pref"; th "family"
+         $ do   tr $ do th "first"; th "preferred"; th "family"
                 tr $ do td (H.toMarkup $ personFirstName    person)
                         td (H.toMarkup $ personPreferredName person)
                         td (H.toMarkup $ personFamilyName   person)

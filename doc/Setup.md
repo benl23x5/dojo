@@ -84,3 +84,28 @@ The key certificate is installed in
 /etc/letsencrypt/live/DOMAIN/
 ```
 
+
+### Set the timezone
+
+To get the current timezone in Debian, and list the available zones.
+
+```
+$ timedatectl
+$ timedatectl list-timezones
+```
+
+Check the timezone table to see when daylight savings begins and ends
+
+```
+$ zdump -v Australia/Sydney
+```
+
+Set the effective timezone for cgi scripts in the Apache `apache2.conf`
+
+```
+ SetEnv TZ Australia/Sydney
+```
+
+```
+$ sudo service apache2 restart
+```
