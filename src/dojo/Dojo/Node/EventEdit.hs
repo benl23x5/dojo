@@ -220,7 +220,12 @@ searchAddPerson
         -> IO [FeedEvent]
 
 searchAddPerson conn event psAttend ix sQuery
- = do   found <- findPerson conn sQuery
+ = do
+        -- Find more people based on the search string,
+        -- skipping over people that are already in the list.
+        let pidsSkip = map personId psAttend
+        found <- findPerson conn sQuery pidsSkip
+
         case found of
          -- Found a unique person based on these terms.
          FoundOk person
@@ -241,7 +246,7 @@ searchAddPerson conn event psAttend ix sQuery
          FoundMany people
           -> return $ FeedEventSearchFoundMultiString ix sQuery
                     : map (FeedEventSearchFoundMultiPersonId ix)
-                          (map personId people)
+                          (take 6 $ map personId people)
 
 
 -------------------------------------------------------------------------------

@@ -179,7 +179,8 @@ trNewAttendance fsEvent takeFocus disable curStudents ix
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
         tdFeedback disable (takeFocus && ix == 0) str
          $  [ "multiple matches" ]
-         ++ [ "- " ++ personDisplayName pMatch | pMatch <- psMatch ]
+         ++ [ "- " ++ personDisplayName pMatch | pMatch <- take 5 $ psMatch ]
+         ++ (if length psMatch >= 6 then ["..."] else [])
 
  -- Empty field.
  | otherwise
