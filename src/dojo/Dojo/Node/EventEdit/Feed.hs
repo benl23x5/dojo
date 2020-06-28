@@ -6,7 +6,12 @@ where
 import Dojo.Data.Person
 
 
--- | Feedback from event entry form.
+-- | Feedback for event edit form.
+--
+--   Actions on the event edit form can create user feedbacm that
+--   should be displayed inline in the form. This type describes
+--   the possible feedback.
+--
 data FeedEvent
         = FeedEventFieldUpdated
         { feedField             :: String }

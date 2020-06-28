@@ -47,7 +47,8 @@ cgiEventEdit ss inputs
         let fsEvent     = renumberSearchFeedback
                         $ [fe | ArgFeedEvent fe <- args]
 
-        -- Field of the event description to update.
+        -- Extract fields to update from the arguments.
+        -- TODO: load this from normalized arguments.
         let fieldUpdates
                 = [ (field, value) | (field@(f : _), value) <- inputs
                                    , isUpper f ]
@@ -62,8 +63,8 @@ cgiEventEdit ss inputs
         conn <- liftIO $ connectSqlite3 databasePath
 
         -- If we have an existing eventId then load the existing event data,
-        --  otherwise start with an empty event record,
-        --  using the current time as a placeholder.
+        --  otherwise start with an empty event record, using the current
+        --  local time as a placeholder until the client updates it.
         (meid, event, psAttend)
           <- case lookup "eid" inputs of
               Just strEventId
@@ -147,14 +148,18 @@ cgiEventEdit_update
 
 -- If the event we want to edit doesn't exist in the database yet,
 -- then add now to create the event id.
-cgiEventEdit_update ss conn fsForm fsEvent Nothing event psAttend updates newNames
+cgiEventEdit_update
+        ss conn fsForm fsEvent
+        Nothing event psAttend updates newNames
  = do   event' <- liftIO $ insertEvent conn event
         cgiEventEdit_update ss conn fsForm fsEvent
                 (Just $ eventId event') event' psAttend
                 updates newNames
 
 -- Edit an event already in the database.
-cgiEventEdit_update ss conn fsForm fsEvent (Just eid) eventOld psAttend updates newNames
+cgiEventEdit_update
+        ss conn fsForm fsEvent
+        (Just eid) eventOld psAttend updates newNames
  = case loadEvent updates eventOld of
         -- Some of the fields didn't parse.
         Left fieldErrors
@@ -168,7 +173,7 @@ cgiEventEdit_update ss conn fsForm fsEvent (Just eid) eventOld psAttend updates 
 
         -- All the fields parsed.
         Right eventNew
-         -> do  -- Add the new details to the row and see if this changes anything.
+         -> do  -- Get the fields that have been updated by the form.
                 let diffFields = diffEvent eventOld eventNew
 
                 -- Write the event details changes to the database.
@@ -181,8 +186,8 @@ cgiEventEdit_update ss conn fsForm fsEvent (Just eid) eventOld psAttend updates 
                 -- Find and add attendees based on the supplied names.
                 fsSearch
                  <- liftM concat $ liftIO
-                  $ zipWithM (searchAddPerson conn (eventId eventNew))
-                              [0..] newNames
+                  $ zipWithM (searchAddPerson conn eventNew psAttend)
+                        [0..] newNames
                 liftIO $ commit conn
                 liftIO $ disconnect conn
 
@@ -195,22 +200,29 @@ cgiEventEdit_update ss conn fsForm fsEvent (Just eid) eventOld psAttend updates 
 
 
 -- | Find and add attendees based on the new names.
---   The returned arguments contain feedback as to whether we found a unique person
---   based on these search terms.
+--   The returned arguments contain feedback as to whether we found a
+--   unique person based on these search terms.
 searchAddPerson
         :: IConnection conn
         => conn
-        -> EventId      -- Id of the event to edit.
-        -> Integer      -- Index of the form field that the search terms were in.
-        -> String       -- Search terms.
+        -> Event    -- ^ Event that we're currently editing.
+        -> [Person] -- ^ People we know are already attending this event.
+        -> Integer  -- ^ Index of the field containing the search string.
+        -> String   -- ^ Search string.
         -> IO [FeedEvent]
 
-searchAddPerson conn eid ix sQuery
+searchAddPerson conn event psAttend ix sQuery
  = do   found   <- findPerson conn sQuery
         case found of
          -- Found a unique person based on these terms.
          FoundOk person
-          -> do  insertAttendance conn eid person
+          -- .. but the person is already an attendee, so skip.
+          | elem (personId person) $ map personId psAttend
+          -> return []
+
+          -- .. and the person is not already an attendee, so add them.
+          | otherwise
+          -> do  insertAttendance conn (eventId event) person
                  return [FeedEventPersonAdded (personId person)]
 
          -- Didn't find any people for these terms.
