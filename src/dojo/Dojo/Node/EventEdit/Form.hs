@@ -15,8 +15,11 @@ import qualified Text.Blaze.Html5.Attributes    as A
 -- | Form to change the details of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
-formEvent :: [FeedForm] -> Path -> Event -> [Person] -> Html
-formEvent fsFeed path event attendance
+formEvent
+        :: Path -> [FeedForm] -> [FeedEvent]
+        -> Event -> [Person] -> Html
+
+formEvent path fsForm fsEvent event attendance
  = form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
@@ -27,11 +30,11 @@ formEvent fsFeed path event attendance
                 (pathFields path)
 
         -- Feedback about updated and invalid fields.
-        htmlFeedForm fsFeed niceNameOfEventField
+        htmlFeedForm fsForm niceNameOfEventField
 
         -- Event details.
-        divEventDetails    fsFeed event
-        divEventAttendance fsFeed [] path event attendance
+        divEventDetails    fsForm event
+        divEventAttendance path fsForm fsEvent event attendance
         H.br
 
         -- Save button.
@@ -74,19 +77,21 @@ divEventDetails fsFeed event
 
 
 -------------------------------------------------------------------------------
-divEventAttendance :: [FeedForm] -> [Arg] -> Path -> Event -> [Person] -> Html
-divEventAttendance fsFeed _args path event attendance
+divEventAttendance
+        :: Path -> [FeedForm] -> [FeedEvent]
+        -> Event -> [Person] -> Html
+
+divEventAttendance path fsForm fsEvent event attendance
  = do
-        -- TODO: fix people added feedback
-        divAttendanceCur [] path attendance
+        divAttendanceCur path fsEvent attendance
 
         let curStudents = fromIntegral $ length attendance
-        divAttendanceNew fsFeed [] event curStudents
+        divAttendanceNew fsForm fsEvent event curStudents
 
 
 -------------------------------------------------------------------------------
 -- | Table of people currently listed as attending the event.
-divAttendanceCur args path attendance
+divAttendanceCur path fsEvent attendance
  = H.div ! A.id     "event-attendance-cur"
          ! A.class_ "list"
  $ H.table
@@ -99,7 +104,7 @@ divAttendanceCur args path attendance
                 th "del"
 
         -- Highlight the people that were just added.
-        let pidsAdded = [pid | ArgPersonAdded pid <- args ]
+        let pidsAdded = [pid | FeedEventPersonAdded pid <- fsEvent ]
 
         zipWithM_ (trCurAttendance pidsAdded path) [1..] attendance
 
@@ -126,14 +131,12 @@ trCurAttendance pidsAdded path ix person
 -- | New Attendance inputs.
 divAttendanceNew
         :: [FeedForm]   -- ^ Form feedback
-        -> [Arg]        -- ^ Pass back args to we can display search feedback
-                        --   In the entry fields for terms that didn't resolve
-                        --   to a single person.
+        -> [FeedEvent]  -- ^ Event edit feedback
         -> Event        -- ^ Event that the new people will be attached to.
         -> Integer      -- ^ Number of current students already added.
         -> Html
 
-divAttendanceNew fsFeed args event curStudents
+divAttendanceNew fsForm fsEvent event curStudents
  = H.div ! A.id     "event-attendance-new"
          ! A.class_ "list"
  $ H.table
@@ -149,25 +152,26 @@ divAttendanceNew fsFeed args event curStudents
         -- When the form has invalid details field then prevent input
         -- of more attendees.
         let hasInvalidFields
-                = not $ null [x | FeedFormInvalid x _ _ <- fsFeed]
+                = not $ null [x | FeedFormInvalid x _ _ <- fsForm]
 
-        mapM_ (trNewAttendance args takeFocus hasInvalidFields curStudents)
+        mapM_ (trNewAttendance fsEvent takeFocus hasInvalidFields curStudents)
                 [0 .. 4]
 
  where  col' c  = col ! A.class_ c
 
 
-trNewAttendance args takeFocus disable curStudents ix
+-------------------------------------------------------------------------------
+trNewAttendance fsEvent takeFocus disable curStudents ix
  -- Search feedback, where no match was found.
- | [names]      <- [names | ArgSearchFoundNone ix' names <- args
-                          , ix == ix' ]
+ | [names] <- [names | FeedEventSearchFoundNone ix' names <- fsEvent
+                     , ix == ix' ]
  = tr
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
         tdFeedback disable (takeFocus && ix == 0) names "(no matches)"
 
  -- Search feedback, where multiple matches were found.
- | [str]        <- [names | ArgSearchFoundMultiString ix' names <- args
-                          , ix == ix' ]
+ | [str]   <- [names | FeedEventSearchFoundMultiString ix' names <- fsEvent
+                     , ix == ix' ]
  = tr
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
         tdFeedback disable (takeFocus && ix == 0) str   "(multiple matches)"
@@ -179,6 +183,7 @@ trNewAttendance args takeFocus disable curStudents ix
         tdEmpty    disable (takeFocus && ix == 0)
 
 
+-------------------------------------------------------------------------------
 tdEmpty disable focus
  = td $ input   ! A.type_        "text"
                 ! A.name         "addPerson"

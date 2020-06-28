@@ -2,6 +2,7 @@
 module Dojo.Node.EventEdit
         (cgiEventEdit)
 where
+import Dojo.Node.EventEdit.Feed
 import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Arg
 import Dojo.Data.Event
@@ -17,6 +18,7 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
+-------------------------------------------------------------------------------
 -- | Edit a single event, using a vertical form.
 --
 --    ?ee [&eid=INT] [... &u=FIELDNAME ...]
@@ -38,13 +40,12 @@ cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventEdit ss inputs
  = do
         -- Normalise incoming arguments.
-        let Just args
-                = liftM renumberSearchFeedback
-                $ sequence
-                $ map argOfKeyVal inputs
+        let Just args   = sequence $ map argOfKeyVal inputs
 
         -- Load form feedback from arguments.
-        let fsFeed   = mapMaybe takeFeedForm args
+        let fsForm      = mapMaybe takeFeedFormOfArg args
+        let fsEvent     = renumberSearchFeedback
+                        $ [fe | ArgFeedEvent fe <- args]
 
         -- Field of the event description to update.
         let fieldUpdates
@@ -89,13 +90,14 @@ cgiEventEdit ss inputs
                  -- Update the event details or add new people as attendees.
                  | (not $ null fieldUpdates) || (not $ null newNames)
                  -> cgiEventEdit_update
-                        ss conn meid event psAttend fieldUpdates newNames
+                        ss conn fsForm fsEvent
+                        meid event psAttend fieldUpdates newNames
 
                  -- Show the form and wait for entry.
                  | otherwise
                  -> do  liftIO $ disconnect conn
                         outputFPS $ renderHtml
-                         $ htmlEventEdit ss meid event psAttend fsFeed
+                         $ htmlEventEdit ss fsForm fsEvent meid event psAttend
 
 
 -------------------------------------------------------------------------------
@@ -133,6 +135,8 @@ cgiEventEdit_update
         :: IConnection conn
         => Session
         -> conn
+        -> [FeedForm]
+        -> [FeedEvent]
         -> Maybe EventId        -- If we're editing a pre-existing event
                                 --  then just its eventId.
         -> Event                -- Event data to edit, shown in form.
@@ -143,23 +147,24 @@ cgiEventEdit_update
 
 -- If the event we want to edit doesn't exist in the database yet,
 -- then add now to create the event id.
-cgiEventEdit_update ss conn Nothing event psAttend updates newNames
+cgiEventEdit_update ss conn fsForm fsEvent Nothing event psAttend updates newNames
  = do   event' <- liftIO $ insertEvent conn event
-        cgiEventEdit_update ss conn
+        cgiEventEdit_update ss conn fsForm fsEvent
                 (Just $ eventId event') event' psAttend
                 updates newNames
 
 -- Edit an event already in the database.
-cgiEventEdit_update ss conn (Just eid) eventOld psAttend updates newNames
+cgiEventEdit_update ss conn fsForm fsEvent (Just eid) eventOld psAttend updates newNames
  = case loadEvent updates eventOld of
         -- Some of the fields didn't parse.
         Left fieldErrors
-         -> do  let fsFeed
-                        = [ FeedFormInvalid sField sValue sError
-                          | (sField, sValue, ParseError sError) <- fieldErrors ]
+         -> do  let fsForm'
+                        =  nub $ fsForm
+                        ++ [ FeedFormInvalid sField sValue sError
+                           | (sField, sValue, ParseError sError) <- fieldErrors ]
 
                 outputFPS $ renderHtml
-                 $ htmlEventEdit ss (Just eid) eventOld psAttend fsFeed
+                 $ htmlEventEdit ss fsForm' fsEvent (Just eid) eventOld psAttend
 
         -- All the fields parsed.
         Right eventNew
@@ -168,22 +173,25 @@ cgiEventEdit_update ss conn (Just eid) eventOld psAttend updates newNames
 
                 -- Write the event details changes to the database.
                 liftIO $ updateEvent conn eventNew
-                liftIO $ commit conn
+
+                -- Feedback for updated fields.
+                let fsUpdated
+                     = map FeedEventFieldUpdated diffFields
 
                 -- Find and add attendees based on the supplied names.
-                fsSearchFeedback
+                fsSearch
                  <- liftM concat $ liftIO
-                  $  zipWithM (searchAddPerson conn (eventId eventNew))
+                  $ zipWithM (searchAddPerson conn (eventId eventNew))
                               [0..] newNames
-
+                liftIO $ commit conn
                 liftIO $ disconnect conn
 
                 -- Redirect to the same page with a clean path,
                 --  that includes updated feedback.
+                let fsFeed = fsUpdated ++ fsSearch
                 redirect $ flatten
-                 $ pathEventEdit ss (Just eid)
-                        <&> map keyValOfArg (map ArgFeedFormUpdated diffFields)
-                        <&> map keyValOfArg fsSearchFeedback
+                 $   pathEventEdit ss (Just eid)
+                 <&> mapMaybe takeKeyValOfFeedEvent fsFeed
 
 
 -- | Find and add attendees based on the new names.
@@ -195,36 +203,36 @@ searchAddPerson
         -> EventId      -- Id of the event to edit.
         -> Integer      -- Index of the form field that the search terms were in.
         -> String       -- Search terms.
-        -> IO [Arg]
+        -> IO [FeedEvent]
 
-searchAddPerson conn eid ix names
- = do   found   <- findPerson conn names
-
+searchAddPerson conn eid ix sQuery
+ = do   found   <- findPerson conn sQuery
         case found of
          -- Found a unique person based on these terms.
          FoundOk person
           -> do  insertAttendance conn eid person
-                 return [ArgPersonAdded (personId person)]
+                 return [FeedEventPersonAdded (personId person)]
 
          -- Didn't find any people for these terms.
          FoundNone
-          -> return [ArgSearchFoundNone ix names]
+          -> return [FeedEventSearchFoundNone ix sQuery]
 
          -- Found multiple people for these terms.
          FoundMany people
-          -> return $ ArgSearchFoundMultiString ix names
-                    : map (ArgSearchFoundMultiPersonId ix) (map personId people)
+          -> return $ FeedEventSearchFoundMultiString ix sQuery
+                    : map (FeedEventSearchFoundMultiPersonId ix)
+                          (map personId people)
 
 
 -------------------------------------------------------------------------------
 -- | Html for event edit page.
 htmlEventEdit
         :: Session
-        -> Maybe EventId -> Event
-        -> [Person]
-        -> [FeedForm] -> Html
+        -> [FeedForm] -> [FeedEvent]
+        -> Maybe EventId -> Event -> [Person]
+        -> Html
 
-htmlEventEdit ss mEid event psAttend fsFeed
+htmlEventEdit ss fsForm fsEvent mEid event psAttend
  = H.docTypeHtml
  $ do   pageHeader "Editing Event"
         pageBody
@@ -235,6 +243,5 @@ htmlEventEdit ss mEid event psAttend fsFeed
 
                 -- Main entry form.
                 H.div   ! A.class_ "event"
-                        $ formEvent fsFeed
-                                (pathEventEdit ss mEid)
+                        $ formEvent (pathEventEdit ss mEid) fsForm fsEvent
                                 event psAttend

@@ -32,7 +32,7 @@ data FeedForm
         , feedValue     :: String       -- ^ Current contents of field.
         , feedError     :: String       -- ^ Description of error.
         }
-        deriving Show
+        deriving (Eq, Show)
 
 type FieldClass  = String
 type FieldLabel  = String

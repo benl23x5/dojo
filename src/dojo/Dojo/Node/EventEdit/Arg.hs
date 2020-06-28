@@ -1,11 +1,13 @@
 
 module Dojo.Node.EventEdit.Arg
-        ( Arg (..)
-        , takeFeedForm
+        ( Arg(..)
+        , FeedEvent(..)
         , argOfKeyVal
-        , keyValOfArg
-        , renumberSearchFeedback)
+        , takeKeyValOfFeedEvent
+        , takeFeedEventOfKeyVal
+        , takeFeedFormOfArg)
 where
+import Dojo.Node.EventEdit.Feed
 import Dojo.Data.Person
 import Dojo.Framework
 import Dojo.Base
@@ -16,64 +18,19 @@ data Arg
         -- | Empty form field.
         = ArgEmpty
 
-        -- | Feedback that a field has been updated.
-        | ArgFeedFormUpdated
-        { argDetailsFeed        :: String}
-
         -- | Add a person to the attendance record.
         | ArgAddPerson          String
 
         -- | Delete a person from the attendance record.
         | ArgDelPerson          PersonId
 
-        -- | Person search returned no matches.
-        | ArgSearchFoundNone
-        { -- | Index of this search.
-          argSearchIx           :: Integer
-
-          -- | The search string.
-        , argSearchString       :: String }
-
-        -- | Person search returned multiple matches,
-        --   and here is the search string.
-        | ArgSearchFoundMultiString
-        { -- | Index of this search.
-          argSearchIx           :: Integer
-
-          -- | The search string.
-        , argSearchString       :: String }
-
-        -- | Person search returned multiple matches,
-        --   and here is one of the indices that matched.
-        | ArgSearchFoundMultiPersonId
-        { -- | Index of this search
-          argSearchIx           :: Integer
-
-          -- | PersonId that matched the string.
-        , argSearchPersonId     :: PersonId }
-
-        -- | Feedback a new person was just added.
-        | ArgPersonAdded
-        { argPersonId           :: PersonId }
+        -- | Event edit feedback
+        | ArgFeedEvent          FeedEvent
 
 
--- | Take feedback details from an argument.
-takeFeedForm :: Arg -> Maybe FeedForm
-takeFeedForm arg
- = case arg of
-        ArgFeedFormUpdated f
-         -> Just $ FeedFormUpdated f
-
-        _ -> Nothing
-
-
--- | Convert a CGI key value pair to an argument.
+-- | Parse a CGI key value pair to an argument.
 argOfKeyVal :: (String, String) -> Maybe Arg
-argOfKeyVal (key, val)
-        -- Details field just updated
-        | "u" <- key
-        = Just $ ArgFeedFormUpdated val
-
+argOfKeyVal kv@(key, val)
         -- Add Person
         | "addPerson"   <- key
         = if null val
@@ -81,74 +38,76 @@ argOfKeyVal (key, val)
                 else Just $ ArgAddPerson val
 
         -- Del person
-        | "delPerson"    <- key
-        , Right pid      <- parse val
+        | "delPerson"   <- key
+        , Right pid     <- parse val
         = Just $ ArgDelPerson pid
 
-        -- A person with this pid was just added
-        | "a"           <- key
-        , Right pid     <- parse val
-        = Just $ ArgPersonAdded pid
+        | Just fe       <- takeFeedEventOfKeyVal kv
+        = Just $ ArgFeedEvent fe
 
-        -- Search Found None
-        | Just ns       <- stripPrefix  "sn" key
-        = Just $ ArgSearchFoundNone (read ns) val
-
-        -- Search Found Many
-        | Just ns       <- stripPrefix  "sm" key
-        = Just $ ArgSearchFoundMultiString (read ns) val
-
-        | Just ns       <- stripPrefix  "sp" key
-        , Right pid     <- parse val
-        = Just $ ArgSearchFoundMultiPersonId (read ns) pid
-
+        -- TODO: better parsing
         | otherwise
-        = Just ArgEmpty                                                 -- TODO: better parsing
+        = Just ArgEmpty
 
 
 -- | Convert an argument to a CGI key value pair.
-keyValOfArg :: Arg -> (String, String)
-keyValOfArg arg
+takeKeyValOfFeedEvent :: FeedEvent -> Maybe (String, String)
+takeKeyValOfFeedEvent fe
+ = case fe of
+        FeedEventFieldUpdated field
+         -> Just ("fu",   field)
+
+        FeedEventPersonAdded pid
+         -> Just ("fa",   pretty pid)
+
+        FeedEventSearchFoundNone ix str
+         -> Just ("sn" ++ show ix, str)
+
+        FeedEventSearchFoundMultiString ix str
+         -> Just ("sm" ++ show ix, str)
+
+        FeedEventSearchFoundMultiPersonId ix pid
+         -> Just ("sp" ++ show ix, pretty pid)
+
+
+-- | Parse a CGI key/value pair as a `FeedEvent`
+--   TODO: safe read.
+takeFeedEventOfKeyVal :: (String, String) -> Maybe FeedEvent
+takeFeedEventOfKeyVal (key, val)
+        -- Details field of this name was updated.
+        | "fu" <- key
+        = Just $ FeedEventFieldUpdated val
+
+        -- A person with this pid was added.
+        | "fa"          <- key
+        , Right pid     <- parse val
+        = Just $ FeedEventPersonAdded pid
+
+        -- Search found no matches.
+        | Just ns       <- stripPrefix "sn" key
+        = Just $ FeedEventSearchFoundNone (read ns) val
+
+        -- Search found multi matches, and here is the search string.
+        | Just ns       <- stripPrefix "sm" key
+        = Just $ FeedEventSearchFoundMultiString (read ns) val
+
+        -- Search found multi matches, and here is a matching person id.
+        | Just ns       <- stripPrefix "sp" key
+        , Right pid     <- parse val
+        = Just $ FeedEventSearchFoundMultiPersonId (read ns) pid
+
+        | otherwise
+        = Nothing
+
+
+-- | Take feedback details from an argument.
+takeFeedFormOfArg :: Arg -> Maybe FeedForm
+takeFeedFormOfArg arg
  = case arg of
-        ArgFeedFormUpdated field
-         -> ("u",   field)
+        ArgFeedEvent (FeedEventFieldUpdated f)
+         -> Just $ FeedFormUpdated f
 
-        ArgPersonAdded pid
-         -> ("a",   pretty pid)
-
-        ArgSearchFoundNone ix str
-         -> ("sn" ++ show ix, str)
-
-        ArgSearchFoundMultiString ix str
-         -> ("sm" ++ show ix, str)
-
-        ArgSearchFoundMultiPersonId ix pid
-         -> ("sp" ++ show ix, pretty pid)
-
-        _ -> error "EventEdit.keyValOfArg: no match"
+        _ -> Nothing
 
 
--- | Renumber args that provide search feedback so all the attendance
---   entries that did not match are packed to the front of the form.
-renumberSearchFeedback :: [Arg] -> [Arg]
-renumberSearchFeedback args
- = go 0 [] args
- where  go _ _ [] = []
-
-        go ix alpha (ArgSearchFoundNone _ str : rest)
-         = ArgSearchFoundNone ix str
-         : go (ix + 1) alpha rest
-
-        go ix alpha (ArgSearchFoundMultiString ixOld str : rest)
-         = ArgSearchFoundMultiString ix str
-         : go (ix + 1) ((ixOld, ix + 1) : alpha) rest
-
-        go ix alpha (ArgSearchFoundMultiPersonId ixOld str : rest)
-         = case lookup ixOld alpha of
-            Nothing     -> error "renumberSearchFeedback: orphan multi pid"
-            Just ixNew  -> ArgSearchFoundMultiPersonId ixNew str
-                        :  go ix alpha rest
-
-        go ix alpha (arg : rest)
-         = arg : go ix alpha rest
 
