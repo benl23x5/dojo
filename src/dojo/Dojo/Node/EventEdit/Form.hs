@@ -48,32 +48,29 @@ divEventDetails :: [FeedForm] -> Event -> Html
 divEventDetails fsFeed event
  = H.div ! A.id "event-details-edit" ! A.class_ "details"
  $ do
-        H.table $ trInput fsFeed
-         "Date" "date (dd-mm-yyyy)"
-         (pretty $ eventDate event) (Just "(required)")
+        tableFields fsFeed
+         [ ( "Date", "date (dd-mm-yyyy)"
+           , pretty $ eventDate event, Just "(required)"
+           , False)
 
-        H.table $ trInput fsFeed
-         "Time" "time (hh:mm 24hr)"
-         (pretty $ eventTime event) (Just "(required)")
+         , ( "Time", "time (hh:mm 24hr)"
+           , pretty $ eventTime event, Just "(required)"
+           , False)
+         ]
 
         -- When this is a new event put focus on the location input field,
         -- otherwise allow focus to be taken by the last person entry field.
         let EventId eid = eventId event
-        let takeFocus   = eid == 0
 
-        if | takeFocus
-           -> H.table $ trInputWithFocus fsFeed
-                 "Location" "location"
-                 (pretty $ eventLocation event) (Just "(required)")
+        tableFields fsFeed
+         [ ( "Location", "location"
+           , pretty $ eventLocation event, Just "(required)"
+           , eid == 0)
 
-           | otherwise
-           -> H.table $ trInput fsFeed
-                 "Location" "location"
-                 (pretty $ eventLocation event) (Just "(required)")
-
-        H.table $ trInput fsFeed
-         "Type" "type (dojo, ttc)"
-         (pretty $ eventType event) (Just "(required)")
+         , ( "Type", "type (dojo, ttc etc)"
+           , pretty $ eventType event, Just "(required)"
+           , False)
+         ]
 
 
 -------------------------------------------------------------------------------

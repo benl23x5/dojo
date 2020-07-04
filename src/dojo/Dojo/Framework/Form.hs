@@ -8,6 +8,8 @@
 --
 module Dojo.Framework.Form
         ( FeedForm(..)
+        , FieldClass, FieldLabel, FieldValue, FieldHolder
+        , tableFields
         , trInput, trInput_
         , trInputWithFocus, trInputWithFocus_
         , thInputFeedback
@@ -38,6 +40,22 @@ type FieldClass  = String
 type FieldLabel  = String
 type FieldValue  = String
 type FieldHolder = String
+
+
+-------------------------------------------------------------------------------
+-- | Produce a table with the given input fields in a single row.
+tableFields
+ :: [FeedForm]
+ -> [(FieldClass, FieldLabel, FieldValue, Maybe FieldHolder, Bool)]
+ -> Html
+
+tableFields fsFeed fs
+ = H.table $ do
+        tr $ forM_ fs $ \(sClass, sLabel, _sValue, _mHolder, _bFocus) -> do
+                thInputFeedback fsFeed sClass sLabel
+
+        tr $ forM_ fs $ \(sClass, _sLabel, sValue, mHolder, bFocus) -> do
+                tdInputFeedback bFocus fsFeed sClass sValue mHolder
 
 
 -------------------------------------------------------------------------------
