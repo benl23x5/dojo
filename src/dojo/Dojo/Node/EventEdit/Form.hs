@@ -92,9 +92,9 @@ divAttendanceCur path fsEvent attendance
  = H.div ! A.id     "event-attendance-cur"
          ! A.class_ "list"
  $ H.table
- $ do   col' "index"
-        col' "name"
-        col' "actions"
+ $ do   col ! A.class_ "index"
+        col ! A.class_ "name"
+        col ! A.class_ "actions"
 
         tr $ do th "#"
                 th "attendees"
@@ -104,8 +104,6 @@ divAttendanceCur path fsEvent attendance
         let pidsAdded = [pid | FeedEventPersonAdded pid <- fsEvent ]
 
         zipWithM_ (trCurAttendance pidsAdded path) [1..] attendance
-
- where  col' c  = col ! A.class_ c
 
 
 -- | Row for person that is currently listed as attending the event.
@@ -137,9 +135,9 @@ divAttendanceNew fsForm fsEvent event curStudents
  = H.div ! A.id     "event-attendance-new"
          ! A.class_ "list"
  $ H.table
- $ do   col' "index"
-        col' "name"
-        col' "actions"
+ $ do   col ! A.class_ "index"
+        col ! A.class_ "name"
+        col ! A.class_ "actions"
 
         -- When the event is new then leave focus on the details rather
         -- than the attandance fields.
@@ -153,8 +151,6 @@ divAttendanceNew fsForm fsEvent event curStudents
 
         mapM_ (trNewAttendance fsEvent takeFocus hasInvalidFields curStudents)
                 [0 .. 4]
-
- where  col' c  = col ! A.class_ c
 
 
 -------------------------------------------------------------------------------
@@ -208,7 +204,4 @@ tdFeedback disable focus names ssMsg
         forM_ ssMsg $ \s -> do
                 string s
                 H.br
-
-
-
 

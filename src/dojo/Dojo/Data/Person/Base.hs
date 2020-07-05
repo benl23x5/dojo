@@ -46,30 +46,32 @@ data Person
 
           -- | Email address.
         , personEmail           :: PersonEmail }
+        deriving Show
+
 
 data PersonId
         = PersonId Integer
-        deriving (Eq, Ord)
+        deriving (Show, Eq, Ord)
 
 data PersonMemberId
         = PersonMemberId Integer
-        deriving Eq
+        deriving (Show, Eq)
 
 data PersonName
         = PersonName String
-        deriving Eq
+        deriving (Show, Eq)
 
 data PersonDateOfBirth
         = PersonDateOfBirth (Maybe Time.Day)
-        deriving Eq
+        deriving (Show, Eq)
 
 data PersonMobile
         = PersonMobile String
-        deriving Eq
+        deriving (Show, Eq)
 
 data PersonEmail
         = PersonEmail String
-        deriving Eq
+        deriving (Show, Eq)
 
 
 -- Constructors ---------------------------------------------------------------

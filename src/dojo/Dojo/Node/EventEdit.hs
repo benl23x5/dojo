@@ -48,12 +48,15 @@ cgiEventEdit ss inputs
         -- Load form feedback from arguments.
         let fsForm      = mapMaybe takeFeedFormOfArg args
 
-        -- TODO: the renumbering doesn't work properly,
-        -- field indices are broken.
+        -- If there is feedback saying that a person search found multiple
+        -- matchinh person ids then lookup the full details so we can display
+        -- the multiple names in feedback. Also renumber the feedback so any
+        -- search terms that are still unresolved are packed to the front
+        -- of the input list.
         fsEvent
          <- liftIO $ fmap concat
          $  mapM (expandMultiPersonId conn)
---       $  renumberSearchFeedback
+         $  renumberSearchFeedback
          $  [fe | ArgFeedEvent fe <- args]
 
         -- Extract fields to update from the arguments.

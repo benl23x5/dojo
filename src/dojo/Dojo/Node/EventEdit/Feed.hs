@@ -57,6 +57,7 @@ data FeedEvent
 
           -- | Full person record that matched.
         , feedSearchPerson      :: Person }
+        deriving Show
 
 
 -- | Renumber args that provide search feedback so all the attendance
@@ -74,12 +75,18 @@ renumberSearchFeedback args
 
         go ix alpha (FeedEventSearchFoundMultiString ixOld str : rest)
          = FeedEventSearchFoundMultiString ix str
-         : go (ix + 1) ((ixOld, ix + 1) : alpha) rest
+         : go (ix + 1) ((ixOld, ix) : alpha) rest
 
         go ix alpha (FeedEventSearchFoundMultiPersonId ixOld str : rest)
          = case lookup ixOld alpha of
             Nothing     -> error "renumberSearchFeedback: orphan multi pid"
             Just ixNew  -> FeedEventSearchFoundMultiPersonId ixNew str
+                        :  go ix alpha rest
+
+        go ix alpha (FeedEventSearchFoundMultiPerson ixOld person : rest)
+         = case lookup ixOld alpha of
+            Nothing     -> error "renumberSearchFeedback: orphan multi pid"
+            Just ixNew  -> FeedEventSearchFoundMultiPerson ixNew person
                         :  go ix alpha rest
 
         go ix alpha (arg : rest)
