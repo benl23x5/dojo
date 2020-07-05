@@ -84,7 +84,7 @@ getPeople conn
                 , ",DateOfBirth"
                 , ",Mobile,Email"
                 , "FROM Person"
-                , "ORDER BY FamilyName"]) []
+                , "ORDER BY FamilyName COLLATE NOCASE ASC"]) []
 
         return $ map personOfSqlValues valuess
 
