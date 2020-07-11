@@ -4,7 +4,6 @@ module Dojo.Node.Logout
 where
 import Dojo.Paths
 import Dojo.Framework
-import Dojo.Base
 import qualified Network.CGI            as CGI
 
 

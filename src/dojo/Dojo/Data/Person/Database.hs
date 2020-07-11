@@ -3,42 +3,6 @@ module Dojo.Data.Person.Database where
 import Dojo.Data.Person.Base
 import Dojo.Framework
 import Dojo.Trivia
-import Dojo.Base
-
-
--------------------------------------------------------------------------------
--- | Build a person from a list of Sql values.
-personOfSqlValues :: [SqlValue] -> Person
-personOfSqlValues
-        [ pid, memberId
-        , preferredName, firstName, familyName
-        , dateOfBirth
-        , phoneMobile, phoneFixed, email
-        , dojoHome
-        , memberLevel, memberDate
-        , emergencyName1, emergencyPhone1
-        , emergencyName2, emergencyPhone2 ]
-
-        = Person
-        { personId                      = fromSql pid
-        , personMemberId                = fromSql memberId
-        , personPreferredName           = fromSql preferredName
-        , personFirstName               = fromSql firstName
-        , personFamilyName              = fromSql familyName
-        , personDateOfBirth             = fromSql dateOfBirth
-        , personPhoneMobile             = fromSql phoneMobile
-        , personPhoneFixed              = fromSql phoneFixed
-        , personEmail                   = fromSql email
-        , personDojoHome                = fromSql dojoHome
-        , personMembershipLevel         = fromSql memberLevel
-        , personMembershipRenewal       = fromSql memberDate
-        , personEmergencyName1          = fromSql emergencyName1
-        , personEmergencyPhone1         = fromSql emergencyPhone1
-        , personEmergencyName2          = fromSql emergencyName2
-        , personEmergencyPhone2         = fromSql emergencyPhone2
-        }
-
-personOfSqlValues _ = error "personOfValues: no match"
 
 
 -- | Get all the people, ordered by family name.

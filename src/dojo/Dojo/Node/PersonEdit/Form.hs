@@ -4,7 +4,6 @@ module Dojo.Node.PersonEdit.Form
 where
 import Dojo.Data.Person
 import Dojo.Framework
-import Dojo.Base
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 

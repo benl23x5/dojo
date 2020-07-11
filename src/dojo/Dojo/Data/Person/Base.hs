@@ -2,22 +2,17 @@
 module Dojo.Data.Person.Base where
 import Dojo.Framework
 import Dojo.Trivia
-import Dojo.Base
-import qualified Data.Time      as Time
 
 
 -------------------------------------------------------------------------------
 -- | A Person known to the system.
 data Person
         = Person
-        { -- | We keep the system user id separate from the membership number
-          --   so that we can add beginners that have not yet joined Aikikai.
-          --
-          --   The person will be Nothing if the record has not been added
+        { -- | The person id will be Nothing if the record has not been added
           --   to the database yet.
           personId                      :: Maybe PersonId       -- PRIMARY KEY
 
-          -- | Aikikai membership number.
+          -- | Organization membership id.
         , personMemberId                :: PersonMemberId
 
           -- | If a person only has one name then use that as the "first name"
@@ -42,77 +37,6 @@ data Person
         deriving Show
 
 
--- Entity  --------------------------------------------------------------------
--- | Person entity.
-personEntity :: Entity Person
-personEntity
-        = Entity
-        { entityTable   = "v1_Person"
-        , entityKey     = "PersonId"
-        , entityFields  = personFields }
-
-
--- | Field definitions of the person entity.
-personFields :: [Field Person]
-personFields
- =      [ Field "PersonId"              "id"
-                (toSql . personId)
-
-        , Field "MemberId"              "member id"
-                (toSql . personMemberId)
-
-        , Field "PreferredName"         "preferred name"
-                (toSql . personPreferredName)
-
-        , Field "FirstName"             "first name"
-                (toSql . personFirstName)
-
-        , Field "FamilyName"            "family name"
-                (toSql . personFamilyName)
-
-        , Field "DateOfBirth"           "date of birth"
-                (toSql . personDateOfBirth)
-
-        , Field "PhoneMobile"           "mobile phone number"
-                (toSql . personPhoneMobile)
-
-        , Field "PhoneFixed"            "fixed phone number"
-                (toSql . personPhoneFixed)
-
-        , Field "Email"                 "email address"
-                (toSql . personEmail)
-
-        , Field "DojoHome"              "home dojo"
-                (toSql . personDojoHome)
-
-        , Field "MembershipLevel"       "membership level"
-                (toSql . personMembershipLevel)
-
-        , Field "MembershipRenewal"     "membership renewal data"
-                (toSql . personMembershipRenewal)
-
-        , Field "EmergencyName1"        "emergency contact name 1"
-                (toSql . personEmergencyName1)
-
-        , Field "EmergencyPhone1"       "emergency contact phone 1"
-                (toSql . personEmergencyPhone1)
-
-        , Field "EmergencyName2"        "emergency contact name 2"
-                (toSql . personEmergencyName2)
-
-        , Field "EmergencyPhone2"       "emergency contact phone 2"
-                (toSql . personEmergencyPhone2)
-        ]
-
-
--- | Like `personFields`, but without the field for the primary key.
-personFieldsNoKey :: [Field Person]
-personFieldsNoKey
- = [pf | pf <- personFields
-       , fieldNameTable pf /= entityKey personEntity ]
-
-
--- Constructors ---------------------------------------------------------------
 -- | Create a zero person with just the first name.
 zeroPerson :: String -> Person
 zeroPerson firstName
@@ -134,6 +58,125 @@ zeroPerson firstName
         , personEmergencyName2          = PersonName    ""
         , personEmergencyPhone2         = PersonPhone   ""
         }
+
+
+-- Entity  --------------------------------------------------------------------
+-- | Person entity.
+personEntity :: Entity Person
+personEntity
+        = Entity
+        { entityTable   = "v1_Person"
+        , entityKey     = "PersonId"
+        , entityFields  = personFields }
+
+
+-- | Field definitions of the person entity.
+personFields :: [Field Person]
+personFields
+ =      [ Field "PersonId"              "id"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonId) )
+                (toSql . personId)
+                (\v x -> x { personId = fromSql v})
+
+        , Field "MemberId"              "member id"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonMemberId) )
+                (toSql . personMemberId)
+                (\v x -> x { personMemberId = fromSql v})
+
+        , Field "PreferredName"         "preferred name"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+                (toSql . personPreferredName)
+                (\v x -> x { personPreferredName = fromSql v})
+
+        , Field "FirstName"             "first name"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+                (toSql . personFirstName)
+                (\v x -> x { personFirstName = fromSql v})
+
+        , Field "FamilyName"            "family name"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+                (toSql . personFamilyName)
+                (\v x -> x { personFamilyName = fromSql v})
+
+        , Field "DateOfBirth"           "date of birth"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
+                (toSql . personDateOfBirth)
+                (\v x -> x { personDateOfBirth = fromSql v})
+
+        , Field "PhoneMobile"           "mobile phone number"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+                (toSql . personPhoneMobile)
+                (\v x -> x { personPhoneMobile = fromSql v})
+
+        , Field "PhoneFixed"            "fixed phone number"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+                (toSql . personPhoneFixed)
+                (\v x -> x { personPhoneFixed = fromSql v})
+
+        , Field "Email"                 "email address"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonEmail) )
+                (toSql . personEmail)
+                (\v x -> x { personEmail = fromSql v})
+
+        , Field "DojoHome"              "home dojo"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonDojo) )
+                (toSql . personDojoHome)
+                (\v x -> x { personDojoHome = fromSql v})
+
+        , Field "MembershipLevel"       "membership level"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonMembershipLevel) )
+                (toSql . personMembershipLevel)
+                (\v x -> x { personMembershipLevel = fromSql v})
+
+        , Field "MembershipRenewal"     "membership renewal data"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
+                (toSql . personMembershipRenewal)
+                (\v x -> x { personMembershipRenewal = fromSql v})
+
+        , Field "EmergencyName1"        "emergency contact name 1"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+                (toSql . personEmergencyName1)
+                (\v x -> x { personEmergencyName1 = fromSql v})
+
+        , Field "EmergencyPhone1"       "emergency contact phone 1"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+                (toSql . personEmergencyPhone1)
+                (\v x -> x { personEmergencyPhone1 = fromSql v})
+
+        , Field "EmergencyName2"        "emergency contact name 2"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+                (toSql . personEmergencyName2)
+                (\v x -> x { personEmergencyName2 = fromSql v})
+
+        , Field "EmergencyPhone2"       "emergency contact phone 2"
+                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+                (toSql . personEmergencyPhone2)
+                (\v x -> x { personEmergencyPhone2 = fromSql v})
+        ]
+
+
+-- | Like `personFields`, but without the field for the primary key.
+personFieldsNoKey :: [Field Person]
+personFieldsNoKey
+ = [pf | pf <- personFields
+       , fieldNameTable pf /= entityKey personEntity ]
+
+
+-- Constructors ---------------------------------------------------------------
+-- | Construct a person from a list of Sql values for each field.
+personOfSqlValues :: [SqlValue] -> Person
+personOfSqlValues vs
+ = foldl (\person (v, inj) -> inj v person) (zeroPerson "")
+ $ zip vs $ map fieldFromSql personFields
+
+
+-- | Load differences to a person record specified in a query path.
+loadPerson
+        :: [(String, String)]   -- ^ Table field name and new value.
+        -> Person               -- ^ Old person to be updated.
+        -> Either [LoadError] Person
+
+loadPerson = loadEntity personEntity
 
 
 -- Projections ----------------------------------------------------------------
@@ -169,4 +212,11 @@ personDisplayName person
 
          | otherwise
          = personPreferredName person
+
+
+-- Comparisons  ---------------------------------------------------------------
+-- | Get the table field names of fields that differ in two person records.
+diffPerson :: Person -> Person -> [String]
+diffPerson p1 p2
+ = diffEntity personEntity p1 p2
 

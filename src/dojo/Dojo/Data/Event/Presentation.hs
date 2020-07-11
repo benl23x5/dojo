@@ -5,7 +5,6 @@ module Dojo.Data.Event.Presentation
 where
 import Dojo.Data.Event.Base
 import Dojo.Framework
-import Dojo.Base
 
 
 -- Pretty ---------------------------------------------------------------------
@@ -36,12 +35,12 @@ instance Parse EventId where
  parse str              = liftM EventId $ parse str
 
 instance Parse EventType where
- parse str      
+ parse str
   | not $ null str      = Right (EventType str)
   | otherwise           = Left  (ParseError "Event Type must be non-empty")
 
 instance Parse EventLocation where
- parse str      
+ parse str
   | not $ null str      = Right (EventLocation str)
   | otherwise           = Left  (ParseError "Event Location must be non-empty")
 

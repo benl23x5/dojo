@@ -3,14 +3,13 @@ module Dojo.Data.Person.Search
         ( Found (..)
         , findPerson)
 where
-import Dojo.Data.Person.Database
 import Dojo.Data.Person.Base
 import Dojo.Framework
 import Dojo.Trivia
-import Dojo.Base
 import Data.Function
 import qualified Data.Char as Char
 import qualified Data.List as List
+
 
 -- Found ----------------------------------------------------------------------
 -- | Find a person based on their name.
@@ -111,6 +110,7 @@ convertResult values
  = map personOfSqlValues values
 
 
+-- Candidate ------------------------------------------------------------------
 -- | A candidate person that we're considering in the search.
 --
 --   We consider how the search string matches the candidate words,

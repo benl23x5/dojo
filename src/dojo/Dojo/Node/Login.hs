@@ -8,7 +8,6 @@ import Dojo.Data.Session
 import Dojo.Chrome
 import Dojo.Framework
 import Dojo.Paths
-import Dojo.Base
 import qualified Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A

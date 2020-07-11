@@ -2,7 +2,6 @@
 module Dojo.Trivia.Parse where
 import Dojo.Trivia.Base
 import Dojo.Framework
-import Dojo.Base
 
 
 instance Parse PersonId where

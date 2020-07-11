@@ -12,7 +12,6 @@ import Dojo.Node.EventEdit
 import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Framework
-import Dojo.Base hiding (main)
 import qualified Config
 import qualified Network.CGI                            as CGI
 import qualified Control.Exception                      as Control
