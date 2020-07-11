@@ -9,6 +9,10 @@ module Dojo.Data.Person
         , PersonEmail           (..)
         , PersonMembershipLevel (..)
 
+        -- * Entity
+        , personEntity
+        , personFields
+
         -- * Constructors
         , zeroPerson
 
@@ -28,15 +32,12 @@ module Dojo.Data.Person
         , Found(..)
         , findPerson
 
-        -- * Presentation
-        , niceNameOfPersonField
-
         -- * Operators
         , diffPerson
         , loadPerson)
 where
 import Dojo.Data.Person.Search
-import Dojo.Data.Person.Presentation
+import Dojo.Data.Person.Presentation    ()
 import Dojo.Data.Person.Database
 import Dojo.Data.Person.Base
 import Dojo.Framework

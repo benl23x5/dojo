@@ -30,7 +30,7 @@ formPerson fsFeed path person
                 (pathFields path)
 
         -- Feedback about updated and invalid fields.
-        htmlFeedForm fsFeed niceNameOfPersonField
+        htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
 
         -- Person details.
         divPersonDetails fsFeed person

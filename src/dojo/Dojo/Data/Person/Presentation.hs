@@ -1,7 +1,5 @@
 
-module Dojo.Data.Person.Presentation
-        ( niceNameOfPersonField)
-where
+module Dojo.Data.Person.Presentation where
 import Dojo.Data.Person.Base
 import Dojo.Framework
 import Dojo.Base
@@ -60,19 +58,4 @@ instance Parse PersonDojo where
 
 instance Parse PersonMembershipLevel where
  parse str      = Right (PersonMembershipLevel str)
-
--- | Nice name for field labels
-niceNameOfPersonField :: String -> Maybe String
-niceNameOfPersonField str
- = case str of
-        "PersonId"      -> Just "id"
-        "MemberId"      -> Just "member id"
-        "PreferredName" -> Just "preferred name"
-        "FirstName"     -> Just "first name"
-        "FamilyName"    -> Just "family name"
-        "MiddleName"    -> Just "middle name"
-        "DateOfBirth"   -> Just "date of birth"
-        "Mobile"        -> Just "mobile"
-        "Email"         -> Just "email"
-        _               -> Nothing
 

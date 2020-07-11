@@ -36,6 +36,16 @@ formFieldNamesOfEntity e
  = map fieldNameForm $ entityFields e
 
 
+-- | Produce the form field for a table field name.
+formTableNameOfEntity :: Entity e -> String -> Maybe String
+formTableNameOfEntity e sNameTable
+ = case [fieldNameForm f
+                | f <- entityFields e
+                , fieldNameTable f == sNameTable ] of
+    [fn] -> Just fn
+    _    -> Nothing
+
+
 -- | Yield a raw sql query
 --    `SELECT fields,.. FROM tableName` for this entity,
 --   for all fields.

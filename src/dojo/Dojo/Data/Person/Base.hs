@@ -21,7 +21,7 @@ data Person
           --   and leave the others empty. We need at least one name to refer
           --   to them, but some people only have a single name.
         , personPreferredName           :: PersonName
-        , personFirstName               :: PersonName   -- NOT NULL
+        , personFirstName               :: PersonName           -- NOT NULL
         , personFamilyName              :: PersonName
 
         , personDateOfBirth             :: PersonDate
