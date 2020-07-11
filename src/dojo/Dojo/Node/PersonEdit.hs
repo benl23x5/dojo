@@ -21,11 +21,7 @@ import qualified Text.Blaze.Html5               as H
 --      The 'p'/updated fields are passed if a previous action just updated
 --      the event record. Display UI feedback for these.
 --
-cgiPersonEdit
-        :: Session
-        -> [(String, String)]
-        -> CGI CGIResult
-
+cgiPersonEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiPersonEdit ss inputs
  = do
         -- TODO: check incoming arguments.
@@ -43,23 +39,28 @@ cgiPersonEdit ss inputs
         conn    <- liftIO $ connectSqlite3 databasePath
 
         -- See if we were given an existing person id.
-        case lookup "pid" inputs of
-         -- Try to load existing person record.
-         Just strPersonId
-          -> do -- TODO: better parsing.
-                let (Right pid) = parse strPersonId
-                person  <- liftIO $ getPerson conn pid
+        (mpid, person)
+         <- case lookup "pid" inputs of
+             -- Try to load existing person record.
+             Just strPersonId
+              -> do -- TODO: better parsing.
+                    let Right pid = parse strPersonId
+                    Just person  <- liftIO $ getPerson conn pid
+                    return (personId person, person)
 
-                if | null fieldUpdates
-                   -> do liftIO $ disconnect conn
-                         cgiPersonEdit_entry ss person
+             Nothing
+              -> do let person = zeroPerson ""
+                    return (Nothing, person)
 
-                   | otherwise
-                   -> do cgiPersonEdit_update ss conn
-                          person (loadPerson inputs person)
-         --
-         Nothing
-          -> do let person = zeroPerson ""
+        if
+         -- Update person details.
+         | (not $ null fieldUpdates)
+         -> cgiPersonEdit_update
+                ss conn mpid person fieldUpdates
+
+         -- Show the form and wait for entry.
+         | otherwise
+         -> do  liftIO $ disconnect conn
                 cgiPersonEdit_entry ss person
 
 
@@ -73,28 +74,45 @@ cgiPersonEdit_entry ss person
 -------------------------------------------------------------------------------
 -- We got some updates.
 --  Update the database and show the updated form.
-cgiPersonEdit_update ss conn personOld ePersonNew
+cgiPersonEdit_update
+        :: IConnection conn
+        => Session -> conn
+        -> Maybe PersonId       -- person id if we are editing an existing person
+        -> Person               -- person
+        -> [(String, String)]   -- fields to update
+        -> CGI CGIResult
 
- -- Fields parsed, so updated the database record.
- | Right personNew <- ePersonNew
- = do   _ <- liftIO $ updatePerson conn personNew
-        liftIO $ commit conn
-        liftIO $ disconnect conn
+cgiPersonEdit_update ss conn
+        Nothing person updates
+ = do   person' <- liftIO $ insertPerson conn person
+        cgiPersonEdit_update ss conn
+                (personId person') person'
+                updates
 
-        let fsFeed =
-                [ FeedFormUpdated sField
-                | sField <- diffPerson personOld personNew ]
-
-        outputFPS $ renderHtml $ htmlPersonEdit ss personNew fsFeed
-
- -- Some of the fields didn't parse,
- --  so redisplay the form with invalid field feedback.
- | Left fieldErrors <- ePersonNew
- = do   let fsFeed =
+cgiPersonEdit_update ss conn
+        (Just _pid) personOld updates
+ = case loadPerson updates personOld of
+    -- Some fields didn't parse.
+    Left fieldErrors
+     -> do let fsFeed =
                 [ FeedFormInvalid sField sValue sError
                 | (sField, sValue, ParseError sError) <- fieldErrors ]
 
-        outputFPS $ renderHtml $ htmlPersonEdit ss personOld fsFeed
+           outputFPS $ renderHtml
+             $ htmlPersonEdit ss personOld fsFeed
+
+    -- All the fields parsed.
+    Right personNew
+      -> do liftIO $ updatePerson conn personNew
+            liftIO $ commit conn
+            liftIO $ disconnect conn
+
+            let fsFeed =
+                 [ FeedFormUpdated sField
+                 | sField <- diffPerson personOld personNew ]
+
+            outputFPS $ renderHtml
+             $ htmlPersonEdit ss personNew fsFeed
 
 
 -------------------------------------------------------------------------------
@@ -102,11 +120,18 @@ cgiPersonEdit_update ss conn personOld ePersonNew
 htmlPersonEdit :: Session -> Person -> [FeedForm] -> Html
 htmlPersonEdit ss person fsFeed
  = H.docTypeHtml
- $ do   let pid = personId person
-        pageHeader "Editing Person"
+ $ do   pageHeader "Editing Person"
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths [pathPersonView ss pid]
-                formPerson fsFeed (pathPersonEdit ss (Just pid)) person
+
+                -- TODO: different link if no person id yet.
+                tablePaths
+                 $ case personId person of
+                    Nothing     -> []
+                    Just pid    -> [pathPersonView ss pid]
+
+                formPerson fsFeed
+                        (pathPersonEdit ss (personId person))
+                        person
 
 

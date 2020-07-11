@@ -112,13 +112,20 @@ trCurAttendance pidsAdded path ix person
  = tr
  $ do   td $ H.toMarkup (show ix)
 
-        td !? (elem (personId person) pidsAdded, A.class_, "updated")
+        let bJustAdded
+             = case personId person of
+                Nothing  -> False
+                Just pid -> elem pid pidsAdded
+
+        td !? (bJustAdded, A.class_, "updated")
            $ H.toMarkup
            $ personDisplayName person
 
+        -- TODO: fix case of no pid
+        let Just pid = personId person
         td $ H.a ! A.class_ "link"
                  ! (A.href $ H.toValue
-                           $ path <&> [("delPerson", pretty $ personId person)])
+                           $ path <&> [("delPerson", pretty pid)])
                  $ "X"
 
 

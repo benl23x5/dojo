@@ -78,9 +78,10 @@ cgiEventEdit ss inputs
         (meid, event, psAttend)
           <- case lookup "eid" inputs of
               Just strEventId
-                -> do   let eid    =  read strEventId
-                        event      <- liftIO $ getEvent      conn (EventId eid)
-                        psAttend   <- liftIO $ getAttendance conn (EventId eid)
+                -> do   -- TODO: better parsing
+                        let Right eid = parse strEventId
+                        event    <- liftIO $ getEvent      conn (EventId eid)
+                        psAttend <- liftIO $ getAttendance conn (EventId eid)
                         return  (Just (eventId event), event, psAttend)
 
               Nothing
@@ -226,7 +227,7 @@ searchAddPerson conn event psAttend ix sQuery
  = do
         -- Find more people based on the search string,
         -- skipping over people that are already in the list.
-        let pidsSkip = map personId psAttend
+        let pidsSkip = mapMaybe personId psAttend
         found <- findPerson conn sQuery pidsSkip
 
         case found of
@@ -239,7 +240,7 @@ searchAddPerson conn event psAttend ix sQuery
           -- .. and the person is not already an attendee, so add them.
           | otherwise
           -> do  insertAttendance conn (eventId event) person
-                 return [FeedEventPersonAdded (personId person)]
+                 return $ [FeedEventPersonAdded pid | Just pid <- [personId person]]
 
          -- Didn't find any people for these terms.
          FoundNone
@@ -249,7 +250,7 @@ searchAddPerson conn event psAttend ix sQuery
          FoundMany people
           -> return $ FeedEventSearchFoundMultiString ix sQuery
                     : map (FeedEventSearchFoundMultiPersonId ix)
-                          (take 6 $ map personId people)
+                          (take 6 $ mapMaybe personId people)
 
 
 -------------------------------------------------------------------------------

@@ -57,6 +57,7 @@ Executable dojo
         Dojo.Framework.Pretty
         Dojo.Framework.Parse
         Dojo.Framework.Form
+        Dojo.Framework.Entity
         Dojo.Framework
 
         Dojo.Node.Main

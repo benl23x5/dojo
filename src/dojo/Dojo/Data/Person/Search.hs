@@ -5,6 +5,7 @@ module Dojo.Data.Person.Search
 where
 import Dojo.Data.Person.Database
 import Dojo.Data.Person.Base
+import Dojo.Framework
 import Dojo.Base
 import Data.Function
 import qualified Data.Char as Char
@@ -52,7 +53,7 @@ findPerson conn strSearch pidsSkip
 
         psPreferredName
          <- fmap concat
-         $  mapM (searchPeopleFromField conn "PreferedName") strWords
+         $  mapM (searchPeopleFromField conn "PreferredName") strWords
 
         psFirstName
          <- fmap concat
@@ -65,7 +66,13 @@ findPerson conn strSearch pidsSkip
         let psAll  = concat [psPreferredName, psFirstName, psFamilyName]
         let psNub  = List.nubBy ((==) `on` personId) psAll
 
-        let psCut  = filter (\person -> not $ elem (personId person) pidsSkip) psNub
+        -- Skip results we were told to ignore.
+        --  these might already be in the list, and we don't want
+        --  to return them in the search again.
+        let psCut  = flip filter psNub $ \person ->
+                case personId person of
+                 Nothing  -> True
+                 Just pid -> not $ elem pid pidsSkip
 
         let cands  = map candidateOfPerson psCut
         let cands' = mapMaybe (filtersCandidate strWords) cands
@@ -87,11 +94,7 @@ searchPeopleFromField
 searchPeopleFromField conn fieldName name
  = liftM convertResult
  $ quickQuery' conn (unlines
-        [ "SELECT "
-        , "PersonId,MemberId,"
-        , "PreferedName,FirstName,MiddleName,FamilyName,"
-        , "DateOfBirth,Mobile,Email"
-        , "FROM   Person"
+        [ sqlSelectAllFromEntity personEntity
         , "WHERE  LOWER(" ++ fieldName ++ ") LIKE '%' || LOWER(?) || '%'"])
         [toSql name]
 

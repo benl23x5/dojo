@@ -17,15 +17,21 @@ instance Pretty PersonMemberId where
 instance Pretty PersonName where
  pretty (PersonName name)       = name
 
-instance Pretty PersonDateOfBirth where
- pretty (PersonDateOfBirth (Just day)) = pretty day
- pretty (PersonDateOfBirth Nothing)    = ""
+instance Pretty PersonDate where
+ pretty (PersonDate (Just day)) = pretty day
+ pretty (PersonDate Nothing)    = ""
 
-instance Pretty PersonMobile where
- pretty (PersonMobile mobile)   = mobile
+instance Pretty PersonPhone where
+ pretty (PersonPhone phone)     = phone
 
 instance Pretty PersonEmail where
  pretty (PersonEmail  email)    = email
+
+instance Pretty PersonDojo where
+ pretty (PersonDojo dojo)       = dojo
+
+instance Pretty PersonMembershipLevel where
+ pretty (PersonMembershipLevel level) = level
 
 
 -- Parse ----------------------------------------------------------------------
@@ -38,17 +44,22 @@ instance Parse PersonMemberId where
 instance Parse PersonName where
  parse str      = Right (PersonName str)
 
-instance Parse PersonDateOfBirth where
+instance Parse PersonDate where
  parse str
-  | str == ""   = Right (PersonDateOfBirth Nothing)
-  | otherwise   = liftM (PersonDateOfBirth . Just) $ parse str
+  | str == ""   = Right (PersonDate Nothing)
+  | otherwise   = liftM (PersonDate . Just) $ parse str
 
-instance Parse PersonMobile where
- parse str      = Right (PersonMobile str)
+instance Parse PersonPhone where
+ parse str      = Right (PersonPhone str)
 
 instance Parse PersonEmail  where
  parse str      = Right (PersonEmail str)
 
+instance Parse PersonDojo where
+ parse str      = Right (PersonDojo str)
+
+instance Parse PersonMembershipLevel where
+ parse str      = Right (PersonMembershipLevel str)
 
 -- | Nice name for field labels
 niceNameOfPersonField :: String -> Maybe String

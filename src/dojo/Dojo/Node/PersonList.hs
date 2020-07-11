@@ -39,7 +39,7 @@ tablePeople ss people
  $ H.table
  $ do   col ! A.class_ "ShortName"
         col ! A.class_ "FamilyName"
-        col ! A.class_ "Mobile"
+        col ! A.class_ "PhoneMobile"
         tr $ do th "pref / first"; th "family"; th "phone"
 
         mapM_ (trPerson ss) people
@@ -50,8 +50,9 @@ trPerson :: Session -> Person -> H.Html
 trPerson ss person
  = tr
  $ do   -- Clicking on any column takes us to the person view page.
-        let pathView
-                = pathPersonView ss $ personId person
+        -- TODO: suppress link on no personid
+        let Just pid = personId person
+        let pathView = pathPersonView ss pid
 
         -- Person data.
         let tdField val
@@ -59,6 +60,6 @@ trPerson ss person
                     (H.toMarkup val)
 
         tdField (personShortName person)
-        tdField (personFamilyName  person)
-        tdField (personMobile      person)
+        tdField (personFamilyName person)
+        tdField (personPhoneMobile person)
 

@@ -1,15 +1,7 @@
 
-module Dojo.Data.Person.Database
-        ( -- * Constructors
-          personOfSqlValues
-
-          -- * Database operators
-        , getPeople
-        , getPerson
-        , insertPerson
-        , updatePerson)
-where
+module Dojo.Data.Person.Database where
 import Dojo.Data.Person.Base
+import Dojo.Framework
 import Dojo.Base
 
 
@@ -23,14 +15,20 @@ instance Convertible PersonMemberId SqlValue where
 instance Convertible PersonName  SqlValue where
  safeConvert (PersonName name)          = safeConvert name
 
-instance Convertible PersonDateOfBirth  SqlValue where
- safeConvert (PersonDateOfBirth dob)    = safeConvert dob
+instance Convertible PersonDate  SqlValue where
+ safeConvert (PersonDate dob)           = safeConvert dob
 
-instance Convertible PersonMobile  SqlValue where
- safeConvert (PersonMobile mobile)      = safeConvert mobile
+instance Convertible PersonPhone SqlValue where
+ safeConvert (PersonPhone mobile)       = safeConvert mobile
 
 instance Convertible PersonEmail  SqlValue where
  safeConvert (PersonEmail  email)       = safeConvert email
+
+instance Convertible PersonDojo SqlValue where
+ safeConvert (PersonDojo mobile)        = safeConvert mobile
+
+instance Convertible PersonMembershipLevel SqlValue where
+ safeConvert (PersonMembershipLevel mobile) = safeConvert mobile
 
 
 -- fromSql --------------------------------------------------------------------
@@ -43,14 +41,20 @@ instance Convertible SqlValue PersonMemberId where
 instance Convertible SqlValue PersonName where
  safeConvert val        = liftM PersonName (safeConvert val)
 
-instance Convertible SqlValue PersonDateOfBirth where
- safeConvert val        = liftM PersonDateOfBirth (safeConvert val)
+instance Convertible SqlValue PersonDate where
+ safeConvert val        = liftM PersonDate (safeConvert val)
 
-instance Convertible SqlValue PersonMobile where
- safeConvert val        = liftM PersonMobile (safeConvert val)
+instance Convertible SqlValue PersonPhone where
+ safeConvert val        = liftM PersonPhone (safeConvert val)
 
 instance Convertible SqlValue PersonEmail where
  safeConvert val        = liftM PersonEmail (safeConvert val)
+
+instance Convertible SqlValue PersonDojo where
+ safeConvert val        = liftM PersonDojo (safeConvert val)
+
+instance Convertible SqlValue PersonMembershipLevel where
+ safeConvert val        = liftM PersonMembershipLevel (safeConvert val)
 
 
 -------------------------------------------------------------------------------
@@ -58,19 +62,32 @@ instance Convertible SqlValue PersonEmail where
 personOfSqlValues :: [SqlValue] -> Person
 personOfSqlValues
         [ pid, memberId
-        , preferedName, firstName, middleName, familyName, dateOfBirth
-        , mobile, email ]
+        , preferredName, firstName, familyName
+        , dateOfBirth
+        , phoneMobile, phoneFixed, email
+        , dojoHome
+        , memberLevel, memberDate
+        , emergencyName1, emergencyPhone1
+        , emergencyName2, emergencyPhone2 ]
 
         = Person
-        { personId              = fromSql pid
-        , personMemberId        = fromSql memberId
-        , personPreferredName   = fromSql preferedName
-        , personFirstName       = fromSql firstName
-        , personMiddleName      = fromSql middleName
-        , personFamilyName      = fromSql familyName
-        , personDateOfBirth     = fromSql dateOfBirth
-        , personMobile          = fromSql mobile
-        , personEmail           = fromSql email }
+        { personId                      = fromSql pid
+        , personMemberId                = fromSql memberId
+        , personPreferredName           = fromSql preferredName
+        , personFirstName               = fromSql firstName
+        , personFamilyName              = fromSql familyName
+        , personDateOfBirth             = fromSql dateOfBirth
+        , personPhoneMobile             = fromSql phoneMobile
+        , personPhoneFixed              = fromSql phoneFixed
+        , personEmail                   = fromSql email
+        , personDojoHome                = fromSql dojoHome
+        , personMembershipLevel         = fromSql memberLevel
+        , personMembershipRenewal       = fromSql memberDate
+        , personEmergencyName1          = fromSql emergencyName1
+        , personEmergencyPhone1         = fromSql emergencyPhone1
+        , personEmergencyName2          = fromSql emergencyName2
+        , personEmergencyPhone2         = fromSql emergencyPhone2
+        }
 
 personOfSqlValues _ = error "personOfValues: no match"
 
@@ -79,71 +96,72 @@ personOfSqlValues _ = error "personOfValues: no match"
 getPeople  :: IConnection conn => conn -> IO [Person]
 getPeople conn
  = do   valuess <- quickQuery' conn (unlines
-                [ "SELECT PersonId,MemberId"
-                , ",PreferedName,FirstName,MiddleName,FamilyName"
-                , ",DateOfBirth"
-                , ",Mobile,Email"
-                , "FROM Person"
+                [ sqlSelectAllFromEntity personEntity
                 , "ORDER BY FamilyName COLLATE NOCASE ASC"]) []
 
         return $ map personOfSqlValues valuess
 
 
 -- | Get the person with the given id.
-getPerson  :: IConnection conn => conn -> PersonId -> IO Person
-getPerson conn userId
- = do   [values] <- quickQuery' conn (unlines
-                [ "SELECT PersonId,MemberId"
-                , ",PreferedName,FirstName,MiddleName,FamilyName"
-                , ",DateOfBirth"
-                , ",Mobile,Email"
-                , "FROM  Person"
+getPerson  :: IConnection conn => conn -> PersonId -> IO (Maybe Person)
+getPerson conn pid
+ = do   valuess <- quickQuery' conn (unlines
+                [ sqlSelectAllFromEntity personEntity
                 , "WHERE PersonId=?" ])
-                [ toSql userId ]
+                [ toSql pid ]
 
-        return  $ personOfSqlValues values
+        case valuess of
+         [vs] -> return $ Just $ personOfSqlValues vs
+         _    -> return Nothing
 
 
 -- | Insert a person.
-insertPerson :: IConnection conn => conn -> Person -> IO Integer
+insertPerson :: IConnection conn => conn -> Person -> IO Person
 insertPerson conn person
- = do   stmt    <- prepare conn $ unlines
-                [ "INSERT INTO Person"
-                , "(MemberId"
-                , ",PreferedName,FirstName,MiddleName,FamilyName"
-                , ",DateOfBirth"
-                , ",Mobile,Email)"
-                , "VALUES (?,?,?,?,?,?,?,?)" ]
-
+ = do   stmt    <- prepare conn $ sqlInsertAllIntoEntity personEntity
         execute stmt
-                [ toSql (personMemberId      person)
-                , toSql (personPreferredName person)
-                , toSql (personFirstName     person)
-                , toSql (personMiddleName    person)
-                , toSql (personFamilyName    person)
-                , toSql (personDateOfBirth   person)
-                , toSql (personMobile        person)
-                , toSql (personEmail         person) ]
+                [ toSql (personMemberId          person)
+                , toSql (personPreferredName     person)
+                , toSql (personFirstName         person)
+                , toSql (personFamilyName        person)
+                , toSql (personDateOfBirth       person)
+                , toSql (personPhoneMobile       person)
+                , toSql (personPhoneFixed        person)
+                , toSql (personEmail             person)
+                , toSql (personDojoHome          person)
+                , toSql (personMembershipLevel   person)
+                , toSql (personMembershipRenewal person)
+                , toSql (personEmergencyName1    person)
+                , toSql (personEmergencyPhone1   person)
+                , toSql (personEmergencyName2    person)
+                , toSql (personEmergencyPhone2   person)]
+
+        [[v]]   <- quickQuery' conn (unlines
+                [ "SELECT last_insert_rowid()"])
+                []
+
+        let Right iPersonId = safeConvert v
+        return person { personId = iPersonId }
 
 
 -- | Update a person.
 updatePerson :: IConnection conn => conn -> Person -> IO Integer
 updatePerson conn person
- = do   stmt    <- prepare conn $ unlines
-                [ "UPDATE Person"
-                , "SET MemberId=?"
-                , ",PreferedName=?,FirstName=?,MiddleName=?,FamilyName=?"
-                , ",DateOfBirth=?"
-                , ",Mobile=?,Email=?"
-                , "WHERE PersonId=?"]
-
+ = do   stmt    <- prepare conn $ sqlUpdateAllOfEntity personEntity
         execute stmt
-         $      [ toSql (personMemberId      person)
-                , toSql (personPreferredName person)
-                , toSql (personFirstName     person)
-                , toSql (personMiddleName    person)
-                , toSql (personFamilyName    person)
-                , toSql (personDateOfBirth   person)
-                , toSql (personMobile        person)
-                , toSql (personEmail         person)
-                , toSql (personId            person) ]
+                [ toSql (personMemberId                 person)
+                , toSql (personPreferredName            person)
+                , toSql (personFirstName                person)
+                , toSql (personFamilyName               person)
+                , toSql (personDateOfBirth              person)
+                , toSql (personPhoneMobile              person)
+                , toSql (personPhoneFixed               person)
+                , toSql (personEmail                    person)
+                , toSql (personDojoHome                 person)
+                , toSql (personMembershipLevel          person)
+                , toSql (personMembershipRenewal        person)
+                , toSql (personEmergencyName1           person)
+                , toSql (personEmergencyPhone1          person)
+                , toSql (personEmergencyName2           person)
+                , toSql (personEmergencyPhone2          person)
+                , toSql (personId                       person) ]

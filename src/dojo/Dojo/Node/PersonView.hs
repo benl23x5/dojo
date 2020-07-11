@@ -27,7 +27,7 @@ cgiPersonView ss inputs
         conn    <- liftIO $ connectSqlite3 databasePath
 
         -- Read the current data for the user.
-        person  <- liftIO $ getPerson conn pid
+        Just person  <- liftIO $ getPerson conn pid
 
         -- Get the events they attended.
         events  <- liftIO $ getAttendanceOfPersonId conn pid
@@ -48,7 +48,14 @@ cgiPersonView_page ss person events
  $ do   pageHeader $ personDisplayName person
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths $ [pathPersonEdit ss $ Just $ personId person]
+
+                -- TODO: add can cancel link if person does not
+                -- exist in the database yet.
+                tablePaths
+                 $ case personId person of
+                    Nothing  -> []
+                    Just pid -> [pathPersonEdit ss $ Just pid]
+
                 divPersonView ss person events
 
 
@@ -80,12 +87,44 @@ divPersonDetails person
                 tr $ td (H.toMarkup $ personMemberId person)
 
         H.table
-         $ do   tr $ th "mobile number"
-                tr $ td (H.toMarkup $ personMobile   person)
+         $ do   tr $ th "mobile phone number"
+                tr $ td (H.toMarkup $ personPhoneMobile  person)
+
+        H.table
+         $ do   tr $ th "fixed phone number"
+                tr $ td (H.toMarkup $ personPhoneFixed person)
 
         H.table
          $ do   tr $ th "email address"
-                tr $ td (H.toMarkup $ personEmail    person)
+                tr $ td (H.toMarkup $ personEmail person)
+
+        H.table
+         $ do   tr $ th "home dojo"
+                tr $ td (H.toMarkup $ personDojoHome person)
+
+        H.table
+         $ do   tr $ th "membership level"
+                tr $ td (H.toMarkup $ personMembershipLevel person)
+
+        H.table
+         $ do   tr $ th "membership renewal date"
+                tr $ td (H.toMarkup $ personMembershipRenewal person)
+
+        H.table
+         $ do   tr $ th "emergency contact name 1"
+                tr $ td (H.toMarkup $ personEmergencyName1 person)
+
+        H.table
+         $ do   tr $ th "emergency contact phone 1"
+                tr $ td (H.toMarkup $ personEmergencyPhone1 person)
+
+        H.table
+         $ do   tr $ th "emergency contact name 2"
+                tr $ td (H.toMarkup $ personEmergencyName2 person)
+
+        H.table
+         $ do   tr $ th "emergency contact phone 2"
+                tr $ td (H.toMarkup $ personEmergencyPhone2 person)
 
 
 -- | Events that a person attended.

@@ -75,10 +75,10 @@ eventOfSqlValues _ = error "eventOfValues: no match"
 getEventList :: IConnection conn => conn -> IO [(Event, Int)]
 getEventList conn
  = do   valuess <- quickQuery' conn (unlines
-                [ "SELECT Event.EventId, Event.Type, Event.Location, Event.Time"
-                , "     , (SELECT count(PersonId) from Attendance"
-                , "        WHERE  Attendance.EventId = Event.EventId)"
-                , "FROM   Event"
+                [ "SELECT v1_Event.EventId, v1_Event.Type, v1_Event.Location, v1_Event.Time"
+                , "     , (SELECT count(PersonId) from v1_Attendance"
+                , "        WHERE  v1_Attendance.EventId = v1_Event.EventId)"
+                , "FROM   v1_Event"
                 , "ORDER BY Time DESC" ]) []
 
         let elemOfSqlValues values
@@ -97,7 +97,7 @@ getEvent :: IConnection conn => conn -> EventId -> IO Event
 getEvent conn eid
  = do   [values] <- quickQuery' conn (unlines
                 [ "SELECT EventId,Type,Location,Time"
-                , "FROM  Event"
+                , "FROM  v1_Event"
                 , "WHERE EventId=?" ])
                 [toSql eid]
 
@@ -112,7 +112,7 @@ getEventOfLocalTime
 getEventOfLocalTime conn ttime
  = do   [values] <- quickQuery' conn (unlines
                 [ "SELECT EventId,Type,Location,Time"
-                , "FROM   Event"
+                , "FROM   v1_Event"
                 , "WHERE  Time=?"])
                 [toSql ttime]
 
@@ -123,9 +123,9 @@ getEventOfLocalTime conn ttime
 getAttendance :: IConnection conn => conn -> EventId -> IO [Person]
 getAttendance conn eid
  = do   valuess <- quickQuery' conn (unlines
-                [ "SELECT " ++ intercalate "," (map ("Person." ++) personFieldNames)
-                , "FROM  Person,Attendance"
-                , "WHERE Person.PersonId = Attendance.PersonId"
+                [ "SELECT " ++ intercalate "," (map ("v1_Person." ++) personFieldNames)
+                , "FROM  v1_Person,v1_Attendance"
+                , "WHERE v1_Person.PersonId = v1_Attendance.PersonId"
                 , "  AND EventId=?"
                 , "ORDER BY FamilyName"])
                 [toSql eid]
@@ -137,9 +137,9 @@ getAttendance conn eid
 getAttendanceOfPersonId :: IConnection conn => conn -> PersonId -> IO [Event]
 getAttendanceOfPersonId conn pid
  = do   valuess <- quickQuery' conn (unlines
-                [ "SELECT Event.EventId, Type, Location, Time"
-                , "FROM   Event,Attendance"
-                , "WHERE  Event.EventId = Attendance.EventId"
+                [ "SELECT v1_Event.EventId, Type, Location, Time"
+                , "FROM   v1_Event,v1_Attendance"
+                , "WHERE  v1_Event.EventId = v1_Attendance.EventId"
                 , "AND    PersonId=?"
                 , "ORDER BY Time Desc"])
                 [toSql pid]
@@ -151,7 +151,7 @@ getAttendanceOfPersonId conn pid
 insertAttendance :: IConnection conn => conn -> EventId -> Person -> IO Integer
 insertAttendance conn eid person
  = do   stmt    <- prepare conn $ unlines
-                [ "INSERT INTO Attendance"
+                [ "INSERT INTO v1_Attendance"
                 , "(EventId, PersonId)"
                 , "VALUES (?,?)" ]
 
@@ -164,7 +164,7 @@ insertAttendance conn eid person
 deleteAttendance :: IConnection conn => conn -> EventId -> PersonId -> IO Integer
 deleteAttendance conn eid pid
  = do   stmt    <- prepare conn $ unlines
-                [ "DELETE FROM Attendance"
+                [ "DELETE FROM v1_Attendance"
                 , "WHERE EventId=? AND PersonId=?" ]
 
         execute stmt
@@ -178,7 +178,7 @@ insertEvent :: IConnection conn => conn -> Event -> IO Event
 insertEvent conn_ event
  = withTransaction conn_ $ \conn
  -> do  stmt    <- prepare conn $ unlines
-                [  "INSERT INTO Event"
+                [  "INSERT INTO v1_Event"
                 ,  "(Type,Location,Time)"
                 ,  "VALUES (?,?,?)" ]
 
@@ -199,7 +199,7 @@ insertEvent conn_ event
 updateEvent :: IConnection conn => conn -> Event -> IO Integer
 updateEvent conn event
  = do   stmt    <- prepare conn $ unlines
-                [ "UPDATE Event"
+                [ "UPDATE v1_Event"
                 , "SET Type=?,Location=?,Time=?"
                 , "WHERE EventId=?" ]
 

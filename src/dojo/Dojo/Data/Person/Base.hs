@@ -1,17 +1,6 @@
 
-module Dojo.Data.Person.Base
-        ( Person                (..)
-        , PersonId              (..)
-        , PersonMemberId        (..)
-        , PersonName            (..)
-        , PersonDateOfBirth     (..)
-        , PersonMobile          (..)
-        , PersonEmail           (..)
-        , zeroPerson
-        , personFieldNames
-        , personShortName
-        , personDisplayName)
-where
+module Dojo.Data.Person.Base where
+import Dojo.Framework
 import qualified Data.Time      as Time
 
 
@@ -20,32 +9,33 @@ data Person
         = Person
         { -- | We keep the system user id separate from the membership number
           --   so that we can add beginners that have not yet joined Aikikai.
-          personId              :: PersonId     -- PRIMARY KEY
+          --
+          --   The person will be Nothing if the record has not been added
+          --   to the database yet.
+          personId                      :: Maybe PersonId       -- PRIMARY KEY
 
           -- | Aikikai membership number.
-        , personMemberId        :: PersonMemberId
-
-          -- | Preferred, short name.
-        , personPreferredName   :: PersonName
+        , personMemberId                :: PersonMemberId
 
           -- | If a person only has one name then use that as the "first name"
-          --   and leave the others empty.
-        , personFirstName       :: PersonName   -- NOT NULL
+          --   and leave the others empty. We need at least one name to refer
+          --   to them, but some people only have a single name.
+        , personPreferredName           :: PersonName
+        , personFirstName               :: PersonName   -- NOT NULL
+        , personFamilyName              :: PersonName
 
-          -- | Other space separated names.
-        , personMiddleName      :: PersonName
-
-          -- | Family name.
-        , personFamilyName      :: PersonName
-
-          -- | Date of birth.
-        , personDateOfBirth     :: PersonDateOfBirth
-
-          -- | Mobile number.
-        , personMobile          :: PersonMobile
-
-          -- | Email address.
-        , personEmail           :: PersonEmail }
+        , personDateOfBirth             :: PersonDate
+        , personPhoneMobile             :: PersonPhone
+        , personPhoneFixed              :: PersonPhone
+        , personEmail                   :: PersonEmail
+        , personDojoHome                :: PersonDojo
+        , personMembershipLevel         :: PersonMembershipLevel
+        , personMembershipRenewal       :: PersonDate
+        , personEmergencyName1          :: PersonName
+        , personEmergencyPhone1         :: PersonPhone
+        , personEmergencyName2          :: PersonName
+        , personEmergencyPhone2         :: PersonPhone
+        }
         deriving Show
 
 
@@ -61,16 +51,24 @@ data PersonName
         = PersonName String
         deriving (Show, Eq)
 
-data PersonDateOfBirth
-        = PersonDateOfBirth (Maybe Time.Day)
+data PersonDate
+        = PersonDate (Maybe Time.Day)
         deriving (Show, Eq)
 
-data PersonMobile
-        = PersonMobile String
+data PersonPhone
+        = PersonPhone String
         deriving (Show, Eq)
 
 data PersonEmail
         = PersonEmail String
+        deriving (Show, Eq)
+
+data PersonDojo
+        = PersonDojo String
+        deriving (Show, Eq)
+
+data PersonMembershipLevel
+        = PersonMembershipLevel String
         deriving (Show, Eq)
 
 
@@ -79,30 +77,93 @@ data PersonEmail
 zeroPerson :: String -> Person
 zeroPerson firstName
         = Person
-        { personId              = PersonId 0
-        , personMemberId        = PersonMemberId 0
-        , personPreferredName   = PersonName    ""
-        , personFirstName       = PersonName firstName
-        , personMiddleName      = PersonName    ""
-        , personFamilyName      = PersonName    ""
-        , personDateOfBirth     = PersonDateOfBirth Nothing
-        , personMobile          = PersonMobile  ""
-        , personEmail           = PersonEmail   "" }
+        { personId                      = Nothing
+        , personMemberId                = PersonMemberId 0
+        , personPreferredName           = PersonName    ""
+        , personFirstName               = PersonName firstName
+        , personFamilyName              = PersonName    ""
+        , personDateOfBirth             = PersonDate    Nothing
+        , personPhoneMobile             = PersonPhone   ""
+        , personPhoneFixed              = PersonPhone   ""
+        , personEmail                   = PersonEmail   ""
+        , personDojoHome                = PersonDojo    ""
+        , personMembershipLevel         = PersonMembershipLevel ""
+        , personMembershipRenewal       = PersonDate    Nothing
+        , personEmergencyName1          = PersonName    ""
+        , personEmergencyPhone1         = PersonPhone   ""
+        , personEmergencyName2          = PersonName    ""
+        , personEmergencyPhone2         = PersonPhone   ""
+        }
+
+
+-- Entity  --------------------------------------------------------------------
+personEntity :: Entity Person
+personEntity
+        = Entity
+        { entityTable   = "v1_Person"
+        , entityKey     = "PersonId"
+        , entityFields  = personFields }
+
+
+personFields :: [Field Person]
+personFields
+ =      [ Field "PersonId"
+                "id"
+
+        , Field "MemberId"
+                "member id"
+
+        , Field "PreferredName"
+                "preferred name"
+
+        , Field "FirstName"
+                "first name"
+
+        , Field "FamilyName"
+                "family name"
+
+        , Field "DateOfBirth"
+                "date of birth"
+
+        , Field "PhoneMobile"
+                "mobile phone number"
+
+        , Field "PhoneFixed"
+                "fixed phone number"
+
+        , Field "Email"
+                "email address"
+
+        , Field "DojoHome"
+                "home dojo"
+
+        , Field "MembershipLevel"
+                "membership level"
+
+        , Field "MembershipRenewal"
+                "membership renewal data"
+
+        , Field "EmergencyName1"
+                "emergency contact name 1"
+
+        , Field "EmergencyPhone1"
+                "emergency contact phone 1"
+
+        , Field "EmergencyName2"
+                "emergency contact name 2"
+
+        , Field "EmergencyPhone2"
+                "emergency contact phone 2"
+        ]
 
 
 -- Projections ----------------------------------------------------------------
 -- | Field names of the person structure.
+--   These need to match the names in the v1_Person database table.
 personFieldNames  :: [String]
 personFieldNames
- =      [ "PersonId"
-        , "MemberId"
-        , "PreferedName"
-        , "FirstName"
-        , "MiddleName"
-        , "FamilyName"
-        , "DateOfBirth"
-        , "Mobile"
-        , "Email" ]
+ = map fieldNameTable
+ $ entityFields personEntity
 
 
 -- | Get the short name of a Person,

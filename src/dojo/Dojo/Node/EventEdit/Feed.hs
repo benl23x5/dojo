@@ -104,7 +104,7 @@ expandMultiPersonId
 expandMultiPersonId conn fe
  = case fe of
         FeedEventSearchFoundMultiPersonId ix pid
-         -> do  person <- getPerson conn pid
+         -> do  Just person <- getPerson conn pid
                 return [fe, FeedEventSearchFoundMultiPerson ix person]
 
         _ -> return [fe]

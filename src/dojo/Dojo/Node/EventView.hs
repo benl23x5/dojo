@@ -109,7 +109,8 @@ divPersonList ss people
 trPerson :: Session -> Int -> Person -> Html
 trPerson ss ix person
  = tr
- $ do   let path = pathPersonView ss (personId person)
+ $ do   let Just pid = personId person
+        let path = pathPersonView ss pid
 
         -- Person index in this event
         td $ H.toMarkup (show ix)

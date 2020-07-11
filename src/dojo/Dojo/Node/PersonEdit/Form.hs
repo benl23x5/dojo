@@ -64,11 +64,35 @@ divPersonDetails fsFeed person
         field   "MemberId"      "member id"
                 (pretty $ personMemberId person)
 
-        field   "Mobile"        "mobile number"
-                (pretty $ personMobile person)
+        field   "PhoneMobile"   "mobile phone number"
+                (pretty $ personPhoneMobile person)
+
+        field   "PhoneFixed"    "fixed phone number"
+                (pretty $ personPhoneFixed person)
 
         field   "Email"         "email address"
                 (pretty $ personEmail person)
+
+        field   "DojoHome"      "home dojo"
+                (pretty $ personDojoHome person)
+
+        field   "MembershipLevel" "membership level"
+                (pretty $ personMembershipLevel person)
+
+        field   "MembershipRenewal" "membership renewal date"
+                (pretty $ personMembershipRenewal person)
+
+        field   "EmergencyName1" "emergency contact name 1"
+                (pretty $ personEmergencyName1 person)
+
+        field   "EmergencyPhone1" "emergency contact phone 1"
+                (pretty $ personEmergencyPhone1 person)
+
+        field   "EmergencyName2" "emergency contact name 2"
+                (pretty $ personEmergencyName2 person)
+
+        field   "EmergencyPhone2" "emergency contact phone 2"
+                (pretty $ personEmergencyPhone2 person)
 
  where
         field sClass sLabel sValue
