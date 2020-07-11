@@ -73,86 +73,86 @@ personEntity
 -- | Field definitions of the person entity.
 personFields :: [Field Person]
 personFields
- =      [ Field "PersonId"              "id"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonId) )
-                (toSql . personId)
-                (\v x -> x { personId = fromSql v})
+ =  [ Field "PersonId"              "id"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonId) )
+        (toSql . personId)
+        (\v x -> x { personId = fromSql v})
 
-        , Field "MemberId"              "member id"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonMemberId) )
-                (toSql . personMemberId)
-                (\v x -> x { personMemberId = fromSql v})
+    , Field "MemberId"              "member id"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonMemberId) )
+        (toSql . personMemberId)
+        (\v x -> x { personMemberId = fromSql v})
 
-        , Field "PreferredName"         "preferred name"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
-                (toSql . personPreferredName)
-                (\v x -> x { personPreferredName = fromSql v})
+    , Field "PreferredName"         "preferred name"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (toSql . personPreferredName)
+        (\v x -> x { personPreferredName = fromSql v})
 
-        , Field "FirstName"             "first name"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
-                (toSql . personFirstName)
-                (\v x -> x { personFirstName = fromSql v})
+    , Field "FirstName"             "first name"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (toSql . personFirstName)
+        (\v x -> x { personFirstName = fromSql v})
 
-        , Field "FamilyName"            "family name"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
-                (toSql . personFamilyName)
-                (\v x -> x { personFamilyName = fromSql v})
+    , Field "FamilyName"            "family name"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (toSql . personFamilyName)
+        (\v x -> x { personFamilyName = fromSql v})
 
-        , Field "DateOfBirth"           "date of birth"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
-                (toSql . personDateOfBirth)
-                (\v x -> x { personDateOfBirth = fromSql v})
+    , Field "DateOfBirth"           "date of birth"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
+        (toSql . personDateOfBirth)
+        (\v x -> x { personDateOfBirth = fromSql v})
 
-        , Field "PhoneMobile"           "mobile phone number"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
-                (toSql . personPhoneMobile)
-                (\v x -> x { personPhoneMobile = fromSql v})
+    , Field "PhoneMobile"           "mobile phone number"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (toSql . personPhoneMobile)
+        (\v x -> x { personPhoneMobile = fromSql v})
 
-        , Field "PhoneFixed"            "fixed phone number"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
-                (toSql . personPhoneFixed)
-                (\v x -> x { personPhoneFixed = fromSql v})
+    , Field "PhoneFixed"            "fixed phone number"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (toSql . personPhoneFixed)
+        (\v x -> x { personPhoneFixed = fromSql v})
 
-        , Field "Email"                 "email address"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonEmail) )
-                (toSql . personEmail)
-                (\v x -> x { personEmail = fromSql v})
+    , Field "Email"                 "email address"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonEmail) )
+        (toSql . personEmail)
+        (\v x -> x { personEmail = fromSql v})
 
-        , Field "DojoHome"              "home dojo"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonDojo) )
-                (toSql . personDojoHome)
-                (\v x -> x { personDojoHome = fromSql v})
+    , Field "DojoHome"              "home dojo"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonDojo) )
+        (toSql . personDojoHome)
+        (\v x -> x { personDojoHome = fromSql v})
 
-        , Field "MembershipLevel"       "membership level"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonMembershipLevel) )
-                (toSql . personMembershipLevel)
-                (\v x -> x { personMembershipLevel = fromSql v})
+    , Field "MembershipLevel"       "membership level"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonMembershipLevel) )
+        (toSql . personMembershipLevel)
+        (\v x -> x { personMembershipLevel = fromSql v})
 
-        , Field "MembershipRenewal"     "membership renewal data"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
-                (toSql . personMembershipRenewal)
-                (\v x -> x { personMembershipRenewal = fromSql v})
+    , Field "MembershipRenewal"     "membership renewal data"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
+        (toSql . personMembershipRenewal)
+        (\v x -> x { personMembershipRenewal = fromSql v})
 
-        , Field "EmergencyName1"        "emergency contact name 1"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
-                (toSql . personEmergencyName1)
-                (\v x -> x { personEmergencyName1 = fromSql v})
+    , Field "EmergencyName1"        "emergency contact name 1"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (toSql . personEmergencyName1)
+        (\v x -> x { personEmergencyName1 = fromSql v})
 
-        , Field "EmergencyPhone1"       "emergency contact phone 1"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
-                (toSql . personEmergencyPhone1)
-                (\v x -> x { personEmergencyPhone1 = fromSql v})
+    , Field "EmergencyPhone1"       "emergency contact phone 1"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (toSql . personEmergencyPhone1)
+        (\v x -> x { personEmergencyPhone1 = fromSql v})
 
-        , Field "EmergencyName2"        "emergency contact name 2"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
-                (toSql . personEmergencyName2)
-                (\v x -> x { personEmergencyName2 = fromSql v})
+    , Field "EmergencyName2"        "emergency contact name 2"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (toSql . personEmergencyName2)
+        (\v x -> x { personEmergencyName2 = fromSql v})
 
-        , Field "EmergencyPhone2"       "emergency contact phone 2"
-                (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
-                (toSql . personEmergencyPhone2)
-                (\v x -> x { personEmergencyPhone2 = fromSql v})
-        ]
+    , Field "EmergencyPhone2"       "emergency contact phone 2"
+        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (toSql . personEmergencyPhone2)
+        (\v x -> x { personEmergencyPhone2 = fromSql v})
+    ]
 
 
 -- | Like `personFields`, but without the field for the primary key.
@@ -175,7 +175,6 @@ loadPerson
         :: [(String, String)]   -- ^ Table field name and new value.
         -> Person               -- ^ Old person to be updated.
         -> Either [LoadError] Person
-
 loadPerson = loadEntity personEntity
 
 
@@ -217,6 +216,5 @@ personDisplayName person
 -- Comparisons  ---------------------------------------------------------------
 -- | Get the table field names of fields that differ in two person records.
 diffPerson :: Person -> Person -> [String]
-diffPerson p1 p2
- = diffEntity personEntity p1 p2
+diffPerson = diffEntity personEntity
 
