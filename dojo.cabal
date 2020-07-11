@@ -41,7 +41,6 @@ Executable dojo
         Dojo.Data.Person.Base
         Dojo.Data.Person.Search
         Dojo.Data.Person.Database
-        Dojo.Data.Person.Presentation
         Dojo.Data.Person
 
         Dojo.Data.Session.Base
@@ -51,6 +50,12 @@ Executable dojo
         Dojo.Data.User.Base
         Dojo.Data.User.Database
         Dojo.Data.User
+
+        Dojo.Trivia.Base
+        Dojo.Trivia.Convertible
+        Dojo.Trivia.Parse
+        Dojo.Trivia.Pretty
+        Dojo.Trivia
 
         Dojo.Framework.Lens
         Dojo.Framework.Path

@@ -6,6 +6,7 @@ where
 import Dojo.Data.Person.Database
 import Dojo.Data.Person.Base
 import Dojo.Framework
+import Dojo.Trivia
 import Dojo.Base
 import Data.Function
 import qualified Data.Char as Char
@@ -25,7 +26,6 @@ data Found a
         deriving Show
 
 
-
 -- Search ---------------------------------------------------------------------
 -- | Find a person based on a search string.
 --
@@ -42,28 +42,35 @@ data Found a
 --   We take a list of ids of people to not consider in the search,
 --   perhaps these people are already in the list we are trying to add to.
 --
-findPerson :: IConnection conn
-           => conn
-           -> String            -- ^ Search string.
-           -> [PersonId]        -- ^ Ids of people to not consider.
-           -> IO (Found Person)
+findPerson
+        :: IConnection conn
+        => conn
+        -> String            -- ^ Search string.
+        -> [PersonId]        -- ^ Ids of people to not consider.
+        -> IO (Found Person)
 
 findPerson conn strSearch pidsSkip
- = do   let strWords = words $ map Char.toLower strSearch
-
+ = do
+        -- Find all person rows that have any of the words in the search
+        -- string as a prefix of a preferred, first or family name.
+        let strWords = words $ map Char.toLower strSearch
         psPreferredName
          <- fmap concat
          $  mapM (searchPeopleFromField conn "PreferredName") strWords
 
         psFirstName
          <- fmap concat
-         $  mapM (searchPeopleFromField conn "FirstName")    strWords
+         $  mapM (searchPeopleFromField conn "FirstName") strWords
 
         psFamilyName
          <- fmap concat
-         $  mapM (searchPeopleFromField conn "FamilyName")   strWords
+         $  mapM (searchPeopleFromField conn "FamilyName") strWords
 
         let psAll  = concat [psPreferredName, psFirstName, psFamilyName]
+
+        -- For people with names like "Paul Paulson", searching for
+        --  "Paul" will return duplicate hits, that we then need to
+        --  fold up.
         let psNub  = List.nubBy ((==) `on` personId) psAll
 
         -- Skip results we were told to ignore.

@@ -1,10 +1,12 @@
 
 module Dojo.Data.Person.Base where
 import Dojo.Framework
+import Dojo.Trivia
 import Dojo.Base
 import qualified Data.Time      as Time
 
 
+-------------------------------------------------------------------------------
 -- | A Person known to the system.
 data Person
         = Person
@@ -38,115 +40,6 @@ data Person
         , personEmergencyPhone2         :: PersonPhone
         }
         deriving Show
-
-
-data PersonId
-        = PersonId Integer
-        deriving (Show, Eq, Ord)
-
-data PersonMemberId
-        = PersonMemberId Integer
-        deriving (Show, Eq)
-
-data PersonName
-        = PersonName String
-        deriving (Show, Eq)
-
-data PersonDate
-        = PersonDate (Maybe Time.Day)
-        deriving (Show, Eq)
-
-data PersonPhone
-        = PersonPhone String
-        deriving (Show, Eq)
-
-data PersonEmail
-        = PersonEmail String
-        deriving (Show, Eq)
-
-data PersonDojo
-        = PersonDojo String
-        deriving (Show, Eq)
-
-data PersonMembershipLevel
-        = PersonMembershipLevel String
-        deriving (Show, Eq)
-
-
--- toSql ----------------------------------------------------------------------
-instance Convertible PersonId   SqlValue where
- safeConvert (PersonId n)               = safeConvert n
-
-instance Convertible PersonMemberId SqlValue where
- safeConvert (PersonMemberId mid)       = safeConvert mid
-
-instance Convertible PersonName  SqlValue where
- safeConvert (PersonName name)          = safeConvert name
-
-instance Convertible PersonDate  SqlValue where
- safeConvert (PersonDate dob)           = safeConvert dob
-
-instance Convertible PersonPhone SqlValue where
- safeConvert (PersonPhone mobile)       = safeConvert mobile
-
-instance Convertible PersonEmail  SqlValue where
- safeConvert (PersonEmail  email)       = safeConvert email
-
-instance Convertible PersonDojo SqlValue where
- safeConvert (PersonDojo mobile)        = safeConvert mobile
-
-instance Convertible PersonMembershipLevel SqlValue where
- safeConvert (PersonMembershipLevel mobile) = safeConvert mobile
-
-
--- fromSql --------------------------------------------------------------------
-instance Convertible SqlValue PersonId where
- safeConvert val        = liftM PersonId (safeConvert val)
-
-instance Convertible SqlValue PersonMemberId where
- safeConvert val        = liftM PersonMemberId (safeConvert val)
-
-instance Convertible SqlValue PersonName where
- safeConvert val        = liftM PersonName (safeConvert val)
-
-instance Convertible SqlValue PersonDate where
- safeConvert val        = liftM PersonDate (safeConvert val)
-
-instance Convertible SqlValue PersonPhone where
- safeConvert val        = liftM PersonPhone (safeConvert val)
-
-instance Convertible SqlValue PersonEmail where
- safeConvert val        = liftM PersonEmail (safeConvert val)
-
-instance Convertible SqlValue PersonDojo where
- safeConvert val        = liftM PersonDojo (safeConvert val)
-
-instance Convertible SqlValue PersonMembershipLevel where
- safeConvert val        = liftM PersonMembershipLevel (safeConvert val)
-
-
--- Constructors ---------------------------------------------------------------
--- | Create a zero person with just the first name.
-zeroPerson :: String -> Person
-zeroPerson firstName
-        = Person
-        { personId                      = Nothing
-        , personMemberId                = PersonMemberId 0
-        , personPreferredName           = PersonName    ""
-        , personFirstName               = PersonName firstName
-        , personFamilyName              = PersonName    ""
-        , personDateOfBirth             = PersonDate    Nothing
-        , personPhoneMobile             = PersonPhone   ""
-        , personPhoneFixed              = PersonPhone   ""
-        , personEmail                   = PersonEmail   ""
-        , personDojoHome                = PersonDojo    ""
-        , personMembershipLevel         = PersonMembershipLevel ""
-        , personMembershipRenewal       = PersonDate    Nothing
-        , personEmergencyName1          = PersonName    ""
-        , personEmergencyPhone1         = PersonPhone   ""
-        , personEmergencyName2          = PersonName    ""
-        , personEmergencyPhone2         = PersonPhone   ""
-        }
 
 
 -- Entity  --------------------------------------------------------------------
@@ -217,6 +110,30 @@ personFieldsNoKey :: [Field Person]
 personFieldsNoKey
  = [pf | pf <- personFields
        , fieldNameTable pf /= entityKey personEntity ]
+
+
+-- Constructors ---------------------------------------------------------------
+-- | Create a zero person with just the first name.
+zeroPerson :: String -> Person
+zeroPerson firstName
+        = Person
+        { personId                      = Nothing
+        , personMemberId                = PersonMemberId 0
+        , personPreferredName           = PersonName    ""
+        , personFirstName               = PersonName firstName
+        , personFamilyName              = PersonName    ""
+        , personDateOfBirth             = PersonDate    Nothing
+        , personPhoneMobile             = PersonPhone   ""
+        , personPhoneFixed              = PersonPhone   ""
+        , personEmail                   = PersonEmail   ""
+        , personDojoHome                = PersonDojo    ""
+        , personMembershipLevel         = PersonMembershipLevel ""
+        , personMembershipRenewal       = PersonDate    Nothing
+        , personEmergencyName1          = PersonName    ""
+        , personEmergencyPhone1         = PersonPhone   ""
+        , personEmergencyName2          = PersonName    ""
+        , personEmergencyPhone2         = PersonPhone   ""
+        }
 
 
 -- Projections ----------------------------------------------------------------

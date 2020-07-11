@@ -2,6 +2,7 @@
 module Dojo.Data.Person.Database where
 import Dojo.Data.Person.Base
 import Dojo.Framework
+import Dojo.Trivia
 import Dojo.Base
 
 

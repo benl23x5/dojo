@@ -37,10 +37,10 @@ module Dojo.Data.Person
         , loadPerson)
 where
 import Dojo.Data.Person.Search
-import Dojo.Data.Person.Presentation    ()
 import Dojo.Data.Person.Database
 import Dojo.Data.Person.Base
 import Dojo.Framework
+import Dojo.Trivia
 
 
 -- Diff -----------------------------------------------------------------------
