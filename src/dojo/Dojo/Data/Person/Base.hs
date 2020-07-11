@@ -1,6 +1,7 @@
 
 module Dojo.Data.Person.Base where
 import Dojo.Framework
+import Dojo.Base
 import qualified Data.Time      as Time
 
 
@@ -72,6 +73,58 @@ data PersonMembershipLevel
         deriving (Show, Eq)
 
 
+-- toSql ----------------------------------------------------------------------
+instance Convertible PersonId   SqlValue where
+ safeConvert (PersonId n)               = safeConvert n
+
+instance Convertible PersonMemberId SqlValue where
+ safeConvert (PersonMemberId mid)       = safeConvert mid
+
+instance Convertible PersonName  SqlValue where
+ safeConvert (PersonName name)          = safeConvert name
+
+instance Convertible PersonDate  SqlValue where
+ safeConvert (PersonDate dob)           = safeConvert dob
+
+instance Convertible PersonPhone SqlValue where
+ safeConvert (PersonPhone mobile)       = safeConvert mobile
+
+instance Convertible PersonEmail  SqlValue where
+ safeConvert (PersonEmail  email)       = safeConvert email
+
+instance Convertible PersonDojo SqlValue where
+ safeConvert (PersonDojo mobile)        = safeConvert mobile
+
+instance Convertible PersonMembershipLevel SqlValue where
+ safeConvert (PersonMembershipLevel mobile) = safeConvert mobile
+
+
+-- fromSql --------------------------------------------------------------------
+instance Convertible SqlValue PersonId where
+ safeConvert val        = liftM PersonId (safeConvert val)
+
+instance Convertible SqlValue PersonMemberId where
+ safeConvert val        = liftM PersonMemberId (safeConvert val)
+
+instance Convertible SqlValue PersonName where
+ safeConvert val        = liftM PersonName (safeConvert val)
+
+instance Convertible SqlValue PersonDate where
+ safeConvert val        = liftM PersonDate (safeConvert val)
+
+instance Convertible SqlValue PersonPhone where
+ safeConvert val        = liftM PersonPhone (safeConvert val)
+
+instance Convertible SqlValue PersonEmail where
+ safeConvert val        = liftM PersonEmail (safeConvert val)
+
+instance Convertible SqlValue PersonDojo where
+ safeConvert val        = liftM PersonDojo (safeConvert val)
+
+instance Convertible SqlValue PersonMembershipLevel where
+ safeConvert val        = liftM PersonMembershipLevel (safeConvert val)
+
+
 -- Constructors ---------------------------------------------------------------
 -- | Create a zero person with just the first name.
 zeroPerson :: String -> Person
@@ -97,6 +150,7 @@ zeroPerson firstName
 
 
 -- Entity  --------------------------------------------------------------------
+-- | Person entity.
 personEntity :: Entity Person
 personEntity
         = Entity
@@ -105,56 +159,64 @@ personEntity
         , entityFields  = personFields }
 
 
+-- | Field definitions of the person entity.
 personFields :: [Field Person]
 personFields
- =      [ Field "PersonId"
-                "id"
+ =      [ Field "PersonId"              "id"
+                (toSql . personId)
 
-        , Field "MemberId"
-                "member id"
+        , Field "MemberId"              "member id"
+                (toSql . personMemberId)
 
-        , Field "PreferredName"
-                "preferred name"
+        , Field "PreferredName"         "preferred name"
+                (toSql . personPreferredName)
 
-        , Field "FirstName"
-                "first name"
+        , Field "FirstName"             "first name"
+                (toSql . personFirstName)
 
-        , Field "FamilyName"
-                "family name"
+        , Field "FamilyName"            "family name"
+                (toSql . personFamilyName)
 
-        , Field "DateOfBirth"
-                "date of birth"
+        , Field "DateOfBirth"           "date of birth"
+                (toSql . personDateOfBirth)
 
-        , Field "PhoneMobile"
-                "mobile phone number"
+        , Field "PhoneMobile"           "mobile phone number"
+                (toSql . personPhoneMobile)
 
-        , Field "PhoneFixed"
-                "fixed phone number"
+        , Field "PhoneFixed"            "fixed phone number"
+                (toSql . personPhoneFixed)
 
-        , Field "Email"
-                "email address"
+        , Field "Email"                 "email address"
+                (toSql . personEmail)
 
-        , Field "DojoHome"
-                "home dojo"
+        , Field "DojoHome"              "home dojo"
+                (toSql . personDojoHome)
 
-        , Field "MembershipLevel"
-                "membership level"
+        , Field "MembershipLevel"       "membership level"
+                (toSql . personMembershipLevel)
 
-        , Field "MembershipRenewal"
-                "membership renewal data"
+        , Field "MembershipRenewal"     "membership renewal data"
+                (toSql . personMembershipRenewal)
 
-        , Field "EmergencyName1"
-                "emergency contact name 1"
+        , Field "EmergencyName1"        "emergency contact name 1"
+                (toSql . personEmergencyName1)
 
-        , Field "EmergencyPhone1"
-                "emergency contact phone 1"
+        , Field "EmergencyPhone1"       "emergency contact phone 1"
+                (toSql . personEmergencyPhone1)
 
-        , Field "EmergencyName2"
-                "emergency contact name 2"
+        , Field "EmergencyName2"        "emergency contact name 2"
+                (toSql . personEmergencyName2)
 
-        , Field "EmergencyPhone2"
-                "emergency contact phone 2"
+        , Field "EmergencyPhone2"       "emergency contact phone 2"
+                (toSql . personEmergencyPhone2)
         ]
+
+
+-- | Like `personFields`, but without the field for the primary key.
+personFieldsNoKey :: [Field Person]
+personFieldsNoKey
+ = [pf | pf <- personFields
+       , fieldNameTable pf /= entityKey personEntity ]
 
 
 -- Projections ----------------------------------------------------------------

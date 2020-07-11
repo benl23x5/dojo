@@ -1,7 +1,10 @@
 
 module Dojo.Framework.Entity where
-import Data.List
+import Dojo.Base
 
+
+-- | An entity in the data model,
+--     backed by a single database table.
 data Entity entity
         = Entity
         { -- | Name of the database table describing this entity.
@@ -21,7 +24,10 @@ data Field entity
           fieldNameTable        :: String
 
           -- | Human readable name to use in forms.
-        , fieldNameForm         :: String }
+        , fieldNameForm         :: String
+
+          -- | Project out the field as an SQL value.
+        , fieldToSql            :: entity -> SqlValue }
 
 
 -- | Get a list of all table field names for this entity.
