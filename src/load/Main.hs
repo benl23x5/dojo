@@ -82,16 +82,36 @@ cleanEmail ss
 -------------------------------------------------------------------------------
 cleanDojo :: String -> Maybe String
 cleanDojo ss
- | all isWhite ss               = Nothing
- | ss == "Unallocated"          = Nothing
- | otherwise                    = Just ss
+ | all isWhite ss       = Nothing
+ | ss == "Unallocated"  = Nothing
+ | otherwise            = Just ss
 
 
 -------------------------------------------------------------------------------
 cleanMemberType :: String -> Maybe String
 cleanMemberType ss
- | all isWhite ss       = Nothing
- | otherwise            = Just ss
+ | all isWhite ss                       = Nothing
+
+ | isPrefixOf "1x " ss                  = cleanMemberType $ drop 3 ss
+ | isPrefixOf "Test level" ss           = Nothing
+
+ | isPrefixOf "Special" ss              = Just $ "Special"
+
+ | isPrefixOf "Family Annual" ss        = Just $ "Family Annual"
+ | isPrefixOf "Adult Annual" ss         = Just $ "Adult Annual"
+ | isPrefixOf "University Annual" ss    = Just $ "University Annual"
+ | isPrefixOf "Student Annual" ss       = Just $ "Student Annual"
+ | isPrefixOf "Concession Annual" ss    = Just $ "Concession Annual"
+ | isPrefixOf "Child Annual" ss         = Just $ "Child Annual"
+
+ | isPrefixOf "Family Intro" ss         = Just $ "Family Intro (3 months)"
+ | isPrefixOf "Adult Intro" ss          = Just $ "Adult Intro (3 months)"
+ | isPrefixOf "University Intro" ss     = Just $ "University Intro (3 months)"
+ | isPrefixOf "Student Intro" ss        = Just $ "Student Intro (3 months)"
+ | isPrefixOf "Concession Intro" ss     = Just $ "Concession Intro (3 months)"
+ | isPrefixOf "Child Intro" ss          = Just $ "Child Intro (3 months)"
+
+ | otherwise                            = Just ss
 
 
 -------------------------------------------------------------------------------
