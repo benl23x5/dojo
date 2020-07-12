@@ -3,10 +3,12 @@ import qualified System.Environment     as S
 import qualified Text.CSV               as CSV
 import qualified Data.Time              as Time
 import qualified Data.Time.Format       as TimeFormat
+import Data.Maybe
 import Data.Char
 import Data.List
 
 
+-------------------------------------------------------------------------------
 main :: IO ()
 main
  = do   [fileName] <- S.getArgs
@@ -46,77 +48,135 @@ convert iPid
  = (parens $ intercalate ","
         [ show iPid
         , "null"
-        , cleanName             sPref
-        , cleanName             sFirst
-        , cleanName             sFamily
-        , cleanDate             sBirthdate
-        , cleanPhone            sPhone
-        , cleanPhone            sMobile
-        , cleanEmail            sEmail
-        , cleanDojo             sDojoHome
-        , cleanMemberType       sMemberType
-        , cleanDate             sMemberRenewal])
+        , fromMaybe "null" $ fmap quote $ cleanName sPref
+        , fromMaybe "null" $ fmap quote $ cleanName sFirst
+        , fromMaybe "null" $ fmap quote $ cleanName sFamily
+        , fromMaybe "null" $ fmap quote $ cleanDate sBirthdate
+        , fromMaybe "null" $ fmap quote $ sFixed'
+        , fromMaybe "null" $ fmap quote $ sMobile'
+        , fromMaybe "null" $ fmap quote $ cleanEmail sEmail
+        , fromMaybe "null" $ fmap quote $ cleanDojo  sDojoHome
+        , fromMaybe "null" $ fmap quote $ cleanMemberType sMemberType
+        , fromMaybe "null" $ fmap quote $ cleanDate sMemberRenewal])
+ where
+        (sFixed', sMobile')
+         = cleanPhones sPhone sMobile
 
 convert _ _ = error "convert: failed"
 
 
 -------------------------------------------------------------------------------
-cleanName :: String -> String
+cleanName :: String -> Maybe String
 cleanName ss
- | all isWhite ss       = "null"
- | otherwise            = quote ss
+ | all isWhite ss       = Nothing
+ | otherwise            = Just ss
 
 
 -------------------------------------------------------------------------------
-cleanEmail :: String -> String
+cleanEmail :: String -> Maybe String
 cleanEmail ss
- | all isWhite ss       = "null"
- | otherwise            = quote ss
+ | all isWhite ss       = Nothing
+ | otherwise            = Just ss
 
 
 -------------------------------------------------------------------------------
-cleanDojo :: String -> String
+cleanDojo :: String -> Maybe String
 cleanDojo ss
- | all isWhite ss       = "null"
- | otherwise            = quote ss
+ | all isWhite ss               = Nothing
+ | ss == "Unallocated"          = Nothing
+ | otherwise                    = Just ss
 
 
 -------------------------------------------------------------------------------
-cleanMemberType :: String -> String
+cleanMemberType :: String -> Maybe String
 cleanMemberType ss
- | all isWhite ss       = "null"
- | otherwise            = quote ss
+ | all isWhite ss       = Nothing
+ | otherwise            = Just ss
 
 
 -------------------------------------------------------------------------------
-cleanPhone :: String -> String
-cleanPhone ss
+data PhoneType
+        = PhoneUnknown
+        | PhoneFixed
+        | PhoneMobile
+        deriving (Eq, Show)
+
+
+-- | Classify a phone number by type.
+classifyPhone :: String -> PhoneType
+classifyPhone ss
+ | isPrefixOf "+612" ss = PhoneFixed
+ | isPrefixOf "+614" ss = PhoneMobile
+ | otherwise            = PhoneUnknown
+
+
+-- | Syntactic cleaning of an Australian phone number.
+cleanPhone :: String -> Maybe String
+cleanPhone ss_
  | all isWhite ss
- = "null"
+ = Nothing
 
- | length ss == 9
- , isPrefixOf "4" ss
- = quote $ "+61" ++ ss
+ -- Assume NSW number with no area code.
+ | length ss == 8,  isPrefixOf "9"  ss = Just $ "+612" ++ ss
+ | length ss == 8,  isPrefixOf "4"  ss = Just $ "+612" ++ ss
 
- | length ss == 9
- , isPrefixOf "2" ss
- = quote $ "+61" ++ ss
+ -- Assume Australian area code without leading zero.
+ | length ss == 9,  isPrefixOf "2"  ss = Just $ "+61" ++ ss
+ | length ss == 9,  isPrefixOf "3"  ss = Just $ "+61" ++ ss
+ | length ss == 9,  isPrefixOf "4"  ss = Just $ "+61" ++ ss
+ | length ss == 9,  isPrefixOf "7"  ss = Just $ "+61" ++ ss
+ | length ss == 9,  isPrefixOf "8"  ss = Just $ "+61" ++ ss
 
- | length ss == 10
- , isPrefixOf "04" ss
- = quote $ "+61" ++ drop 1 ss
+ -- Assume Australian area code with leading zero.
+ | length ss == 10, isPrefixOf "02" ss = Just $ "+61" ++ drop 1 ss
+ | length ss == 10, isPrefixOf "03" ss = Just $ "+61" ++ drop 1 ss
+ | length ss == 10, isPrefixOf "04" ss = Just $ "+61" ++ drop 1 ss
+ | length ss == 10, isPrefixOf "07" ss = Just $ "+61" ++ drop 1 ss
+ | length ss == 10, isPrefixOf "08" ss = Just $ "+61" ++ drop 1 ss
 
- | length ss == 10
- , isPrefixOf "02" ss
- = quote $ "+61" ++ drop 1 ss
+ -- Assume Australian country code without '+' prefix.
+ | length ss == 11, isPrefixOf "61" ss = Just $ "+" ++ ss
 
  | otherwise
- = quote $ ss
+ = Just $ ss
+ where  ss = filter (not . isWhite) ss_
+
+
+-- | We have fixed and mobile phone number fields,
+--   but sometimes the numbers are swapped, or duplicated,
+--   which we sort out here.
+cleanPhones :: String -> String -> (Maybe String, Maybe String)
+cleanPhones sPhone sMobile
+ = let  mPhone'  = cleanPhone sPhone
+        mMobile' = cleanPhone sMobile
+
+        mtPhone  = fmap classifyPhone mPhone'
+        mtMobile = fmap classifyPhone mMobile'
+
+   in   if | mPhone' == mMobile'
+           , mtPhone == Just PhoneFixed
+           -> (mPhone', Nothing)
+
+           | mPhone' == mMobile'
+           , mtPhone == Just PhoneMobile
+           -> (Nothing, mMobile')
+
+           |  mtPhone  == Just PhoneMobile
+           || mtMobile == Just PhoneFixed
+           -> (mMobile', mPhone')
+           | otherwise
+           -> (mPhone',  mMobile')
 
 
 -------------------------------------------------------------------------------
-cleanDate :: String -> String
+cleanDate :: String -> Maybe String
 cleanDate str
+  | length str == 0
+  = Nothing
+
+  | str == "1 Jan 1900"
+  = Nothing
+
   | (sDay,   '-' : str1) <- span isDigit str
   , (sMonth, '-' : str2) <- span isDigit str1
   , (sYear,  [])         <- span isDigit str2
@@ -129,17 +189,15 @@ cleanDate str
   , (sMonth, ' ' : str2) <- span isAlpha str1
   , (sYear, [])          <- span isDigit str2
   , length sDay > 0
-  , Just nMonth <- lookup sMonth
-                $  zip [ "Jan", "Feb", "Mar", "Apr", "May", "Jun"
-                       , "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] [1..]
+  , Just nMonth
+    <- lookup sMonth
+     $ zip [ "Jan", "Feb", "Mar", "Apr", "May", "Jun"
+           , "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] [1..]
   , length sYear > 0
   = check (read sDay) nMonth (read sYear)
 
-  | length str == 0
-  = "null"
-
   | otherwise
-  = error "cannot parse date: " ++ show str
+  = error $ "cannot parse date: " ++ show str
 
   where check nDay nMonth nYear
          | not $ nYear >= 1900
@@ -151,7 +209,7 @@ cleanDate str
          | otherwise
          = case Time.fromGregorianValid nYear nMonth nDay of
             Just date
-             -> quote $ TimeFormat.formatTime
+             -> Just $ TimeFormat.formatTime
                         TimeFormat.defaultTimeLocale
                         "%F" date
             Nothing
