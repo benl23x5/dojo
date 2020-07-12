@@ -1,8 +1,9 @@
 
 module Dojo.Trivia.Convertible where
 import Dojo.Trivia.Base
-import Dojo.Base
-
+import Dojo.Framework
+import qualified Data.Time                      as Time
+import Database.HDBC.SqlValue
 
 -- toSql ----------------------------------------------------------------------
 instance Convertible PersonId   SqlValue where

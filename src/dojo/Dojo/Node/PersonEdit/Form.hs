@@ -52,46 +52,46 @@ divPersonDetails fsFeed person
                 (Just "(required)")
 
         field   "PreferredName" "preferred name"
-                (pretty $ personPreferredName person)
+                (maybe "" pretty $ personPreferredName person)
 
         field   "FamilyName"    "family name"
-                (pretty $ personFamilyName person)
+                (maybe "" pretty $ personFamilyName person)
 
         field   "DateOfBirth"   "date of birth (dd-mm-yyyy)"
-                (pretty $ personDateOfBirth person)
+                (maybe "" pretty $ personDateOfBirth person)
 
         field   "MemberId"      "member id"
-                (pretty $ personMemberId person)
+                (maybe "" pretty $ personMemberId person)
 
         field   "PhoneMobile"   "mobile phone number"
-                (pretty $ personPhoneMobile person)
+                (maybe "" pretty $ personPhoneMobile person)
 
         field   "PhoneFixed"    "fixed phone number"
-                (pretty $ personPhoneFixed person)
+                (maybe "" pretty $ personPhoneFixed person)
 
         field   "Email"         "email address"
-                (pretty $ personEmail person)
+                (maybe "" pretty $ personEmail person)
 
         field   "DojoHome"      "home dojo"
-                (pretty $ personDojoHome person)
+                (maybe "" pretty $ personDojoHome person)
 
         field   "MembershipLevel" "membership level"
-                (pretty $ personMembershipLevel person)
+                (maybe "" pretty $ personMembershipLevel person)
 
         field   "MembershipRenewal" "membership renewal date"
-                (pretty $ personMembershipRenewal person)
+                (maybe "" pretty $ personMembershipRenewal person)
 
         field   "EmergencyName1" "emergency contact name 1"
-                (pretty $ personEmergencyName1 person)
+                (maybe "" pretty $ personEmergencyName1 person)
 
         field   "EmergencyPhone1" "emergency contact phone 1"
-                (pretty $ personEmergencyPhone1 person)
+                (maybe "" pretty $ personEmergencyPhone1 person)
 
         field   "EmergencyName2" "emergency contact name 2"
-                (pretty $ personEmergencyName2 person)
+                (maybe "" pretty $ personEmergencyName2 person)
 
         field   "EmergencyPhone2" "emergency contact phone 2"
-                (pretty $ personEmergencyPhone2 person)
+                (maybe "" pretty $ personEmergencyPhone2 person)
 
  where
         field sClass sLabel sValue

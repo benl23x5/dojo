@@ -33,12 +33,12 @@ instance Convertible SqlValue UserPasswordHash where
 
 instance Convertible SqlValue UserPasswordSalt where
  safeConvert val        = liftM UserPasswordSalt (safeConvert val)
- 
+
 
 -------------------------------------------------------------------------------
 -- | Build a user from a list of sql values.
 userOfSqlValues :: [SqlValue] -> User
-userOfSqlValues 
+userOfSqlValues
         [ uid, uname, passwordHash, passwordSalt, pid ]
 
         = User
@@ -56,7 +56,7 @@ getMaybeUser :: IConnection conn => conn -> UserName -> IO (Maybe User)
 getMaybeUser conn uname
  = do   result  <- quickQuery' conn (unlines
                 [ "SELECT UserId,UserName,PasswordHash,PasswordSalt,UserPersonId"
-                , "FROM  User"
+                , "FROM  v1_User"
                 , "WHERE UserName=?" ])
                 [toSql uname]
 

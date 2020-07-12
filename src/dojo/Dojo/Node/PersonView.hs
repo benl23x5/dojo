@@ -74,56 +74,56 @@ divPersonDetails person
  $ do   H.table
          $ do   tr $ do th "first"; th "preferred"; th "family"
                 tr $ do td (H.toMarkup $ personFirstName    person)
-                        td (H.toMarkup $ personPreferredName person)
-                        td (H.toMarkup $ personFamilyName   person)
+                        td (H.toMarkup $ maybe "" pretty $ personPreferredName person)
+                        td (H.toMarkup $ maybe "" pretty $ personFamilyName   person)
 
         H.table
          $ do   tr $ th "date of birth"
-                tr $ td (H.toMarkup $ personDateOfBirth  person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personDateOfBirth  person)
 
         H.table
          $ do   tr $ th "member id"
-                tr $ td (H.toMarkup $ personMemberId person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personMemberId person)
 
         H.table
          $ do   tr $ th "mobile phone number"
-                tr $ td (H.toMarkup $ personPhoneMobile  person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personPhoneMobile  person)
 
         H.table
          $ do   tr $ th "fixed phone number"
-                tr $ td (H.toMarkup $ personPhoneFixed person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personPhoneFixed person)
 
         H.table
          $ do   tr $ th "email address"
-                tr $ td (H.toMarkup $ personEmail person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personEmail person)
 
         H.table
          $ do   tr $ th "home dojo"
-                tr $ td (H.toMarkup $ personDojoHome person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personDojoHome person)
 
         H.table
          $ do   tr $ th "membership level"
-                tr $ td (H.toMarkup $ personMembershipLevel person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personMembershipLevel person)
 
         H.table
          $ do   tr $ th "membership renewal date"
-                tr $ td (H.toMarkup $ personMembershipRenewal person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personMembershipRenewal person)
 
         H.table
          $ do   tr $ th "emergency contact name 1"
-                tr $ td (H.toMarkup $ personEmergencyName1 person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyName1 person)
 
         H.table
          $ do   tr $ th "emergency contact phone 1"
-                tr $ td (H.toMarkup $ personEmergencyPhone1 person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone1 person)
 
         H.table
          $ do   tr $ th "emergency contact name 2"
-                tr $ td (H.toMarkup $ personEmergencyName2 person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyName2 person)
 
         H.table
          $ do   tr $ th "emergency contact phone 2"
-                tr $ td (H.toMarkup $ personEmergencyPhone2 person)
+                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone2 person)
 
 
 -- | Events that a person attended.

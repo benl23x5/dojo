@@ -132,11 +132,15 @@ candidateOfPerson :: Person -> Candidate
 candidateOfPerson person
  = Candidate
     (concat
-        [ words $ sName $ personPreferredName person
-        , words $ sName $ personFirstName person
-        , words $ sName $ personFamilyName person ])
+        [ words $ sName' $ personPreferredName person
+        , words $ sName  $ personFirstName person
+        , words $ sName' $ personFamilyName person ])
         person
- where  sName (PersonName s) = map Char.toLower s
+ where
+        sName  (PersonName s)           = map Char.toLower s
+        sName' (Just (PersonName s))    = map Char.toLower s
+        sName' Nothing                  = []
+
 
 
 filtersCandidate :: [String] -> Candidate -> Maybe Candidate

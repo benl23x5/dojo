@@ -2,9 +2,9 @@
 module Dojo.Node.PersonList where
 import Dojo.Data.Session
 import Dojo.Data.Person
+import Dojo.Framework
 import Dojo.Paths
 import Dojo.Chrome
-import Dojo.Base
 import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
@@ -60,6 +60,6 @@ trPerson ss person
                     (H.toMarkup val)
 
         tdField (personShortName person)
-        tdField (personFamilyName person)
-        tdField (personPhoneMobile person)
+        tdField (maybe "" pretty $ personFamilyName person)
+        tdField (maybe "" pretty $ personPhoneMobile person)
 

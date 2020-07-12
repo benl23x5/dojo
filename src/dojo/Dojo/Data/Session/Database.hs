@@ -1,6 +1,6 @@
 
 module Dojo.Data.Session.Database
-        ( sessionOfSqlValues 
+        ( sessionOfSqlValues
         , getSessionByHash
         , insertSession)
 where
@@ -55,18 +55,18 @@ sessionOfSqlValues [sid, uid, hash, localStart, localEnd]
         , sessionEndDate        = edate
         , sessionEndTime        = etime }
 
-        where   (sdate, stime) 
+        where   (sdate, stime)
                  = splitSessionLocalTime $ fromSql localStart
 
-                (edate, etime) 
+                (edate, etime)
                  = case fromSql localEnd of
                      Nothing     -> (Nothing, Nothing)
-                     Just ltime  
+                     Just ltime
                       |  (edate', etime') <- splitSessionLocalTime $ fromSql ltime
                       -> (Just edate', Just etime')
 
 
-sessionOfSqlValues _ 
+sessionOfSqlValues _
         = error "sessionOfValues: no match"
 
 
@@ -76,8 +76,8 @@ getSessionByHash :: IConnection conn => conn -> SessionHash -> IO Session
 getSessionByHash conn hash
  = do   [values] <- quickQuery' conn (unlines
                 [ "SELECT SessionId,UserId,Hash,StartTime,EndTime"
-                , "FROM   Session"
-                , "WHERE  Hash=?" ]) 
+                , "FROM   v1_Session"
+                , "WHERE  Hash=?" ])
                 [toSql hash]
 
         return $ sessionOfSqlValues values
@@ -87,7 +87,7 @@ getSessionByHash conn hash
 insertSession :: IConnection conn  => conn -> Session -> IO Integer
 insertSession conn session
  = do   stmt    <- prepare conn $ unlines
-                [ "INSERT INTO Session"
+                [ "INSERT INTO v1_Session"
                 , "(Hash, UserId, StartTime)"
                 , "VALUES (?,?,?)" ]
 

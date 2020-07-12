@@ -11,5 +11,3 @@ import Dojo.Data.Person.Base
 import Dojo.Trivia
 
 
-
-

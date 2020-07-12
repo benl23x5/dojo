@@ -8,31 +8,32 @@ import Dojo.Trivia
 -- | A Person known to the system.
 data Person
         = Person
-        { -- | The person id will be Nothing if the record has not been added
-          --   to the database yet.
+        { -- | The person id will be Nothing if the record has not been
+          --   added to the database yet, but there is a NOT NULL/PRIMARY KEY
+          --   constraint on the field in the database.
           personId                      :: Maybe PersonId       -- PRIMARY KEY
 
           -- | Organization membership id.
-        , personMemberId                :: PersonMemberId
+        , personMemberId                :: Maybe PersonMemberId
 
           -- | If a person only has one name then use that as the "first name"
           --   and leave the others empty. We need at least one name to refer
           --   to them, but some people only have a single name.
-        , personPreferredName           :: PersonName
+        , personPreferredName           :: Maybe PersonName
         , personFirstName               :: PersonName           -- NOT NULL
-        , personFamilyName              :: PersonName
+        , personFamilyName              :: Maybe PersonName
 
-        , personDateOfBirth             :: PersonDate
-        , personPhoneMobile             :: PersonPhone
-        , personPhoneFixed              :: PersonPhone
-        , personEmail                   :: PersonEmail
-        , personDojoHome                :: PersonDojo
-        , personMembershipLevel         :: PersonMembershipLevel
-        , personMembershipRenewal       :: PersonDate
-        , personEmergencyName1          :: PersonName
-        , personEmergencyPhone1         :: PersonPhone
-        , personEmergencyName2          :: PersonName
-        , personEmergencyPhone2         :: PersonPhone
+        , personDateOfBirth             :: Maybe PersonDate
+        , personPhoneMobile             :: Maybe PersonPhone
+        , personPhoneFixed              :: Maybe PersonPhone
+        , personEmail                   :: Maybe PersonEmail
+        , personDojoHome                :: Maybe PersonDojo
+        , personMembershipLevel         :: Maybe PersonMembershipLevel
+        , personMembershipRenewal       :: Maybe PersonDate
+        , personEmergencyName1          :: Maybe PersonName
+        , personEmergencyPhone1         :: Maybe PersonPhone
+        , personEmergencyName2          :: Maybe PersonName
+        , personEmergencyPhone2         :: Maybe PersonPhone
         }
         deriving Show
 
@@ -42,21 +43,21 @@ zeroPerson :: String -> Person
 zeroPerson firstName
         = Person
         { personId                      = Nothing
-        , personMemberId                = PersonMemberId 0
-        , personPreferredName           = PersonName    ""
+        , personMemberId                = Nothing
+        , personPreferredName           = Nothing
         , personFirstName               = PersonName firstName
-        , personFamilyName              = PersonName    ""
-        , personDateOfBirth             = PersonDate    Nothing
-        , personPhoneMobile             = PersonPhone   ""
-        , personPhoneFixed              = PersonPhone   ""
-        , personEmail                   = PersonEmail   ""
-        , personDojoHome                = PersonDojo    ""
-        , personMembershipLevel         = PersonMembershipLevel ""
-        , personMembershipRenewal       = PersonDate    Nothing
-        , personEmergencyName1          = PersonName    ""
-        , personEmergencyPhone1         = PersonPhone   ""
-        , personEmergencyName2          = PersonName    ""
-        , personEmergencyPhone2         = PersonPhone   ""
+        , personFamilyName              = Nothing
+        , personDateOfBirth             = Nothing
+        , personPhoneMobile             = Nothing
+        , personPhoneFixed              = Nothing
+        , personEmail                   = Nothing
+        , personDojoHome                = Nothing
+        , personMembershipLevel         = Nothing
+        , personMembershipRenewal       = Nothing
+        , personEmergencyName1          = Nothing
+        , personEmergencyPhone1         = Nothing
+        , personEmergencyName2          = Nothing
+        , personEmergencyPhone2         = Nothing
         }
 
 
@@ -166,7 +167,7 @@ personFieldsNoKey
 -- | Construct a person from a list of Sql values for each field.
 personOfSqlValues :: [SqlValue] -> Person
 personOfSqlValues vs
- = foldl (\person (v, inj) -> inj v person) (zeroPerson "")
+ = foldl (\person (v, inj) -> inj v person) (zeroPerson "")     -- TODO: avoid empty name init
  $ zip vs $ map fieldFromSql personFields
 
 
@@ -191,26 +192,23 @@ personFieldNames
 --   which is a perferred name if we have one, otherwise the first name.
 personShortName :: Person -> String
 personShortName person
- = if sPreferred == "" then sFirst else sPreferred
- where
-        PersonName sPreferred   = personPreferredName person
-        PersonName sFirst       = personFirstName person
+ | Just (PersonName sPreferred) <- personPreferredName person
+ = sPreferred
+
+ | PersonName sFirst <- personFirstName person
+ = sFirst
 
 
 -- | Get the standard display name of a Person.
 --   We use the prefered name if set, and ignore middle names.
 personDisplayName :: Person -> String
 personDisplayName person
- = first ++ " " ++ family
- where
-        PersonName family   = personFamilyName person
+ = case personFamilyName person of
+        Nothing
+         -> personShortName person
 
-        PersonName first
-         | personPreferredName person == PersonName ""
-         = personFirstName person
-
-         | otherwise
-         = personPreferredName person
+        Just (PersonName sFamily)
+         -> personShortName person ++ " " ++ sFamily
 
 
 -- Comparisons  ---------------------------------------------------------------

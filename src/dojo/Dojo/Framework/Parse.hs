@@ -38,6 +38,16 @@ instance Parse Time.Day where
   , length sYear  > 0
   = check (read sDay) (read sMonth) (read sYear)
 
+  | (sDay,   ' ' : str1) <- span isDigit str
+  , (sMonth, ' ' : str2) <- span isAlpha str1
+  , (sYear, [])          <- span isDigit str2
+  , length sDay > 0
+  , Just nMonth <- lookup sMonth
+                $  zip [ "Jan", "Feb", "Mar", "Apr", "May", "Jun"
+                       , "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"] [1..]
+  , length sYear > 0
+  = check (read sDay) nMonth (read sYear)
+
   | otherwise
   = Left  (ParseError "date must have format dd-mm-yyyy")
 
