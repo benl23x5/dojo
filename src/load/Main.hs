@@ -63,41 +63,29 @@ convert _ _ = error "convert: failed"
 -------------------------------------------------------------------------------
 cleanName :: String -> String
 cleanName ss
- | all isWhite ss
- = "null"
-
- | otherwise
- = quote ss
+ | all isWhite ss       = "null"
+ | otherwise            = quote ss
 
 
 -------------------------------------------------------------------------------
 cleanEmail :: String -> String
 cleanEmail ss
- | all isWhite ss
- = "null"
-
- | otherwise
- = quote ss
+ | all isWhite ss       = "null"
+ | otherwise            = quote ss
 
 
 -------------------------------------------------------------------------------
 cleanDojo :: String -> String
 cleanDojo ss
- | all isWhite ss
- = "null"
-
- | otherwise
- = quote ss
+ | all isWhite ss       = "null"
+ | otherwise            = quote ss
 
 
 -------------------------------------------------------------------------------
 cleanMemberType :: String -> String
 cleanMemberType ss
- | all isWhite ss
- = "null"
-
- | otherwise
- = quote ss
+ | all isWhite ss       = "null"
+ | otherwise            = quote ss
 
 
 -------------------------------------------------------------------------------

@@ -61,5 +61,12 @@ trPerson ss person
 
         tdField (personShortName person)
         tdField (maybe "" pretty $ personFamilyName person)
-        tdField (maybe "" pretty $ personPhoneMobile person)
+
+        -- Prefer showing the mobile number if we have one.
+        tdField
+         $ if | Just mobile <- personPhoneMobile person
+              -> pretty mobile
+              | otherwise
+              -> maybe "" pretty $ personPhoneFixed person
+
 
