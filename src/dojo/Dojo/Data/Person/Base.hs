@@ -80,80 +80,92 @@ personFields
         (\v x -> x { personId = fromSql v})
 
     , Field "MemberId"              "member id"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonMemberId) )
+        (fmap toSql . load @PersonMemberId)
         (toSql . personMemberId)
         (\v x -> x { personMemberId = fromSql v})
 
     , Field "PreferredName"         "preferred name"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (fmap toSql . load @PersonName)
         (toSql . personPreferredName)
         (\v x -> x { personPreferredName = fromSql v})
 
     , Field "FirstName"             "first name"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (fmap toSql . load @PersonName)
         (toSql . personFirstName)
         (\v x -> x { personFirstName = fromSql v})
 
     , Field "FamilyName"            "family name"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (fmap toSql . load @PersonName)
         (toSql . personFamilyName)
         (\v x -> x { personFamilyName = fromSql v})
 
     , Field "DateOfBirth"           "date of birth"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
+        (fmap toSql . load @PersonDate)
         (toSql . personDateOfBirth)
         (\v x -> x { personDateOfBirth = fromSql v})
 
     , Field "PhoneMobile"           "mobile phone number"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (fmap toSql . load @PersonPhone)
         (toSql . personPhoneMobile)
         (\v x -> x { personPhoneMobile = fromSql v})
 
     , Field "PhoneFixed"            "fixed phone number"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (fmap toSql . load @PersonPhone)
         (toSql . personPhoneFixed)
         (\v x -> x { personPhoneFixed = fromSql v})
 
     , Field "Email"                 "email address"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonEmail) )
+        (fmap toSql . load @PersonEmail)
         (toSql . personEmail)
         (\v x -> x { personEmail = fromSql v})
 
     , Field "DojoHome"              "home dojo"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonDojo) )
+        (fmap toSql . load @PersonDojo)
         (toSql . personDojoHome)
         (\v x -> x { personDojoHome = fromSql v})
 
     , Field "MembershipLevel"       "membership level"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonMembershipLevel) )
+        (fmap toSql . load @PersonMembershipLevel)
         (toSql . personMembershipLevel)
         (\v x -> x { personMembershipLevel = fromSql v})
 
     , Field "MembershipRenewal"     "membership renewal data"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonDate) )
+        (fmap toSql . load @PersonDate)
         (toSql . personMembershipRenewal)
         (\v x -> x { personMembershipRenewal = fromSql v})
 
     , Field "EmergencyName1"        "emergency contact name 1"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (fmap toSql . load @PersonName)
         (toSql . personEmergencyName1)
         (\v x -> x { personEmergencyName1 = fromSql v})
 
     , Field "EmergencyPhone1"       "emergency contact phone 1"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (fmap toSql . load @PersonPhone)
         (toSql . personEmergencyPhone1)
         (\v x -> x { personEmergencyPhone1 = fromSql v})
 
     , Field "EmergencyName2"        "emergency contact name 2"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonName) )
+        (fmap toSql . load @PersonName)
         (toSql . personEmergencyName2)
         (\v x -> x { personEmergencyName2 = fromSql v})
 
     , Field "EmergencyPhone2"       "emergency contact phone 2"
-        (\s -> fmap toSql $ (parse s :: Either ParseError PersonPhone) )
+        (fmap toSql . load @PersonPhone)
         (toSql . personEmergencyPhone2)
         (\v x -> x { personEmergencyPhone2 = fromSql v})
     ]
+
+
+-- | Squash empty fields to null
+--   TODO: squash all white fields to null as well.
+load :: forall a. Parse a => String -> Either ParseError (Maybe a)
+load ss
+ | length ss == 0       = Right Nothing
+ | otherwise
+ = case parse @a ss of
+        Left err        -> Left  err
+        Right x         -> Right (Just x)
+
 
 
 -- | Like `personFields`, but without the field for the primary key.

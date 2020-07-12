@@ -109,6 +109,8 @@ Executable dojo
         FlexibleContexts
         MultiWayIf
         EmptyDataDecls
+        TypeApplications
+        ExplicitForAll
 
 Executable load
   build-depends:
@@ -138,3 +140,5 @@ Executable load
         ScopedTypeVariables
         FlexibleContexts
         MultiWayIf
+        TypeApplications
+        ExplicitForAll
