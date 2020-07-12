@@ -44,40 +44,86 @@ convert iPid
         , _sMemberStatus
         , sMemberRenewal]
  = (parens $ intercalate ","
-        [ show iPid, "0"
-        , quote sPref, quote sFirst, quote sFamily
-        , cleanDate  sBirthdate
-        , quote $ cleanPhone sPhone
-        , quote $ cleanPhone sMobile
-        , quote sEmail
-        , quote sDojoHome
-        , quote sMemberType
-        , cleanDate sMemberRenewal])
+        [ show iPid
+        , "null"
+        , cleanName             sPref
+        , cleanName             sFirst
+        , cleanName             sFamily
+        , cleanDate             sBirthdate
+        , cleanPhone            sPhone
+        , cleanPhone            sMobile
+        , cleanEmail            sEmail
+        , cleanDojo             sDojoHome
+        , cleanMemberType       sMemberType
+        , cleanDate             sMemberRenewal])
 
 convert _ _ = error "convert: failed"
 
 
 -------------------------------------------------------------------------------
+cleanName :: String -> String
+cleanName ss
+ | all isWhite ss
+ = "null"
+
+ | otherwise
+ = quote ss
+
+
+-------------------------------------------------------------------------------
+cleanEmail :: String -> String
+cleanEmail ss
+ | all isWhite ss
+ = "null"
+
+ | otherwise
+ = quote ss
+
+
+-------------------------------------------------------------------------------
+cleanDojo :: String -> String
+cleanDojo ss
+ | all isWhite ss
+ = "null"
+
+ | otherwise
+ = quote ss
+
+
+-------------------------------------------------------------------------------
+cleanMemberType :: String -> String
+cleanMemberType ss
+ | all isWhite ss
+ = "null"
+
+ | otherwise
+ = quote ss
+
+
+-------------------------------------------------------------------------------
 cleanPhone :: String -> String
 cleanPhone ss
+ | all isWhite ss
+ = "null"
+
  | length ss == 9
  , isPrefixOf "4" ss
- = "+61" ++ ss
+ = quote $ "+61" ++ ss
 
  | length ss == 9
  , isPrefixOf "2" ss
- = "+61" ++ ss
+ = quote $ "+61" ++ ss
 
  | length ss == 10
  , isPrefixOf "04" ss
- = "+61" ++ drop 1 ss
+ = quote $ "+61" ++ drop 1 ss
 
  | length ss == 10
  , isPrefixOf "02" ss
- = "+61" ++ drop 1 ss
+ = quote $ "+61" ++ drop 1 ss
 
  | otherwise
- = ss
+ = quote $ ss
 
 
 -------------------------------------------------------------------------------
@@ -102,7 +148,7 @@ cleanDate str
   = check (read sDay) nMonth (read sYear)
 
   | length str == 0
-  = quote "2020-01-01"
+  = "null"
 
   | otherwise
   = error "cannot parse date: " ++ show str
@@ -127,3 +173,4 @@ cleanDate str
 -------------------------------------------------------------------------------
 parens ss = "(" ++ ss ++ ")"
 quote  ss = "'" ++ ss ++ "'"
+isWhite c = elem c [' ', '\n', '\t']
