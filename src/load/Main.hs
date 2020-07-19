@@ -184,6 +184,7 @@ cleanPhones sPhone sMobile
            |  mtPhone  == Just PhoneMobile
            || mtMobile == Just PhoneFixed
            -> (mMobile', mPhone')
+
            | otherwise
            -> (mPhone',  mMobile')
 

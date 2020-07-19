@@ -54,12 +54,12 @@ th
         font-size:      0.8em;
         height:         1.2em;
         min-width:      4em;
-        border-bottom:  2px solid rgb(0,80,150);
 }
 
 td
 {       text-align:     left;
         height:         1em;
+        padding:        0.3ex;
 }
 
 input
@@ -116,6 +116,12 @@ input
 {       width:          100%;
 }
 
+.list th
+{
+        border-bottom:  2px solid rgb(0,80,150);
+}
+
+
 .list tbody .link
 {       text-decoration: underline;
 }
@@ -129,7 +135,8 @@ input
 
 .list tbody tr:hover .link
 {       color: #00f;
-        text-decoration: underline;
+
+/*        text-decoration: underline;  */
 }
 
 
@@ -147,10 +154,10 @@ input
 {       padding-right:  1ex;
 }
 
+
 /* Person List ********************************************/
 .person-list .ShortName         { width: 8em; }
 .person-list .FamilyName        { width: 10em; }
-
 
 /* Person View/Edit **************************************/
 
@@ -158,6 +165,12 @@ input
 .person-attendance .Date        { width: 6em;  }
 .person-attendance .Time        { width: 4em;  }
 
+#person-details-view .Col3A     { width: 20% }
+#person-details-view .Col3B     { width: 30% }
+#person-details-view .Col3C     { width: 50% }
+
+#person-details-view .Col2A     { width: 50% }
+#person-details-view .Col2B     { width: 50% }
 
 /* Event List *********************************************/
 .event-list .Date               { width: 6em;   }

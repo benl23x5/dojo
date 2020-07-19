@@ -72,58 +72,49 @@ divPersonDetails :: Person -> Html
 divPersonDetails person
  = H.div ! A.id "person-details-view" ! A.class_ "details"
  $ do   H.table
-         $ do   tr $ do th "first"; th "preferred"; th "family"
+         $ do   col ! A.class_ "Col3A"; col ! A.class_ "Col3B"; col ! A.class_ "Col3C"
+                tr $ do th "first"; th "preferred"; th "family"
                 tr $ do td (H.toMarkup $ personFirstName    person)
                         td (H.toMarkup $ maybe "" pretty $ personPreferredName person)
                         td (H.toMarkup $ maybe "" pretty $ personFamilyName   person)
 
         H.table
-         $ do   tr $ th "date of birth"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personDateOfBirth  person)
+         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
+                tr $ do th "date of birth"; th "home dojo"
+                tr $ do td (H.toMarkup $ maybe "" pretty $ personDateOfBirth  person)
+                        td (H.toMarkup $ maybe "" pretty $ personDojoHome person)
 
         H.table
-         $ do   tr $ th "member id"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personMemberId person)
-
-        H.table
-         $ do   tr $ th "mobile phone number"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personPhoneMobile  person)
-
-        H.table
-         $ do   tr $ th "fixed phone number"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personPhoneFixed person)
-
-        H.table
-         $ do   tr $ th "email address"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personEmail person)
-
-        H.table
-         $ do   tr $ th "home dojo"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personDojoHome person)
+         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
+                tr $ do th "membership id"; th "renewal date"
+                tr $ do td (H.toMarkup $ maybe "" pretty $ personMemberId person)
+                        td (H.toMarkup $ maybe "" pretty $ personMembershipRenewal person)
 
         H.table
          $ do   tr $ th "membership level"
                 tr $ td (H.toMarkup $ maybe "" pretty $ personMembershipLevel person)
 
         H.table
-         $ do   tr $ th "membership renewal date"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personMembershipRenewal person)
+         $ do   tr $ th "email address"
+                tr $ td (H.toMarkup $ maybe "" pretty $ personEmail person)
 
         H.table
-         $ do   tr $ th "emergency contact name 1"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyName1 person)
+         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
+                tr $ do th "mobile phone"; th "fixed phone"
+                tr $ do td (H.toMarkup $ maybe "" pretty $ personPhoneMobile  person)
+                        td (H.toMarkup $ maybe "" pretty $ personPhoneFixed person)
 
         H.table
-         $ do   tr $ th "emergency contact phone 1"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone1 person)
+         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
+                tr $ do th "emergency contact 1"; th "phone"
+                tr $ do td (H.toMarkup $ maybe "" pretty $ personEmergencyName1 person)
+                        td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone1 person)
 
         H.table
-         $ do   tr $ th "emergency contact name 2"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyName2 person)
-
-        H.table
-         $ do   tr $ th "emergency contact phone 2"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone2 person)
+         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
+                tr $ do th "emergency contact 2"; th "phone"
+                tr $ do td (H.toMarkup $ maybe "" pretty $ personEmergencyName2 person)
+                        td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone2 person)
 
 
 -- | Events that a person attended.
