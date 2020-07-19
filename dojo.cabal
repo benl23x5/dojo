@@ -34,6 +34,7 @@ Executable dojo
         Dojo.Data.Attendance
 
         Dojo.Data.Class.Base
+        Dojo.Data.Class.Database
         Dojo.Data.Class
 
         Dojo.Data.Event.Base

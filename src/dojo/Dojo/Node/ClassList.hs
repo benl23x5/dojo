@@ -17,8 +17,7 @@ cgiClassList sid _inputs
         conn    <- liftIO $ connectSqlite3 databasePath
 
         -- Read current data for all people
---        classes  <- liftIO $ getClasses conn
-        classes <- return []
+        classes <- liftIO $ getClasses conn
         liftIO $ disconnect conn
 
         cgiClassList_list sid classes
@@ -61,9 +60,9 @@ trClass _ss classs
              = td $ -- (a ! A.href (H.toValue pathView))
                     (H.toMarkup val)
 
-        tdField (classLocation classs)
-        tdField (classType classs)
-        tdField (classDay classs)
-        tdField (classTime classs)
+        tdField (maybe "" pretty $ classLocation classs)
+        tdField (maybe "" pretty $ classType classs)
+        tdField (maybe "" pretty $ classDay classs)
+        tdField (maybe "" pretty $ classTime classs)
 
 

@@ -59,4 +59,4 @@ instance Pretty ClassId where
  pretty (ClassId n)             = show n
 
 instance Pretty ClassDay where
- pretty (ClassDay str)          = show str
+ pretty (ClassDay str)          = str
