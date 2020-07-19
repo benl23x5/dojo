@@ -2,7 +2,6 @@
 module Dojo.Paths where
 import Dojo.Data.Session
 import Dojo.Data.Person
-import Dojo.Data.Event
 import Dojo.Framework
 import Config
 
@@ -10,7 +9,7 @@ import Config
 -- The paths to show at the top of each page.
 pathsJump :: Session -> [Path]
 pathsJump ss
- = [ pathPersonList ss, pathEventList ss, pathLogout]
+ = [ pathPersonList ss, pathClassList ss, pathEventList ss, pathLogout]
 
 
 -- Session -------------------------------------------------------------------
@@ -126,5 +125,14 @@ pathEventEdit ss Nothing
         cgiName
         [ ("s",   show $ sessionHash ss)
         , ("n",   "ee")]
+
+
+-- Classes ---------------------------------------------------------------------
+pathClassList :: Session -> Path
+pathClassList ss
+ = Path "Classes"
+        cgiName
+        [ ("s", show $ sessionHash ss)
+        , ("n", "cl")]
 
 

@@ -10,7 +10,7 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
--- | A table of people, with edit links on the right.
+-- | A table of people which link to the per-person page.
 cgiPersonList :: Session -> [(String, String)] -> CGI CGIResult
 cgiPersonList sid _inputs
  = do   -- Connect to the database.

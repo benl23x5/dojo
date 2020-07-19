@@ -3,35 +3,75 @@ module Dojo.Trivia.Base where
 import qualified Data.Time      as Time
 
 
+-------------------------------------------------------------------------------
 data PersonId
         = PersonId Integer
         deriving (Show, Eq, Ord)
 
 data PersonMemberId
         = PersonMemberId Integer
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
 data PersonName
         = PersonName String
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
 data PersonDate
         = PersonDate (Maybe Time.Day)
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
 data PersonPhone
         = PersonPhone String
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
 data PersonEmail
         = PersonEmail String
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
 data PersonDojo
         = PersonDojo String
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
 data PersonMembershipLevel
         = PersonMembershipLevel String
-        deriving (Show, Eq)
+        deriving (Show, Eq, Ord)
 
+
+-------------------------------------------------------------------------------
+data EventId
+        = EventId Integer
+        deriving (Show, Eq, Ord)
+
+data EventType
+        = EventType String
+        deriving (Show, Eq, Ord)
+
+data EventLocation
+        = EventLocation String
+        deriving (Show, Eq, Ord)
+
+data EventDate
+        = EventDate Time.Day
+        deriving (Show, Eq, Ord)
+
+data EventTime
+        = EventTime Time.TimeOfDay
+        deriving (Show, Eq, Ord)
+
+data EventDisplayName
+        = EventDisplayName String
+        deriving (Show, Eq, Ord)
+
+data EventLocalTime
+        = EventLocalTime Time.LocalTime
+        deriving (Show, Eq, Ord)
+
+
+-------------------------------------------------------------------------------
+data ClassId
+        = ClassId Integer
+        deriving (Show, Eq, Ord)
+
+data ClassDay
+        = ClassDay String
+        deriving (Show, Eq, Ord)

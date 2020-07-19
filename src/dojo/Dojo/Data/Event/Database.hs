@@ -17,42 +17,6 @@ import Dojo.Base
 import qualified Data.Time      as Time
 
 
--- toSql ----------------------------------------------------------------------
-instance Convertible EventId   SqlValue where
- safeConvert (EventId n)                = safeConvert n
-
-instance Convertible EventType SqlValue where
- safeConvert (EventType str)            = safeConvert str
-
-instance Convertible EventLocation SqlValue where
- safeConvert (EventLocation str)        = safeConvert str
-
-instance Convertible EventDate SqlValue where
- safeConvert (EventDate ddate)          = safeConvert ddate
-
-instance Convertible EventTime SqlValue where
- safeConvert (EventTime etime)          = safeConvert etime
-
-instance Convertible EventLocalTime SqlValue where
- safeConvert (EventLocalTime etime)     = safeConvert etime
-
-
--- fromSql --------------------------------------------------------------------
-instance Convertible SqlValue EventId where
- safeConvert val                        = liftM EventId (safeConvert val)
-
-instance Convertible SqlValue EventType where
- safeConvert val                        = liftM EventType (safeConvert val)
-
-instance Convertible SqlValue EventLocation where
- safeConvert val                        = liftM EventLocation (safeConvert val)
-
-instance Convertible SqlValue EventDate where
- safeConvert val                        = liftM EventDate (safeConvert val)
-
-instance Convertible SqlValue EventTime where
- safeConvert val                        = liftM EventTime (safeConvert val)
-
 
 -------------------------------------------------------------------------------
 -- | Build an event from a list of Sql values.

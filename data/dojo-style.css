@@ -58,13 +58,13 @@ th
 
 td
 {       text-align:     left;
-        height:         1em;
         padding:        0.3ex;
 }
 
 input
 {       font-size:      1em;
         width:          100%;
+        padding:        0.3ex;
         box-sizing:     border-box;
 }
 

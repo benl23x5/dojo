@@ -1,4 +1,18 @@
 
+CREATE TABLE v1_User
+        ( UserId                INTEGER   PRIMARY KEY
+        , UserName              TEXT
+        , PasswordHash          TEXT
+        , PasswordSalt          TEXT
+        , UserPersonId          INTEGER);
+
+CREATE TABLE v1_Session
+        ( SessionId             INTEGER   PRIMARY KEY
+        , UserId                INTEGER   NOT NULL
+        , Hash                  TEXT      NOT NULL
+        , StartTime             DATETIME  NOT NULL
+        , EndTime               DATETIME);
+
 CREATE TABLE v1_Person
         ( PersonId              INTEGER PRIMARY KEY
         , MemberId              INTEGER
@@ -28,17 +42,15 @@ CREATE TABLE v1_Attendance
         , EventId               INTEGER
         , PRIMARY KEY (PersonId, EventId));
 
-CREATE TABLE v1_User
-        ( UserId                INTEGER   PRIMARY KEY
-        , UserName              TEXT
-        , PasswordHash          TEXT
-        , PasswordSalt          TEXT
-        , UserPersonId          INTEGER);
+/* A reoccuring weekly class, which can be used as a template
+ * to create a new event. */
+CREATE TABLE v1_Class
+        ( ClassId               INTEGER PRIMARY KEY
+        , Type                  STRING  NOT NULL
+        , Location              STRING  NOT NULL
+        , Day                   STRING  NOT NULL
+        , Time                  TIME    NOT NULL
+        , DateFirst             DATE    NOT NULL
+        , DateFinal             DATE);
 
-CREATE TABLE v1_Session
-        ( SessionId             INTEGER   PRIMARY KEY
-        , UserId                INTEGER   NOT NULL
-        , Hash                  TEXT      NOT NULL
-        , StartTime             DATETIME  NOT NULL
-        , EndTime               DATETIME);
 

@@ -4,6 +4,7 @@ import Dojo.Trivia.Base
 import Dojo.Framework
 
 
+-- Person ---------------------------------------------------------------------
 instance Parse PersonId where
  parse str      = liftM PersonId $ parse str
 
@@ -30,3 +31,31 @@ instance Parse PersonDojo where
 instance Parse PersonMembershipLevel where
  parse str      = Right (PersonMembershipLevel str)
 
+
+-- Event ----------------------------------------------------------------------
+instance Parse EventId where
+ parse str      = liftM EventId $ parse str
+
+instance Parse EventType where
+ parse str
+  | not $ null str      = Right (EventType str)
+  | otherwise           = Left  (ParseError "Event Type must be non-empty")
+
+instance Parse EventLocation where
+ parse str
+  | not $ null str      = Right (EventLocation str)
+  | otherwise           = Left  (ParseError "Event Location must be non-empty")
+
+instance Parse EventDate where
+ parse str              = liftM EventDate $ parse str
+
+instance Parse EventTime where
+ parse str              = liftM EventTime $ parse str
+
+
+-- Class ----------------------------------------------------------------------
+instance Parse ClassId where
+ parse str      = liftM ClassId $ parse str
+
+instance Parse ClassDay where
+ parse str      = Right (ClassDay str)

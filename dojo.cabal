@@ -33,6 +33,9 @@ Executable dojo
   other-modules:
         Dojo.Data.Attendance
 
+        Dojo.Data.Class.Base
+        Dojo.Data.Class
+
         Dojo.Data.Event.Base
         Dojo.Data.Event.Presentation
         Dojo.Data.Event.Database
@@ -79,6 +82,8 @@ Executable dojo
         Dojo.Node.EventList
         Dojo.Node.EventView
         Dojo.Node.EventEdit
+
+        Dojo.Node.ClassList
 
         Dojo.Node.Login
         Dojo.Node.Logout

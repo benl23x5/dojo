@@ -1,5 +1,5 @@
 
-module Dojo.Data.Event.Base 
+module Dojo.Data.Event.Base
         ( Event                 (..)
         , EventId               (..)
         , EventType             (..)
@@ -19,12 +19,13 @@ module Dojo.Data.Event.Base
         , makeEventLocalTime
         , splitEventLocalTime)
 where
+import Dojo.Trivia
 import qualified Data.Time      as Time
 
 
 -- | An event that people can attend.
 --
---   This is a view of the rows of the event table in the database. 
+--   This is a view of the rows of the event table in the database.
 --   We keep the date and time separate in this view, but they are merged
 --   in the database.
 --
@@ -45,17 +46,6 @@ data Event
           -- | Local time when the event was held.
         , eventTime             :: EventTime }
 
--- Intrinsic
-data EventId            = EventId       Integer                 deriving Eq
-data EventType          = EventType     String                  deriving Eq
-data EventLocation      = EventLocation String                  deriving Eq
-data EventDate          = EventDate     Time.Day                deriving Eq
-data EventTime          = EventTime     Time.TimeOfDay          deriving Eq
-
--- Synthetic
-data EventDisplayName   = EventDisplayName String               deriving Eq
-data EventLocalTime     = EventLocalTime   Time.LocalTime       deriving Eq
-
 
 -- Projections ----------------------------------------------------------------
 -- | Take the local time of an event.
@@ -69,7 +59,7 @@ eventLocalTime event
 -- | Create a zero event.
 zeroEvent :: EventDate -> EventTime -> Event
 zeroEvent edate etime
-        = Event 
+        = Event
         { eventId               = EventId       0
         , eventType             = EventType     ""
         , eventLocation         = EventLocation ""
