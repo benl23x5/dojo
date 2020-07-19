@@ -31,6 +31,12 @@ formEvent path fsForm fsEvent event attendance
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsForm niceNameOfEventField
 
+        -- Save button.
+        H.br
+        input   ! A.type_  "submit"
+                ! A.class_ "buttonFull"
+                ! A.value  "Save"
+
         -- Event details.
         divEventDetails    fsForm event
         divEventAttendance path fsForm fsEvent event attendance

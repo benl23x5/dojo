@@ -135,13 +135,11 @@ input
 
 .list tbody tr:hover .link
 {       color: #00f;
-
-/*        text-decoration: underline;  */
 }
 
 
 .list tbody a
-{       color: #000;
+{       color: #00a;
         text-decoration: none;
 }
 

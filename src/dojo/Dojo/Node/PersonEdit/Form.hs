@@ -31,6 +31,12 @@ formPerson fsFeed path person
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
 
+        -- Save button.
+        H.br
+        input   ! A.type_  "submit"
+                ! A.class_ "buttonFull"
+                ! A.value  "Save"
+
         -- Person details.
         divPersonDetails fsFeed person
         H.br
