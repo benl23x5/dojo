@@ -6,7 +6,7 @@ import Dojo.Data.Person
 import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
-
+import Data.String
 
 -------------------------------------------------------------------------------
 -- | Form to change the details of a single person.
@@ -78,11 +78,23 @@ divPersonDetails fsFeed person
         field   "Email"         "email address"
                 (maybe "" pretty $ personEmail person)
 
-        field   "DojoHome"      "home dojo"
-                (maybe "" pretty $ personDojoHome person)
+        -- TODO: add 'ok' feedback when updated.
+        let sDojo   = fromString $ maybe "" pretty $ personDojoHome person
+        H.table
+         $ do   col ! A.class_ "DojoHome"
+                tr $ th $ "home dojo"
+                tr $ td $ (H.select ! A.name "DojoHome")
+                        $ do    H.option ! A.value "" $ "(unspecified)"
+                                forM_ ssDojos (optSelected sDojo)
 
-        field   "MembershipLevel" "membership level"
-                (maybe "" pretty $ personMembershipLevel person)
+        -- TODO: add 'ok' feedback when updated.
+        let sMember = fromString $ maybe "" pretty $ personMembershipLevel person
+        H.table
+         $ do   col ! A.class_ "MembershipLevel"
+                tr $ th $ "membership level"
+                tr $ td $ (H.select ! A.name "MembershipLevel")
+                        $ do    H.option ! A.value "" $ "(unspecified)"
+                                forM_ ssMemberLevels (optSelected sMember)
 
         field   "MembershipRenewal" "membership renewal date"
                 (maybe "" pretty $ personMembershipRenewal person)
@@ -103,4 +115,42 @@ divPersonDetails fsFeed person
         field sClass sLabel sValue
          = H.table $ trInput_ fsFeed sClass sLabel sValue
 
+        optSelected sSel sVal
+         = (H.option
+                !  A.value (fromString sVal)
+                !? (sSel == sVal, A.selected, "true"))
+                (H.toHtml sVal)
+
+        -- TODO: get member types from database.
+        ssMemberLevels
+         = [ "Family Annual"
+           , "Adult Annual"
+           , "University Annual"
+           , "Student Annual"
+           , "Concession Annual"
+           , "Child Annual"
+           , "Family Intro (3 months)"
+           , "Adult Intro (3 months)"
+           , "University Intro (3 months)"
+           , "Student Intro (3 months)"
+           , "Concession Intro (3 months)"
+           , "Child Intro (3 months)" ]
+
+        -- TODO: get dojo list from database.
+        ssDojos
+         = [ "Armidale"
+           , "Bega"
+           , "Bellingen"
+           , "Berala"
+           , "Elands"
+           , "Faulconbridge"
+           , "Gordon"
+           , "Granville"
+           , "Hornsby"
+           , "Katoomba"
+           , "Leichhardt"
+           , "Lismore"
+           , "Roseville"
+           , "Seven Hills"
+           , "Sutherland" ]
 
