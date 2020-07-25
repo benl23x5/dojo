@@ -70,7 +70,9 @@ divEventDetails fsFeed event dojos
 
         -- When this is a new event put focus on the location input field,
         -- otherwise allow focus to be taken by the last person entry field.
+        --  TODO:  reinstate focus on location when eid == 0
         let EventId eid = eventId event
+
 
         let sDojo = pretty $ eventLocation event
         H.table
@@ -79,13 +81,6 @@ divEventDetails fsFeed event dojos
                 tr $ td $ (H.select ! A.name "Location")
                         $ do    H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty dojos) (optSelected sDojo)
-
-{-
-        tableFields fsFeed
-         [ ( "Location", "location"
-           , pretty $ eventLocation event, Just "(required)"
-           , eid == 0) ]
--}
 
         tableFields fsFeed
          [ ( "Type", "type (dojo, ttc etc)"

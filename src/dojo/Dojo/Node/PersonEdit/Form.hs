@@ -17,9 +17,10 @@ formPerson
         -> Path         -- ^ Path to submit form.
         -> Person       -- ^ Person details to populate form.
         -> [PersonDojo] -- ^ Current dojos list.
+        -> [PersonMembershipLevel]
         -> Html
 
-formPerson fsFeed path person dojos
+formPerson fsFeed path person dojos memberLevels
  = form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
@@ -39,7 +40,7 @@ formPerson fsFeed path person dojos
                 ! A.value  "Save"
 
         -- Person details.
-        divPersonDetails fsFeed person dojos
+        divPersonDetails fsFeed person dojos memberLevels
         H.br
 
         -- Save button.
@@ -49,8 +50,12 @@ formPerson fsFeed path person dojos
 
 
 -------------------------------------------------------------------------------
-divPersonDetails :: [FeedForm] -> Person -> [PersonDojo] -> Html
-divPersonDetails fsFeed person dojos
+divPersonDetails
+        :: [FeedForm]
+        -> Person -> [PersonDojo] -> [PersonMembershipLevel]
+        -> Html
+
+divPersonDetails fsFeed person dojos memberLevels
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
         H.table $ trInputWithFocus fsFeed
@@ -95,7 +100,7 @@ divPersonDetails fsFeed person dojos
                 tr $ th $ "membership level"
                 tr $ td $ (H.select ! A.name "MembershipLevel")
                         $ do    H.option ! A.value "" $ "(unspecified)"
-                                forM_ ssMemberLevels (optSelected sMember)
+                                forM_ (map pretty memberLevels) (optSelected sMember)
 
         fieldm  "MembershipRenewal" "membership renewal date"
                 (personMembershipRenewal person)
@@ -122,20 +127,3 @@ divPersonDetails fsFeed person dojos
                 !  A.value (fromString sVal)
                 !? (sSel == sVal, A.selected, "true"))
                 (H.toHtml sVal)
-
-        -- TODO: get member types from database.
-        ssMemberLevels
-         = [ "Family Annual"
-           , "Adult Annual"
-           , "University Annual"
-           , "Student Annual"
-           , "Concession Annual"
-           , "Child Annual"
-           , "Family Intro (3 months)"
-           , "Adult Intro (3 months)"
-           , "University Intro (3 months)"
-           , "Student Intro (3 months)"
-           , "Concession Intro (3 months)"
-           , "Child Intro (3 months)"
-           , "Special" ]
-

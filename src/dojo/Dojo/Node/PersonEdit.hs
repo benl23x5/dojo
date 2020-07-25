@@ -36,8 +36,9 @@ cgiPersonEdit ss inputs
                   , isUpper f ]
 
         -- Connect to the database.
-        conn    <- liftIO $ connectSqlite3 databasePath
-        dojos   <- liftIO $ getDojos conn
+        conn            <- liftIO $ connectSqlite3 databasePath
+        dojos           <- liftIO $ getDojos conn
+        memberLevels    <- liftIO $ getMembershipLevels conn
 
         -- See if we were given an existing person id.
         (mpid, person)
@@ -57,19 +58,19 @@ cgiPersonEdit ss inputs
          -- Update person details.
          | (not $ null fieldUpdates)
          -> cgiPersonEdit_update
-                ss conn mpid person dojos fieldUpdates
+                ss conn mpid person dojos memberLevels fieldUpdates
 
          -- Show the form and wait for entry.
          | otherwise
          -> do  liftIO $ disconnect conn
-                cgiPersonEdit_entry ss person dojos
+                cgiPersonEdit_entry ss person dojos memberLevels
 
 
 -------------------------------------------------------------------------------
 -- | We haven't got any updates yet, so show the entry form.
-cgiPersonEdit_entry ss person dojos
+cgiPersonEdit_entry ss person dojos memberLevels
  = outputFPS $ renderHtml
- $ htmlPersonEdit ss person dojos []
+ $ htmlPersonEdit ss person dojos memberLevels []
 
 
 -------------------------------------------------------------------------------
@@ -78,21 +79,22 @@ cgiPersonEdit_entry ss person dojos
 cgiPersonEdit_update
         :: IConnection conn
         => Session -> conn
-        -> Maybe PersonId       -- person id if we are editing an existing person
-        -> Person               -- person
-        -> [PersonDojo]         -- available dojos
-        -> [(String, String)]   -- fields to update
+        -> Maybe PersonId               -- person id if we are editing existing
+        -> Person                       -- person
+        -> [PersonDojo]                 -- available dojos
+        -> [PersonMembershipLevel]      -- available membership levels
+        -> [(String, String)]           -- fields to update
         -> CGI CGIResult
 
 cgiPersonEdit_update ss conn
-        Nothing person dojos updates
+        Nothing person dojos memberLevels updates
  = do   person' <- liftIO $ insertPerson conn person
         cgiPersonEdit_update ss conn
-                (personId person') person' dojos
+                (personId person') person' dojos memberLevels
                 updates
 
 cgiPersonEdit_update ss conn
-        (Just _pid) personOld dojos updates
+        (Just _pid) personOld dojos memberLevels updates
  = case loadPerson updates personOld of
     -- Some fields didn't parse.
     Left fieldErrors
@@ -101,7 +103,7 @@ cgiPersonEdit_update ss conn
                 | (sField, sValue, ParseError sError) <- fieldErrors ]
 
            outputFPS $ renderHtml
-             $ htmlPersonEdit ss personOld dojos fsFeed
+             $ htmlPersonEdit ss personOld dojos memberLevels fsFeed
 
     -- All the fields parsed.
     Right personNew
@@ -114,15 +116,17 @@ cgiPersonEdit_update ss conn
                  | sField <- diffPerson personOld personNew ]
 
             outputFPS $ renderHtml
-             $ htmlPersonEdit ss personNew dojos fsFeed
+             $ htmlPersonEdit ss personNew dojos memberLevels fsFeed
 
 
 -------------------------------------------------------------------------------
 -- | Html for person edit page.
 htmlPersonEdit
-        :: Session -> Person -> [PersonDojo]
+        :: Session
+        -> Person -> [PersonDojo] -> [PersonMembershipLevel]
         -> [FeedForm] -> Html
-htmlPersonEdit ss person dojos fsFeed
+
+htmlPersonEdit ss person dojos memberLevels fsFeed
  = H.docTypeHtml
  $ do   pageHeader "Editing Person"
         pageBody
@@ -136,6 +140,6 @@ htmlPersonEdit ss person dojos fsFeed
 
                 formPerson fsFeed
                         (pathPersonEdit ss (personId person))
-                        person dojos
+                        person dojos memberLevels
 
 

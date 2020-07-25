@@ -59,4 +59,5 @@ CREATE TABLE v1_Dojo
 
 /* Membership Level names. */
 CREATE TABLE v1_MembershipLevel
-        ( Name                  STRING  PRIMARY KEY);
+        ( SortOrder             INTEGER
+        , Name                  STRING  PRIMARY KEY);

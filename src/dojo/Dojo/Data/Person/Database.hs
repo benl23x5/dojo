@@ -5,6 +5,7 @@ import Dojo.Framework
 import Dojo.Trivia
 
 
+------------------------------------------------------------------------------
 -- | Get all the people, ordered by family name.
 getPeople  :: IConnection conn => conn -> IO [Person]
 getPeople conn
@@ -53,3 +54,18 @@ updatePerson conn person
         execute stmt
          $  [fieldToSql pf person | pf <- personFieldsNoKey]
          ++ [toSql $ personId person]
+
+
+------------------------------------------------------------------------------
+getMembershipLevels
+        :: IConnection conn => conn -> IO [PersonMembershipLevel]
+getMembershipLevels conn
+ = do   vss <- quickQuery' conn (unlines
+                [ "SELECT Name FROM v1_MembershipLevel"
+                , "ORDER BY SortOrder ASC" ]) []
+
+        let parseLevel [v]
+             = let Just level = fromSql v
+               in  level
+
+        return $ map parseLevel vss
