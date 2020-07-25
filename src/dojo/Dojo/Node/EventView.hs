@@ -48,7 +48,7 @@ cgiEventView_page ss event attendance
 -- | Event details.
 divEventDetails :: Event -> Html
 divEventDetails event
- = H.div ! A.id "event-details-view" ! A.class_ "details"
+ = H.div ! A.class_ "details" ! A.id "event-details-view"
  $ do
         H.table
          $ do   col' "EventId"; col' "Date"; col' "Time"

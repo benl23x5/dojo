@@ -41,9 +41,7 @@ divPersonList ss people
  = H.div ! A.class_ "list person-list"
  $ H.table
  $ do
-        col ! A.class_ "ShortName"
-        col ! A.class_ "FamilyName"
-        col ! A.class_ "PhoneMobile"
+        col' "ShortName"; col' "FamilyName"; col' "PhoneMobile"
         tr $ do th "pref / first"; th "family"; th "phone"
 
          -- Clicking on any column goes to person view page.
@@ -59,7 +57,9 @@ divPersonList ss people
                |  otherwise
                -> personPhoneFixed person
 
- where  td' person val
+ where  col' c = col ! A.class_ c
+
+        td' person val
          | Just pid <- personId person
          = td $ (a ! A.href (H.toValue $ pathPersonView ss pid))
                 (H.toMarkup $ fromMaybe "" $ fmap pretty val)

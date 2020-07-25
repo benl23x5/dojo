@@ -41,6 +41,9 @@ zeroEvent
         , eventDate             = Nothing
         , eventTime             = Nothing }
 
+eventFieldNames
+        = ["Id", "Type", "Location", "Date", "Time"]
+
 
 -- Projections ----------------------------------------------------------------
 -- | Take the local time of an event.

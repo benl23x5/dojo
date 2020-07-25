@@ -133,8 +133,8 @@ divAttendanceCur path fsEvent attendance
 -- | Row for person that is currently listed as attending the event.
 trCurAttendance :: [PersonId] -> Path -> Int -> Person -> Html
 trCurAttendance pidsAdded path ix person
- = tr
- $ do   td $ H.toMarkup (show ix)
+ = tr $ do
+        td $ H.toMarkup (show ix)
 
         let bJustAdded
              = case personId person of
@@ -172,16 +172,16 @@ divAttendanceNew fsForm fsEvent event curStudents
 
         -- When the event is new then leave focus on the details rather
         -- than the attandance fields.
-        let Just (EventId eid) = eventId event
-        let takeFocus   = not $ eid == 0
+        let bTakeFocus = isJust $ eventId event
 
         -- When the form has invalid details field then prevent input
         -- of more attendees.
         let hasInvalidFields
                 = not $ null [x | FeedFormInvalid x _ _ <- fsForm]
 
-        mapM_ (trNewAttendance fsEvent takeFocus hasInvalidFields curStudents)
-                [0 .. 4]
+        forM_ [0 .. 4] $ \ix ->
+                trNewAttendance fsEvent bTakeFocus
+                        hasInvalidFields curStudents ix
 
 
 -------------------------------------------------------------------------------

@@ -9,22 +9,26 @@ module Dojo.Node.EventEdit.Arg
 where
 import Dojo.Node.EventEdit.Feed
 import Dojo.Data.Person
-import Dojo.Framework
+import Dojo.Data.Event
 
 
 -- | A CGI argument passed to the EventEdit node.
 data Arg
-        -- | Empty form field.
-        = ArgEmpty
+        -- | Update a field
+        = ArgUpdate     String String
 
         -- | Add a person to the attendance record.
-        | ArgAddPerson          String
+        | ArgAddPerson  String
 
         -- | Delete a person from the attendance record.
-        | ArgDelPerson          PersonId
+        | ArgDelPerson  PersonId
 
         -- | Event edit feedback
-        | ArgFeedEvent          FeedEvent
+        | ArgFeedEvent  FeedEvent
+
+        -- | Empty update field, safe to ignore.
+        | ArgEmpty
+        deriving Show
 
 
 -- | Parse a CGI key value pair to an argument.
@@ -44,9 +48,11 @@ argOfKeyVal kv@(key, val)
         | Just fe       <- takeFeedEventOfKeyVal kv
         = Just $ ArgFeedEvent fe
 
-        -- TODO: better parsing
+        | elem key eventFieldNames
+        = Just $ ArgUpdate key val
+
         | otherwise
-        = Just ArgEmpty
+        = Nothing
 
 
 -- | Convert an argument to a CGI key value pair.
@@ -113,6 +119,4 @@ takeFeedFormOfArg arg
          -> Just $ FeedFormUpdated f
 
         _ -> Nothing
-
-
 

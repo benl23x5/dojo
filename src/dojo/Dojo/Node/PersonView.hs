@@ -48,7 +48,7 @@ cgiPersonView_page ss person events
 -- | Person Details
 divPersonDetails :: Person -> Html
 divPersonDetails person
- = H.div ! A.id "person-details-view" ! A.class_ "details"
+ = H.div ! A.class_ "details" ! A.id "person-details-view"
  $ do
         H.table
          $ do   let bHasPref = isJust $ personPreferredName person

@@ -1,7 +1,5 @@
 
-module Dojo.Node.EventEdit
-        (cgiEventEdit)
-where
+module Dojo.Node.EventEdit (cgiEventEdit) where
 import Dojo.Node.EventEdit.Feed
 import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Arg
@@ -10,6 +8,7 @@ import Dojo.Data.Person
 import Dojo.Data.Session
 import Dojo.Data.Dojo
 import Dojo.Paths
+import Dojo.Fail
 import Dojo.Chrome
 import Config
 import qualified Data.Time                      as Time
@@ -20,12 +19,7 @@ import qualified Text.Blaze.Html5.Attributes    as A
 -------------------------------------------------------------------------------
 -- | Edit a single event, using a vertical form.
 --
---    ?ee [&eid=INT] [... &u=FIELDNAME ...]
---      Show the form to edit or add an event.
---      When there is no eid argument then we add a new event.
---
---      The 'updated' fields are passed if a previous action just updated
---      the event record. Display UI feedback for these.
+--    ?ee [&eid=INT] ...
 --
 --    ?ee ... &addPerson=STRING ...
 --      (action) Add people as attendees to this event,
@@ -35,6 +29,13 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --      (action) Delete people as attendees to this event,
 --               then show the entry form.
 --
+--    ?ee ... &fu=FieldName ...
+--      (feedback) Feedback field updated.
+--
+--    ?ee ... &fa=PID ...
+--      (feedback) Feedback person added.
+--
+--
 cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventEdit ss inputs
  = do
@@ -42,27 +43,26 @@ cgiEventEdit ss inputs
         conn <- liftIO $ connectSqlite3 databasePath
 
         -- Normalise incoming arguments.
-        let Just args   = sequence $ map argOfKeyVal inputs
+        let ssArgs = filter (\(k, _) -> not $ elem k ["s", "n", "eid"]) inputs
+        let args   = case sequence $ map argOfKeyVal ssArgs of
+                        Just aa -> aa
+                        Nothing -> throw $ FailNodeArgs "event edit" inputs
 
         -- Load form feedback from arguments.
-        let fsForm      = mapMaybe takeFeedFormOfArg args
+        let fsForm = mapMaybe takeFeedFormOfArg args
 
         -- If there is feedback saying that a person search found multiple
-        -- matchinh person ids then lookup the full details so we can display
-        -- the multiple names in feedback. Also renumber the feedback so any
-        -- search terms that are still unresolved are packed to the front
-        -- of the input list.
-        fsEvent
-         <- liftIO $ fmap concat
-         $  mapM (expandMultiPersonId conn)
-         $  renumberSearchFeedback
-         $  [fe | ArgFeedEvent fe <- args]
+        --  matching person ids then lookup the full details so we can display
+        --  the multiple names in feedback. Also renumber the feedback so any
+        --  search terms that are still unresolved are packed to the front
+        --  of the input list.
+        fsEvent <- liftIO $ fmap concat
+                $  mapM (expandMultiPersonId conn)
+                $  renumberSearchFeedback
+                $  [fe | ArgFeedEvent fe <- args]
 
         -- Extract fields to update from the arguments.
-        -- TODO: load this from normalized arguments.
-        let fieldUpdates
-                = [ (field, value) | (field@(f : _), value) <- inputs
-                                   , isUpper f ]
+        let updates  = [ (field, value) | ArgUpdate field value <- args ]
 
         -- People to delete from the event.
         let pidsDel  = [ pid  | ArgDelPerson pid  <- args ]
@@ -80,11 +80,14 @@ cgiEventEdit ss inputs
         (meid, event, psAttend)
           <- case lookup "eid" inputs of
               Just strEventId
-                -> do   -- TODO: better parsing
-                        let Right eid = parse strEventId
-                        event    <- liftIO $ getEvent      conn (EventId eid)
-                        psAttend <- liftIO $ getAttendance conn (EventId eid)
-                        return  (eventId event, event, psAttend)
+               -> case parse strEventId of
+                   Left err
+                    -> throw $ FailParse "event id" strEventId err
+
+                   Right eid
+                    -> do event    <- liftIO $ getEvent      conn eid
+                          psAttend <- liftIO $ getAttendance conn eid
+                          return  (eventId event, event, psAttend)
 
               Nothing
                -> do    -- Use the current time as a placeholder until the
@@ -99,17 +102,18 @@ cgiEventEdit ss inputs
                                   , eventTime = Just etime }
                         return  (Nothing, event, [])
 
+
         if
          -- Delete some people from the event.
          | not $ null pidsDel
          ->     cgiEventEdit_del ss conn meid pidsDel
 
          -- Update the event details or add new people as attendees.
-         | (not $ null fieldUpdates) || (not $ null newNames)
+         | (not $ null updates) || (not $ null newNames)
          -> cgiEventEdit_update
                 ss conn fsForm fsEvent
                 meid event psAttend dojos eventTypes
-                fieldUpdates newNames
+                updates newNames
 
          -- Show the form and wait for entry.
          | otherwise
@@ -117,7 +121,6 @@ cgiEventEdit ss inputs
                 outputFPS $ renderHtml
                  $ htmlEventEdit ss fsForm fsEvent
                         meid event psAttend dojos eventTypes
-
 
 -------------------------------------------------------------------------------
 -- Delete some people from the event.
@@ -173,8 +176,7 @@ cgiEventEdit_update
         Nothing event psAttend dojos eventTypes updates newNames
  = do   event' <- liftIO $ insertEvent conn event
         cgiEventEdit_update
-                ss conn
-                fsForm fsEvent
+                ss conn fsForm fsEvent
                 (eventId event') event'
                 psAttend dojos eventTypes
                 updates newNames
@@ -184,45 +186,46 @@ cgiEventEdit_update
         ss conn fsForm fsEvent
         (Just eid) eventOld psAttend dojos eventTypes updates newNames
  = case loadEvent updates eventOld of
-        -- Some of the fields didn't parse.
-        Left fieldErrors
-         -> do  let fsForm'
-                        =  nub $ fsForm
-                        ++ [ FeedFormInvalid sField sValue sError
-                           | (sField, sValue, ParseError sError) <- fieldErrors ]
+        Left fieldErrors -> goError fieldErrors
+        Right eventNew   -> goNewEvent eventNew
+ where
+  goError fieldErrors
+   = do let fsForm'
+                =  nub $ fsForm
+                ++ [ FeedFormInvalid sField sValue sError
+                   | (sField, sValue, ParseError sError) <- fieldErrors ]
 
-                outputFPS $ renderHtml
-                 $ htmlEventEdit ss
-                        fsForm' fsEvent
-                        (Just eid) eventOld
-                        psAttend dojos eventTypes
+        outputFPS $ renderHtml
+         $ htmlEventEdit ss
+                fsForm' fsEvent
+                (Just eid) eventOld
+                psAttend dojos eventTypes
 
-        -- All the fields parsed.
-        Right eventNew
-         -> do  -- Get the fields that have been updated by the form.
-                let diffFields = diffEvent eventOld eventNew
+  goNewEvent eventNew
+   = do -- Get the fields that have been updated by the form.
+        let diffFields = diffEvent eventOld eventNew
 
-                -- Write the event details changes to the database.
-                liftIO $ updateEvent conn eventNew
+        -- Write the event details changes to the database.
+        liftIO $ updateEvent conn eventNew
 
-                -- Feedback for updated fields.
-                let fsUpdated
-                     = map FeedEventFieldUpdated diffFields
+        -- Feedback for updated fields.
+        let fsUpdated
+             = map FeedEventFieldUpdated diffFields
 
-                -- Find and add attendees based on the supplied names.
-                fsSearch
-                 <- liftM concat $ liftIO
-                  $ zipWithM (searchAddPerson conn eventNew psAttend)
-                        [0..] newNames
-                liftIO $ commit conn
-                liftIO $ disconnect conn
+        -- Find and add attendees based on the supplied names.
+        fsSearch
+         <- liftM concat $ liftIO
+          $ zipWithM (searchAddPerson conn eventNew psAttend)
+                [0..] newNames
+        liftIO $ commit conn
+        liftIO $ disconnect conn
 
-                -- Redirect to the same page with a clean path,
-                --  that includes updated feedback.
-                let fsFeed = fsUpdated ++ fsSearch
-                redirect $ flatten
-                 $   pathEventEdit ss (Just eid)
-                 <&> mapMaybe takeKeyValOfFeedEvent fsFeed
+        -- Redirect to the same page with a clean path,
+        --  that includes updated feedback.
+        let fsFeed = fsUpdated ++ fsSearch
+        redirect $ flatten
+         $   pathEventEdit ss (Just eid)
+         <&> mapMaybe takeKeyValOfFeedEvent fsFeed
 
 
 -- | Find and add attendees based on the new names.
@@ -254,7 +257,8 @@ searchAddPerson conn event psAttend ix sQuery
           -- .. and the person is not already an attendee, so add them.
           | Just eid <- eventId event
           -> do  insertAttendance conn eid person
-                 return $ [FeedEventPersonAdded pid | Just pid <- [personId person]]
+                 return [ FeedEventPersonAdded pid
+                        | Just pid <- [personId person]]
 
           -- .. no event id yet, skip.
           | otherwise
@@ -285,14 +289,12 @@ htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos eventTypes
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                -- TODO: different link if no event id yet
                 tablePaths
                  $ case eventId event of
                     Nothing     -> []
                     Just eid    -> [pathEventView ss eid]
 
-                -- Main entry form.
-                H.div   ! A.class_ "event"
-                        $ formEvent (pathEventEdit ss mEid)
-                                fsForm fsEvent
-                                event eventTypes psAttend dojos
+                H.div ! A.class_ "event"
+                 $ formEvent (pathEventEdit ss mEid)
+                        fsForm fsEvent
+                        event eventTypes psAttend dojos
