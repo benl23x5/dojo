@@ -9,7 +9,7 @@ import Dojo.Trivia
 data Person
         = Person
         { -- | The person id will be Nothing if the record has not been
-          --   added to the database yet, but there is a NOT NULL/PRIMARY KEY
+          --   added to the database yet, but there is a PRIMARY KEY
           --   constraint on the field in the database.
           personId                      :: Maybe PersonId       -- PRIMARY KEY
 

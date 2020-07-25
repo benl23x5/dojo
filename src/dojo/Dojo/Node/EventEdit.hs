@@ -84,7 +84,7 @@ cgiEventEdit ss inputs
                         let Right eid = parse strEventId
                         event    <- liftIO $ getEvent      conn (EventId eid)
                         psAttend <- liftIO $ getAttendance conn (EventId eid)
-                        return  (Just (eventId event), event, psAttend)
+                        return  (eventId event, event, psAttend)
 
               Nothing
                -> do    -- Use the current time as a placeholder until the
@@ -94,7 +94,9 @@ cgiEventEdit ss inputs
                                 = splitEventLocalTime
                                 $ Time.zonedTimeToLocalTime zonedTime
 
-                        let event = zeroEvent edate etime
+                        let event = zeroEvent
+                                  { eventDate = Just edate
+                                  , eventTime = Just etime }
                         return  (Nothing, event, [])
 
         if
@@ -173,7 +175,7 @@ cgiEventEdit_update
         cgiEventEdit_update
                 ss conn
                 fsForm fsEvent
-                (Just $ eventId event') event'
+                (eventId event') event'
                 psAttend dojos eventTypes
                 updates newNames
 
@@ -250,9 +252,13 @@ searchAddPerson conn event psAttend ix sQuery
           -> return []
 
           -- .. and the person is not already an attendee, so add them.
-          | otherwise
-          -> do  insertAttendance conn (eventId event) person
+          | Just eid <- eventId event
+          -> do  insertAttendance conn eid person
                  return $ [FeedEventPersonAdded pid | Just pid <- [personId person]]
+
+          -- .. no event id yet, skip.
+          | otherwise
+          -> return []
 
          -- Didn't find any people for these terms.
          FoundNone
@@ -277,10 +283,13 @@ htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos eventTypes
  = H.docTypeHtml
  $ do   pageHeader "Editing Event"
         pageBody
-         $ do   (if isJust mEid
-                  then do tablePaths $ pathsJump ss
-                          tablePaths [pathEventView ss $ eventId event]
-                  else do tablePaths (pathsJump ss))
+         $ do   tablePaths $ pathsJump ss
+
+                -- TODO: different link if no event id yet
+                tablePaths
+                 $ case eventId event of
+                    Nothing     -> []
+                    Just eid    -> [pathEventView ss eid]
 
                 -- Main entry form.
                 H.div   ! A.class_ "event"

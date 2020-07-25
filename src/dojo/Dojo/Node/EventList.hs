@@ -49,15 +49,17 @@ tableEventList ss eventList
 trEvent :: Session -> (Event, Int) -> Html
 trEvent ss (event, peopleCount)
  = tr
- $ do   -- Event data.
-        td' (eventDate      event)
-        td' (eventTime      event)
-        td' (eventLocation  event)
-        td' peopleCount
+ $ do   -- TODO: supress link on no eid
+        let Just eid = eventId event
+        let pathView = pathEventView ss eid
 
- where  -- Clicking on any column takes us to the Event View page.
-        pathView = pathEventView ss $ eventId event
-
-        td' val  = td $ (a ! A.href (H.toValue pathView))
+        let tdField val
+             = td $ (a ! A.href (H.toValue pathView))
                         (H.toMarkup val)
+
+        -- Event data.
+        tdField (fromMaybe "" $ fmap pretty $ eventDate      event)
+        tdField (fromMaybe "" $ fmap pretty $ eventTime      event)
+        tdField (fromMaybe "" $ fmap pretty $ eventLocation  event)
+        tdField peopleCount
 

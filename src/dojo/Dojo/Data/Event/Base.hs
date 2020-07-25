@@ -1,28 +1,10 @@
 
-module Dojo.Data.Event.Base
-        ( Event                 (..)
-        , EventId               (..)
-        , EventType             (..)
-        , EventLocation         (..)
-        , EventDate             (..)
-        , EventTime             (..)
-        , EventDisplayName      (..)
-        , EventLocalTime        (..)
-
-        -- * Projections
-        , eventLocalTime
-
-        -- * Constructors
-        , zeroEvent
-
-        -- * Conversions
-        , makeEventLocalTime
-        , splitEventLocalTime)
-where
+module Dojo.Data.Event.Base where
 import Dojo.Trivia
 import qualified Data.Time      as Time
 
 
+-------------------------------------------------------------------------------
 -- | An event that people can attend.
 --
 --   This is a view of the rows of the event table in the database.
@@ -31,40 +13,48 @@ import qualified Data.Time      as Time
 --
 data Event
         = Event
-        { -- | Unique event id.
-          eventId               :: EventId              -- PRIMARY KEY
+        { -- | The event id will be Nothing if the record has not been
+          --   added to the database yet, but there is a PRIMARY KEY
+          --   constraint on the field in the database.
+          eventId               :: Maybe EventId        -- PRIMARY KEY
 
-          -- | Sort of event, eg "Regular"
-        , eventType             :: EventType
+          -- | Sort of event, eg "Adults"
+        , eventType             :: Maybe EventType
 
           -- | Where the event was held.
-        , eventLocation         :: EventLocation
+        , eventLocation         :: Maybe EventLocation
 
           -- | Date the event was held.
-        , eventDate             :: EventDate
+        , eventDate             :: Maybe EventDate
 
           -- | Local time when the event was held.
-        , eventTime             :: EventTime }
+        , eventTime             :: Maybe EventTime }
+
+
+-- | Create a zero event.
+zeroEvent :: Event
+zeroEvent
+        = Event
+        { eventId               = Nothing
+        , eventType             = Nothing
+        , eventLocation         = Nothing
+        , eventDate             = Nothing
+        , eventTime             = Nothing }
 
 
 -- Projections ----------------------------------------------------------------
 -- | Take the local time of an event.
-eventLocalTime :: Event -> EventLocalTime
+eventLocalTime :: Event -> Maybe EventLocalTime
 eventLocalTime event
-        = EventLocalTime
-        $ makeEventLocalTime (eventDate event) (eventTime event)
+ | Just date <- eventDate event
+ , Just time <- eventTime event
+ = Just $ EventLocalTime $ makeEventLocalTime date time
+
+ | otherwise
+ = Nothing
 
 
 -- Constructors ---------------------------------------------------------------
--- | Create a zero event.
-zeroEvent :: EventDate -> EventTime -> Event
-zeroEvent edate etime
-        = Event
-        { eventId               = EventId       0
-        , eventType             = EventType     ""
-        , eventLocation         = EventLocation ""
-        , eventDate             = edate
-        , eventTime             = etime }
 
 
 -- Conversions ----------------------------------------------------------------

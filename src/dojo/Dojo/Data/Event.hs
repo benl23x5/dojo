@@ -42,7 +42,7 @@ loadEvent inputs event
          = case lookup name inputs of
                 Nothing  -> Right def
                 Just str -> case parse str of
-                                Right val       -> Right val
+                                Right val       -> Right (Just val)
                                 Left err        -> Left [(name, str, err)]
    in do
         eloc    <- load "Location" (eventLocation  event)

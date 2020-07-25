@@ -121,18 +121,21 @@ divEventList :: Session -> [Event] -> Html
 divEventList ss events
  = H.div ! A.class_ "list person-attendance"
  $ H.table
- $ do   col' "Date"; col' "Time"; col' "Location"
+ $ do
+        col' "Date"; col' "Time"; col' "Location"
         tr $ do th "date"; th "time"; th "location"
 
         forM_ events $ \event -> tr $ do
-         td' event (eventDate      event)
-         td' event (eventTime      event)
-         td' event (eventLocation  event)
+         td' event (fromMaybe "" $ fmap pretty $ eventDate event)
+         td' event (fromMaybe "" $ fmap pretty $ eventTime      event)
+         td' event (fromMaybe "" $ fmap pretty $ eventLocation  event)
 
  where  col' c   = col ! A.class_ c
 
+        -- TODO: suppress link on no eid
         pathView event
-         = pathEventView ss $ eventId event
+         = let  Just eid = eventId event
+           in   pathEventView ss $ eid
 
         td' event val
          = td $ (a ! A.href (H.toValue $ pathView event))

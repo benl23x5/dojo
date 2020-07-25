@@ -61,11 +61,13 @@ divEventDetails fsFeed event eventTypes dojos
  $ do
         tableFields fsFeed
          [ ( "Date", "date (dd-mm-yyyy)"
-           , pretty $ eventDate event, Just "(required)"
+           , maybe "" pretty $ eventDate event
+           , Just "(required)"
            , False)
 
          , ( "Time", "time (hh:mm 24hr)"
-           , pretty $ eventTime event, Just "(required)"
+           , maybe "" pretty $ eventTime event
+           , Just "(required)"
            , False)
          ]
 
@@ -73,7 +75,7 @@ divEventDetails fsFeed event eventTypes dojos
         -- otherwise allow focus to be taken by the last person entry field.
         --  TODO:  reinstate focus on location when eid == 0
         --  let EventId eid = eventId event
-        let sDojo = pretty $ eventLocation event
+        let sDojo = maybe "" pretty $ eventLocation event
         H.table
          $ do   col ! A.class_ "Location"
                 tr $ th $ "location"
@@ -81,7 +83,7 @@ divEventDetails fsFeed event eventTypes dojos
                         $ do    H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty dojos) (optSelected sDojo)
 
-        let sType = pretty $ eventType event
+        let sType = maybe "" pretty $ eventType event
         H.table
          $ do   col ! A.class_ "Type"
                 tr $ th $ "type"
@@ -170,7 +172,7 @@ divAttendanceNew fsForm fsEvent event curStudents
 
         -- When the event is new then leave focus on the details rather
         -- than the attandance fields.
-        let EventId eid = eventId event
+        let Just (EventId eid) = eventId event
         let takeFocus   = not $ eid == 0
 
         -- When the form has invalid details field then prevent input

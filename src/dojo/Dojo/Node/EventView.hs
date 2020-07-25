@@ -44,7 +44,7 @@ cgiEventView_page ss event attendance
  $ do   pageHeader $ pretty $ eventDisplayName event
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths $ [pathEventEdit ss $ Just $ eventId event]
+                tablePaths $ [pathEventEdit ss $ eventId event]
                 divEventView ss event attendance
 
 
@@ -82,7 +82,7 @@ divEventDetails event
 
  where  col' c  = col ! A.class_ c
         th' val = th val
-        td' val = td $ H.toMarkup val
+        td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
 
 -- | People that attended an event.

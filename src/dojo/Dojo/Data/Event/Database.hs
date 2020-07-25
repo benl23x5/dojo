@@ -11,14 +11,17 @@ import qualified Data.Time      as Time
 -- | Build an event from a list of Sql values.
 eventOfSqlValues :: [SqlValue] -> Event
 eventOfSqlValues [eid, etype, loc, ltime]
-        = Event
+ = Event
         { eventId       = fromSql eid
         , eventType     = fromSql etype
         , eventLocation = fromSql loc
         , eventDate     = edate
         , eventTime     = etime }
 
-        where (edate, etime) = splitEventLocalTime $ fromSql ltime
+ where (edate, etime)
+         = case fmap splitEventLocalTime $ fromSql ltime of
+                Nothing         -> (Nothing, Nothing)
+                Just (d, t)     -> (Just d, Just t)
 
 eventOfSqlValues _ = error "eventOfValues: no match"
 

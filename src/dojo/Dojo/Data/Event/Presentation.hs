@@ -5,17 +5,20 @@ module Dojo.Data.Event.Presentation
 where
 import Dojo.Data.Event.Base
 import Dojo.Framework
+import Dojo.Trivia
 
 
--- Presentation ---------------------------------------------------------------
 -- | Take the display name of an event.
 eventDisplayName :: Event -> EventDisplayName
 eventDisplayName event
          = EventDisplayName
-         $          (pretty $ eventLocation event)
-         ++ " "  ++ (pretty $ eventType     event)
-         ++ " on " ++ (pretty $ eventDate event)
-         ++ " at " ++ (pretty $ eventTime event)
+         $  (fromMaybe "event" (fmap pretty $ eventLocation event))
+         ++ (case eventDate event of
+                Nothing -> ""
+                Just d  -> " on " ++ pretty d)
+         ++ (case eventTime event of
+                Nothing -> ""
+                Just t  -> " at " ++ pretty t)
 
 
 niceNameOfEventField :: String -> Maybe String
