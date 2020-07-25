@@ -167,15 +167,16 @@ select
 /* Person View/Edit **************************************/
 
 /* View Mode */
-.person-attendance .Date        { width: 6em;  }
-.person-attendance .Time        { width: 4em;  }
-
 #person-details-view .Col3A     { width: 20% }
 #person-details-view .Col3B     { width: 30% }
 #person-details-view .Col3C     { width: 50% }
 
 #person-details-view .Col2A     { width: 50% }
 #person-details-view .Col2B     { width: 50% }
+
+#person-attendance .Date        { width: 6em;  }
+#person-attendance .Time        { width: 4em;  }
+
 
 /* Event List *********************************************/
 .event-list .Date               { width: 6em;   }
@@ -189,12 +190,7 @@ select
 /* View Mode */
 #event-details-view .EventId    { width: 2em; }
 #event-details-view .Date       { width: 8em; }
-
 #event-details-view .Location   { width: 10em; }
-/*
-#event-details-view .Time       { width: 5em; }
-#event-details-view .Type       { width: 8em; }
-*/
 
 /* Edit Mode */
 #event-details-edit .EventId    { width: 3em; }

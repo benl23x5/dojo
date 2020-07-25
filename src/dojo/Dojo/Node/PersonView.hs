@@ -19,8 +19,8 @@ cgiPersonView
         -> CGI CGIResult
 
 cgiPersonView ss inputs
- | Just strPersonId     <- lookup "pid" inputs
- , Right pid            <- parse strPersonId
+ | Just strPersonId <- lookup "pid" inputs
+ , Right pid        <- parse strPersonId
  = do   conn    <- liftIO $ connectSqlite3 databasePath
         person  <- liftIO $ getPerson conn pid
         events  <- liftIO $ getAttendanceOfPersonId conn pid
@@ -38,12 +38,7 @@ cgiPersonView_page ss person events
  $ do   pageHeader $ personDisplayName person
         pageBody
          $ do   tablePaths $ pathsJump ss
-
-                tablePaths
-                 $ case personId person of
-                    Nothing  -> []
-                    Just pid -> [pathPersonEdit ss $ Just pid]
-
+                tablePaths [pathPersonEdit ss $ personId person]
                 H.div ! A.id "person-view"
                  $ do   divPersonDetails person
                         divEventList ss events
@@ -125,7 +120,7 @@ divPersonDetails person
 -- | Events that a person has attended.
 divEventList :: Session -> [Event] -> Html
 divEventList ss events
- = H.div ! A.class_ "list person-attendance"
+ = H.div ! A.class_ "list" ! A.id "person-attendance"
  $ H.table
  $ do
         col ! A.class_ "Date"

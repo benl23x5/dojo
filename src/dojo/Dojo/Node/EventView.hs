@@ -1,42 +1,36 @@
 
-module Dojo.Node.EventView
-        (cgiEventView)
-where
+module Dojo.Node.EventView (cgiEventView) where
 import Dojo.Data.Session
 import Dojo.Data.Event
 import Dojo.Data.Person
 import Dojo.Paths
+import Dojo.Fail
 import Dojo.Chrome
 import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
+-------------------------------------------------------------------------------
 -- | Show details for a single event.
-cgiEventView :: Session -> [(String, String)] -> CGI CGIResult
+--      &eid=NAT  View the event with this id.
+cgiEventView
+        :: Session -> [(String, String)]
+        -> CGI CGIResult
+
 cgiEventView ss inputs
- | Just strEventId      <- lookup "eid" inputs
- , Right eid            <- parse strEventId
- = do
-        -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 databasePath
-
-        -- Load the event description.
+ | Just strEventId  <- lookup "eid" inputs
+ , Right eid        <- parse strEventId
+ = do   conn    <- liftIO $ connectSqlite3 databasePath
         event   <- liftIO $ getEvent conn eid
+        attend  <- liftIO $ getAttendance conn eid
+        liftIO $ disconnect conn
 
-        -- Load the current attendance.
-        attendance <- liftIO $ getAttendance conn eid
-
-        cgiEventView_page ss event attendance
+        cgiEventView_page ss event attend
 
  | otherwise
- = error $ "cgiEventView: bad inputs " ++ show inputs
+ = throw $ FailNodeArgs "event view" inputs
 
-
-cgiEventView_page
-        :: Session
-        -> Event -> [Person]
-        -> CGI CGIResult
 
 cgiEventView_page ss event attendance
  = outputFPS $ renderHtml
@@ -45,18 +39,12 @@ cgiEventView_page ss event attendance
         pageBody
          $ do   tablePaths $ pathsJump ss
                 tablePaths $ [pathEventEdit ss $ eventId event]
-                divEventView ss event attendance
+                H.div ! A.id "event-view"
+                 $ do   divEventDetails event
+                        divPersonList ss attendance
 
 
--- Event ----------------------------------------------------------------------
-divEventView :: Session -> Event -> [Person] -> Html
-divEventView ss event attendance
- = H.div ! A.id "event-view"
- $ do
-        divEventDetails event
-        divPersonList ss attendance
-
-
+-------------------------------------------------------------------------------
 -- | Event details.
 divEventDetails :: Event -> Html
 divEventDetails event
@@ -64,9 +52,7 @@ divEventDetails event
  $ do
         H.table
          $ do   col' "EventId"; col' "Date"; col' "Time"
-                tr $ do th' "id"
-                        th' "date"
-                        th' "time"
+                tr $ do th "id"; th "date"; th "time"
 
                 tr $ do td' (eventId       event)
                         td' (eventDate     event)
@@ -74,48 +60,35 @@ divEventDetails event
 
         H.table
          $ do   col' "Location"; col' "Type"
-                tr $ do th' "location"
-                        th' "type"
+                tr $ do th "location"; th "type"
 
                 tr $ do td' (eventLocation event)
                         td' (eventType     event)
 
  where  col' c  = col ! A.class_ c
-        th' val = th val
         td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
 
+-------------------------------------------------------------------------------
 -- | People that attended an event.
 divPersonList :: Session -> [Person] -> Html
 divPersonList ss people
- = H.div ! A.id     "event-attendance-cur"
-         ! A.class_ "list"
- $ table
- $ do   col' "index"
-        col' "Name"
-        col' "actions"
+ = H.div ! A.class_ "list" ! A.id "event-attendance-cur"
+ $ H.table
+ $ do   col' "index"; col' "Name"
+        tr $ do th "#"; th "attendees"
 
-        tr $ do th "#"
-                th "attendees"
+        forM_ (zip [(1 :: Int)..] people) $ \(ix, person) -> tr $ do
+         td $ H.toMarkup $ show ix
+         td' person $ pretty $ personDisplayName person
 
-        zipWithM_ (trPerson ss) [1..] people
+ where  col' c  = col ! A.class_ c
 
- where  col' c = col ! A.class_ c
+        td' person val
+         | Just pid <- personId person
+         = td $ (H.a ! A.href (H.toValue $ pathPersonView ss pid))
+                (H.toMarkup val)
 
-
--- | One person that attend an event.
-trPerson :: Session -> Int -> Person -> Html
-trPerson ss ix person
- = tr
- $ do   let Just pid = personId person
-        let path = pathPersonView ss pid
-
-        -- Person index in this event
-        td $ H.toMarkup (show ix)
-
-        -- Person name
-        td $ H.a
-           ! A.href (H.toValue path)
-           $ H.toMarkup $ personDisplayName person
-
+         | otherwise
+         = td   (H.toMarkup val)
 
