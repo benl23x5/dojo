@@ -54,9 +54,6 @@ eventLocalTime event
  = Nothing
 
 
--- Constructors ---------------------------------------------------------------
-
-
 -- Conversions ----------------------------------------------------------------
 -- | Make a `LocalTime` from the date and time portions.
 makeEventLocalTime  :: EventDate -> EventTime -> Time.LocalTime

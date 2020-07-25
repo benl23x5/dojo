@@ -41,9 +41,15 @@ loadEvent inputs event
  = let load name def
          = case lookup name inputs of
                 Nothing  -> Right def
-                Just str -> case parse str of
-                                Right val       -> Right (Just val)
-                                Left err        -> Left [(name, str, err)]
+                Just str
+                 -- TODO: squash whitespace.
+                 | length str == 0
+                 -> Right Nothing
+
+                 | otherwise
+                 -> case parse str of
+                        Right val       -> Right (Just val)
+                        Left err        -> Left [(name, str, err)]
    in do
         eloc    <- load "Location" (eventLocation  event)
         etype   <- load "Type"     (eventType      event)

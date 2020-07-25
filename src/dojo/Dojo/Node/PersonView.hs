@@ -22,7 +22,7 @@ cgiPersonView ss inputs
  , Right pid            <- parse strPersonId
  = do
         -- Connect to the database.
-        conn    <- liftIO $ connectSqlite3 databasePath
+        conn <- liftIO $ connectSqlite3 databasePath
 
         -- Read the current data for the user.
         Just person  <- liftIO $ getPerson conn pid
@@ -71,49 +71,53 @@ divPersonDetails :: Person -> Html
 divPersonDetails person
  = H.div ! A.id "person-details-view" ! A.class_ "details"
  $ do   H.table
-         $ do   col ! A.class_ "Col3A"; col ! A.class_ "Col3B"; col ! A.class_ "Col3C"
-                tr $ do th "first"; th "preferred"; th "family"
-                tr $ do td (H.toMarkup $ personFirstName    person)
-                        td (H.toMarkup $ maybe "" pretty $ personPreferredName person)
-                        td (H.toMarkup $ maybe "" pretty $ personFamilyName   person)
+         $ do   let bHasPref = isJust $ personPreferredName person
+                tr $ do th "first"
+                        when bHasPref $ th "preferred"
+                        th "family"
+                tr $ do td  $ H.toMarkup $ pretty $ personFirstName person
+                        when bHasPref $ td' $ personPreferredName person
+                        td' $ personFamilyName   person
 
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "date of birth"; th "home dojo"
-                tr $ do td (H.toMarkup $ maybe "" pretty $ personDateOfBirth  person)
-                        td (H.toMarkup $ maybe "" pretty $ personDojoHome person)
+                tr $ do td' $ personDateOfBirth  person
+                        td' $ personDojoHome person
 
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "membership id"; th "renewal date"
-                tr $ do td (H.toMarkup $ maybe "" pretty $ personMemberId person)
-                        td (H.toMarkup $ maybe "" pretty $ personMembershipRenewal person)
+                tr $ do td' $ personMemberId person
+                        td' $ personMembershipRenewal person
 
         H.table
          $ do   tr $ th "membership level"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personMembershipLevel person)
+                tr $ td' $ personMembershipLevel person
 
         H.table
          $ do   tr $ th "email address"
-                tr $ td (H.toMarkup $ maybe "" pretty $ personEmail person)
+                tr $ td' $ personEmail person
 
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "mobile phone"; th "fixed phone"
-                tr $ do td (H.toMarkup $ maybe "" pretty $ personPhoneMobile  person)
-                        td (H.toMarkup $ maybe "" pretty $ personPhoneFixed person)
+                tr $ do td' $ personPhoneMobile  person
+                        td' $ personPhoneFixed person
 
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "emergency contact 1"; th "phone"
-                tr $ do td (H.toMarkup $ maybe "" pretty $ personEmergencyName1 person)
-                        td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone1 person)
+                tr $ do td' $ personEmergencyName1 person
+                        td' $ personEmergencyPhone1 person
 
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "emergency contact 2"; th "phone"
-                tr $ do td (H.toMarkup $ maybe "" pretty $ personEmergencyName2 person)
-                        td (H.toMarkup $ maybe "" pretty $ personEmergencyPhone2 person)
+                tr $ do td' $ personEmergencyName2 person
+                        td' $ personEmergencyPhone2 person
+
+ where  td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
 
 -- | Events that a person attended.
@@ -126,9 +130,9 @@ divEventList ss events
         tr $ do th "date"; th "time"; th "location"
 
         forM_ events $ \event -> tr $ do
-         td' event (fromMaybe "" $ fmap pretty $ eventDate event)
-         td' event (fromMaybe "" $ fmap pretty $ eventTime      event)
-         td' event (fromMaybe "" $ fmap pretty $ eventLocation  event)
+         td' event $ eventDate event
+         td' event $ eventTime event
+         td' event $ eventLocation  event
 
  where  col' c   = col ! A.class_ c
 
@@ -139,5 +143,5 @@ divEventList ss events
 
         td' event val
          = td $ (a ! A.href (H.toValue $ pathView event))
-                (H.toMarkup val)
+                (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 
