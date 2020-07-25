@@ -1,5 +1,5 @@
 
-module Dojo.Node.PersonView where
+module Dojo.Node.PersonView (cgiPersonView) where
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Data.Event
@@ -99,13 +99,20 @@ divPersonDetails person
                 tr $ do td' $ personPhoneMobile  person
                         td' $ personPhoneFixed person
 
-        H.table
+        -- suppress emergency contact if not filled.
+        when (or [ isJust $ personEmergencyName1  person
+                 , isJust $ personEmergencyPhone1 person])
+         $ H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "emergency contact 1"; th "phone"
                 tr $ do td' $ personEmergencyName1 person
                         td' $ personEmergencyPhone1 person
 
-        H.table
+
+        -- suppress emergency contact if not filled.
+        when (or [ isJust $ personEmergencyName2  person
+                 , isJust $ personEmergencyPhone2 person])
+         $ H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "emergency contact 2"; th "phone"
                 tr $ do td' $ personEmergencyName2 person

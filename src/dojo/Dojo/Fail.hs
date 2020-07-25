@@ -3,6 +3,7 @@ module Dojo.Fail
         ( throw
         , Fail(..))
 where
+import Dojo.Framework.Parse
 import Control.Exception
 
 data Fail
@@ -15,6 +16,12 @@ data Fail
         | FailUnknownEntity
         { failEntityType        :: String
         , failEntityId          :: String }
+
+        -- | Parse of a field failed.
+        | FailParse
+        { failParseType         :: String
+        , failParseText         :: String
+        , failParseError        :: ParseError }
         deriving Show
 
 instance Exception Fail

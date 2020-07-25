@@ -12,6 +12,7 @@ class Parse a where
 
 data ParseError
         = ParseError String
+        deriving Show
 
 
 -------------------------------------------------------------------------------

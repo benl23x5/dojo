@@ -1,5 +1,5 @@
 
-module Dojo.Node.PersonList where
+module Dojo.Node.PersonList (cgiPersonList) where
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Framework

@@ -1,12 +1,12 @@
 
-module Dojo.Node.Main where
+module Dojo.Node.Main (cgiMain) where
 import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Base
 import qualified Text.Blaze.Html5               as H
 
 
--- The top-level page.
+-- | The top-level page.
 cgiMain sid _inputs
  = outputFPS $ renderHtml
  $ H.docTypeHtml
