@@ -53,4 +53,10 @@ CREATE TABLE v1_Class
         , DateFirst             DATE    NOT NULL
         , DateFinal             DATE);
 
+/* Dojo names. */
+CREATE TABLE v1_Dojo
+        ( Name                  STRING  PRIMARY KEY);
 
+/* Membership Level names. */
+CREATE TABLE v1_MembershipLevel
+        ( Name                  STRING  PRIMARY KEY);

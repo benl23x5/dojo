@@ -16,9 +16,10 @@ formPerson
         :: [FeedForm]   -- ^ Feedback to add to current form.
         -> Path         -- ^ Path to submit form.
         -> Person       -- ^ Person details to populate form.
+        -> [PersonDojo] -- ^ Current dojos list.
         -> Html
 
-formPerson fsFeed path person
+formPerson fsFeed path person dojos
  = form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
@@ -38,7 +39,7 @@ formPerson fsFeed path person
                 ! A.value  "Save"
 
         -- Person details.
-        divPersonDetails fsFeed person
+        divPersonDetails fsFeed person dojos
         H.br
 
         -- Save button.
@@ -48,8 +49,8 @@ formPerson fsFeed path person
 
 
 -------------------------------------------------------------------------------
-divPersonDetails :: [FeedForm] -> Person -> Html
-divPersonDetails fsFeed person
+divPersonDetails :: [FeedForm] -> Person -> [PersonDojo] -> Html
+divPersonDetails fsFeed person dojos
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
         H.table $ trInputWithFocus fsFeed
@@ -57,26 +58,26 @@ divPersonDetails fsFeed person
                 (pretty $ personFirstName person)
                 (Just "(required)")
 
-        field   "PreferredName" "preferred name"
-                (maybe "" pretty $ personPreferredName person)
+        fieldm  "PreferredName" "preferred name"
+                (personPreferredName person)
 
-        field   "FamilyName"    "family name"
-                (maybe "" pretty $ personFamilyName person)
+        fieldm  "FamilyName"    "family name"
+                (personFamilyName person)
 
-        field   "DateOfBirth"   "date of birth (dd-mm-yyyy)"
-                (maybe "" pretty $ personDateOfBirth person)
+        fieldm  "DateOfBirth"   "date of birth (dd-mm-yyyy)"
+                (personDateOfBirth person)
 
-        field   "MemberId"      "member id"
-                (maybe "" pretty $ personMemberId person)
+        fieldm  "MemberId"      "member id"
+                (personMemberId person)
 
-        field   "PhoneMobile"   "mobile phone number"
-                (maybe "" pretty $ personPhoneMobile person)
+        fieldm  "PhoneMobile"   "mobile phone number"
+                (personPhoneMobile person)
 
-        field   "PhoneFixed"    "fixed phone number"
-                (maybe "" pretty $ personPhoneFixed person)
+        fieldm  "PhoneFixed"    "fixed phone number"
+                (personPhoneFixed person)
 
-        field   "Email"         "email address"
-                (maybe "" pretty $ personEmail person)
+        fieldm  "Email"         "email address"
+                (personEmail person)
 
         -- TODO: add 'ok' feedback when updated.
         let sDojo   = fromString $ maybe "" pretty $ personDojoHome person
@@ -85,7 +86,7 @@ divPersonDetails fsFeed person
                 tr $ th $ "home dojo"
                 tr $ td $ (H.select ! A.name "DojoHome")
                         $ do    H.option ! A.value "" $ "(unspecified)"
-                                forM_ ssDojos (optSelected sDojo)
+                                forM_ (map pretty dojos) (optSelected sDojo)
 
         -- TODO: add 'ok' feedback when updated.
         let sMember = fromString $ maybe "" pretty $ personMembershipLevel person
@@ -96,24 +97,25 @@ divPersonDetails fsFeed person
                         $ do    H.option ! A.value "" $ "(unspecified)"
                                 forM_ ssMemberLevels (optSelected sMember)
 
-        field   "MembershipRenewal" "membership renewal date"
-                (maybe "" pretty $ personMembershipRenewal person)
+        fieldm  "MembershipRenewal" "membership renewal date"
+                (personMembershipRenewal person)
 
-        field   "EmergencyName1" "emergency contact name 1"
-                (maybe "" pretty $ personEmergencyName1 person)
+        fieldm  "EmergencyName1" "emergency contact name 1"
+                (personEmergencyName1 person)
 
-        field   "EmergencyPhone1" "emergency contact phone 1"
-                (maybe "" pretty $ personEmergencyPhone1 person)
+        fieldm  "EmergencyPhone1" "emergency contact phone 1"
+                (personEmergencyPhone1 person)
 
-        field   "EmergencyName2" "emergency contact name 2"
-                (maybe "" pretty $ personEmergencyName2 person)
+        fieldm  "EmergencyName2" "emergency contact name 2"
+                (personEmergencyName2 person)
 
-        field   "EmergencyPhone2" "emergency contact phone 2"
-                (maybe "" pretty $ personEmergencyPhone2 person)
+        fieldm  "EmergencyPhone2" "emergency contact phone 2"
+                (personEmergencyPhone2 person)
 
  where
-        field sClass sLabel sValue
-         = H.table $ trInput_ fsFeed sClass sLabel sValue
+        fieldm sClass sLabel xValue
+         = H.table $ trInput_ fsFeed sClass sLabel
+                   $ maybe "" pretty xValue
 
         optSelected sSel sVal
          = (H.option
@@ -134,23 +136,6 @@ divPersonDetails fsFeed person
            , "University Intro (3 months)"
            , "Student Intro (3 months)"
            , "Concession Intro (3 months)"
-           , "Child Intro (3 months)" ]
-
-        -- TODO: get dojo list from database.
-        ssDojos
-         = [ "Armidale"
-           , "Bega"
-           , "Bellingen"
-           , "Berala"
-           , "Elands"
-           , "Faulconbridge"
-           , "Gordon"
-           , "Granville"
-           , "Hornsby"
-           , "Katoomba"
-           , "Leichhardt"
-           , "Lismore"
-           , "Roseville"
-           , "Seven Hills"
-           , "Sutherland" ]
+           , "Child Intro (3 months)"
+           , "Special" ]
 

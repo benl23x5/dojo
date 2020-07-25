@@ -8,6 +8,7 @@ import Dojo.Node.EventEdit.Arg
 import Dojo.Data.Event
 import Dojo.Data.Person
 import Dojo.Data.Session
+import Dojo.Data.Dojo
 import Dojo.Paths
 import Dojo.Chrome
 import Dojo.Framework
@@ -70,6 +71,8 @@ cgiEventEdit ss inputs
         -- People to add to this event.
         let newNames = [ name | ArgAddPerson name <- args ]
 
+        -- Get current dojos list.
+        dojos <- liftIO $ getDojos conn
 
         -- If we have an existing eventId then load the existing event data,
         --  otherwise start with an empty event record, using the current
@@ -103,13 +106,14 @@ cgiEventEdit ss inputs
          | (not $ null fieldUpdates) || (not $ null newNames)
          -> cgiEventEdit_update
                 ss conn fsForm fsEvent
-                meid event psAttend fieldUpdates newNames
+                meid event psAttend dojos
+                fieldUpdates newNames
 
          -- Show the form and wait for entry.
          | otherwise
          -> do  liftIO $ disconnect conn
                 outputFPS $ renderHtml
-                 $ htmlEventEdit ss fsForm fsEvent meid event psAttend
+                 $ htmlEventEdit ss fsForm fsEvent meid event psAttend dojos
 
 
 -------------------------------------------------------------------------------
@@ -153,6 +157,7 @@ cgiEventEdit_update
                                 --  then just its eventId.
         -> Event                -- Event data to edit, shown in form.
         -> [Person]             -- Current attendance
+        -> [PersonDojo]         -- Current dojos list
         -> [(String, String)]   -- Fields to update.
         -> [String]             -- Names of people to add as attendees.
         -> CGI CGIResult
@@ -161,16 +166,18 @@ cgiEventEdit_update
 -- then add now to create the event id.
 cgiEventEdit_update
         ss conn fsForm fsEvent
-        Nothing event psAttend updates newNames
+        Nothing event psAttend dojos updates newNames
  = do   event' <- liftIO $ insertEvent conn event
-        cgiEventEdit_update ss conn fsForm fsEvent
-                (Just $ eventId event') event' psAttend
+        cgiEventEdit_update
+                ss conn
+                fsForm fsEvent
+                (Just $ eventId event') event' psAttend dojos
                 updates newNames
 
 -- Edit an event already in the database.
 cgiEventEdit_update
         ss conn fsForm fsEvent
-        (Just eid) eventOld psAttend updates newNames
+        (Just eid) eventOld psAttend dojos updates newNames
  = case loadEvent updates eventOld of
         -- Some of the fields didn't parse.
         Left fieldErrors
@@ -180,7 +187,8 @@ cgiEventEdit_update
                            | (sField, sValue, ParseError sError) <- fieldErrors ]
 
                 outputFPS $ renderHtml
-                 $ htmlEventEdit ss fsForm' fsEvent (Just eid) eventOld psAttend
+                 $ htmlEventEdit ss
+                        fsForm' fsEvent (Just eid) eventOld psAttend dojos
 
         -- All the fields parsed.
         Right eventNew
@@ -257,10 +265,10 @@ searchAddPerson conn event psAttend ix sQuery
 htmlEventEdit
         :: Session
         -> [FeedForm] -> [FeedEvent]
-        -> Maybe EventId -> Event -> [Person]
+        -> Maybe EventId -> Event -> [Person] -> [PersonDojo]
         -> Html
 
-htmlEventEdit ss fsForm fsEvent mEid event psAttend
+htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos
  = H.docTypeHtml
  $ do   pageHeader "Editing Event"
         pageBody
@@ -271,5 +279,6 @@ htmlEventEdit ss fsForm fsEvent mEid event psAttend
 
                 -- Main entry form.
                 H.div   ! A.class_ "event"
-                        $ formEvent (pathEventEdit ss mEid) fsForm fsEvent
-                                event psAttend
+                        $ formEvent (pathEventEdit ss mEid)
+                                fsForm fsEvent
+                                event psAttend dojos

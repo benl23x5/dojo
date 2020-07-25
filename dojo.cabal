@@ -37,6 +37,9 @@ Executable dojo
         Dojo.Data.Class.Database
         Dojo.Data.Class
 
+        Dojo.Data.Dojo.Database
+        Dojo.Data.Dojo
+
         Dojo.Data.Event.Base
         Dojo.Data.Event.Presentation
         Dojo.Data.Event.Database

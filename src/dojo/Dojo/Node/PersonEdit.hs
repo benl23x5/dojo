@@ -4,6 +4,7 @@ import Dojo.Node.PersonEdit.Form
 import Dojo.Node.PersonEdit.Arg
 import Dojo.Data.Session
 import Dojo.Data.Person
+import Dojo.Data.Dojo
 import Dojo.Paths
 import Dojo.Chrome
 import Dojo.Framework
@@ -36,6 +37,7 @@ cgiPersonEdit ss inputs
 
         -- Connect to the database.
         conn    <- liftIO $ connectSqlite3 databasePath
+        dojos   <- liftIO $ getDojos conn
 
         -- See if we were given an existing person id.
         (mpid, person)
@@ -55,19 +57,19 @@ cgiPersonEdit ss inputs
          -- Update person details.
          | (not $ null fieldUpdates)
          -> cgiPersonEdit_update
-                ss conn mpid person fieldUpdates
+                ss conn mpid person dojos fieldUpdates
 
          -- Show the form and wait for entry.
          | otherwise
          -> do  liftIO $ disconnect conn
-                cgiPersonEdit_entry ss person
+                cgiPersonEdit_entry ss person dojos
 
 
 -------------------------------------------------------------------------------
 -- | We haven't got any updates yet, so show the entry form.
-cgiPersonEdit_entry ss person
+cgiPersonEdit_entry ss person dojos
  = outputFPS $ renderHtml
- $ htmlPersonEdit ss person []
+ $ htmlPersonEdit ss person dojos []
 
 
 -------------------------------------------------------------------------------
@@ -78,18 +80,19 @@ cgiPersonEdit_update
         => Session -> conn
         -> Maybe PersonId       -- person id if we are editing an existing person
         -> Person               -- person
+        -> [PersonDojo]         -- available dojos
         -> [(String, String)]   -- fields to update
         -> CGI CGIResult
 
 cgiPersonEdit_update ss conn
-        Nothing person updates
+        Nothing person dojos updates
  = do   person' <- liftIO $ insertPerson conn person
         cgiPersonEdit_update ss conn
-                (personId person') person'
+                (personId person') person' dojos
                 updates
 
 cgiPersonEdit_update ss conn
-        (Just _pid) personOld updates
+        (Just _pid) personOld dojos updates
  = case loadPerson updates personOld of
     -- Some fields didn't parse.
     Left fieldErrors
@@ -98,7 +101,7 @@ cgiPersonEdit_update ss conn
                 | (sField, sValue, ParseError sError) <- fieldErrors ]
 
            outputFPS $ renderHtml
-             $ htmlPersonEdit ss personOld fsFeed
+             $ htmlPersonEdit ss personOld dojos fsFeed
 
     -- All the fields parsed.
     Right personNew
@@ -111,13 +114,15 @@ cgiPersonEdit_update ss conn
                  | sField <- diffPerson personOld personNew ]
 
             outputFPS $ renderHtml
-             $ htmlPersonEdit ss personNew fsFeed
+             $ htmlPersonEdit ss personNew dojos fsFeed
 
 
 -------------------------------------------------------------------------------
 -- | Html for person edit page.
-htmlPersonEdit :: Session -> Person -> [FeedForm] -> Html
-htmlPersonEdit ss person fsFeed
+htmlPersonEdit
+        :: Session -> Person -> [PersonDojo]
+        -> [FeedForm] -> Html
+htmlPersonEdit ss person dojos fsFeed
  = H.docTypeHtml
  $ do   pageHeader "Editing Person"
         pageBody
@@ -131,6 +136,6 @@ htmlPersonEdit ss person fsFeed
 
                 formPerson fsFeed
                         (pathPersonEdit ss (personId person))
-                        person
+                        person dojos
 
 

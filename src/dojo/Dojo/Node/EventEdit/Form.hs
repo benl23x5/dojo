@@ -8,17 +8,22 @@ import Dojo.Data.Person
 import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
-
+import Data.String
 
 -------------------------------------------------------------------------------
 -- | Form to change the details of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
 formEvent
-        :: Path -> [FeedForm] -> [FeedEvent]
-        -> Event -> [Person] -> Html
+        :: Path
+        -> [FeedForm]
+        -> [FeedEvent]
+        -> Event                -- ^ Event values.
+        -> [Person]             -- ^ Attendance at this event.
+        -> [PersonDojo]         -- ^ Available dojos list.
+        -> Html
 
-formEvent path fsForm fsEvent event attendance
+formEvent path fsForm fsEvent event attendance dojos
  = form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
@@ -38,7 +43,7 @@ formEvent path fsForm fsEvent event attendance
                 ! A.value  "Save"
 
         -- Event details.
-        divEventDetails    fsForm event
+        divEventDetails    fsForm event dojos
         divEventAttendance path fsForm fsEvent event attendance
         H.br
 
@@ -49,8 +54,8 @@ formEvent path fsForm fsEvent event attendance
 
 
 -------------------------------------------------------------------------------
-divEventDetails :: [FeedForm] -> Event -> Html
-divEventDetails fsFeed event
+divEventDetails :: [FeedForm] -> Event -> [PersonDojo] -> Html
+divEventDetails fsFeed event dojos
  = H.div ! A.id "event-details-edit" ! A.class_ "details"
  $ do
         tableFields fsFeed
@@ -67,16 +72,32 @@ divEventDetails fsFeed event
         -- otherwise allow focus to be taken by the last person entry field.
         let EventId eid = eventId event
 
+        let sDojo = pretty $ eventLocation event
+        H.table
+         $ do   col ! A.class_ "Location"
+                tr $ th $ "location"
+                tr $ td $ (H.select ! A.name "Location")
+                        $ do    H.option ! A.value "" $ "(unspecified)"
+                                forM_ (map pretty dojos) (optSelected sDojo)
+
+{-
         tableFields fsFeed
          [ ( "Location", "location"
            , pretty $ eventLocation event, Just "(required)"
-           , eid == 0)
+           , eid == 0) ]
+-}
 
-         , ( "Type", "type (dojo, ttc etc)"
+        tableFields fsFeed
+         [ ( "Type", "type (dojo, ttc etc)"
            , pretty $ eventType event, Just "(required)"
            , False)
          ]
 
+ where  optSelected sSel sVal
+         = (H.option
+                !  A.value (fromString sVal)
+                !? (sSel == sVal, A.selected, "true"))
+                (H.toHtml sVal)
 
 -------------------------------------------------------------------------------
 divEventAttendance
