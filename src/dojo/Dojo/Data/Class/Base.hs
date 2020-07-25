@@ -12,7 +12,8 @@ data Class
         , classType             :: Maybe EventType
         , classLocation         :: Maybe EventLocation
         , classDay              :: Maybe ClassDay
-        , classTime             :: Maybe EventTime
+        , classTimeStart        :: Maybe EventTime
+        , classTimeEnd          :: Maybe EventTime
         , classDateFirst        :: Maybe EventDate
         , classDateFinal        :: Maybe EventDate }
         deriving Show
@@ -51,10 +52,15 @@ classFields
         (toSql . classDay)
         (\v x -> x { classDay = fromSql v})
 
-    , Field "Time"              "time"
+    , Field "TimeStart"         "time start"
         (fmap toSql . load @EventTime)
-        (toSql . classTime)
-        (\v x -> x { classTime = fromSql v})
+        (toSql . classTimeStart)
+        (\v x -> x { classTimeStart = fromSql v})
+
+    , Field "TimeEnd"           "time end"
+        (fmap toSql . load @EventTime)
+        (toSql . classTimeEnd)
+        (\v x -> x { classTimeEnd = fromSql v})
 
     , Field "DateFirst"         "date first"
         (fmap toSql . load @EventDate)
@@ -75,7 +81,8 @@ zeroClass
         , classType             = Nothing
         , classLocation         = Nothing
         , classDay              = Nothing
-        , classTime             = Nothing
+        , classTimeStart        = Nothing
+        , classTimeEnd          = Nothing
         , classDateFirst        = Nothing
         , classDateFinal        = Nothing }
 
@@ -97,3 +104,19 @@ classOfSqlValues :: [SqlValue] -> Class
 classOfSqlValues vs
  = foldl (\classs (v, inj) -> inj v classs) zeroClass
  $ zip vs $ map fieldFromSql classFields
+
+
+-- Presentation --------------------------------------------------------------
+-- | Take the display name of an event.
+classDisplayName :: Class -> String
+classDisplayName classs
+ =  (fromMaybe "class" (fmap pretty $ classLocation classs))
+ ++ (case classType classs of
+        Nothing -> ""
+        Just t  -> " " ++ pretty t)
+ ++ (case classDay classs of
+        Nothing -> ""
+        Just d  -> " on " ++ pretty d)
+ ++ (case classTimeStart classs of
+        Nothing -> ""
+        Just t  -> " at " ++ pretty t)

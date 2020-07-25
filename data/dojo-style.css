@@ -160,6 +160,15 @@ select
 }
 
 
+/* Common Column Layout ***********************************/
+.Col2A                          { width: 50% }
+.Col2B                          { width: 50% }
+
+.Col3A                          { width: 20% }
+.Col3B                          { width: 30% }
+.Col3C                          { width: 50% }
+
+
 /* Person List ********************************************/
 .person-list .ShortName         { width: 8em; }
 .person-list .FamilyName        { width: 10em; }
@@ -167,13 +176,6 @@ select
 /* Person View/Edit **************************************/
 
 /* View Mode */
-#person-details-view .Col3A     { width: 20% }
-#person-details-view .Col3B     { width: 30% }
-#person-details-view .Col3C     { width: 50% }
-
-#person-details-view .Col2A     { width: 50% }
-#person-details-view .Col2B     { width: 50% }
-
 #person-attendance .Date        { width: 6em;  }
 #person-attendance .Time        { width: 4em;  }
 

@@ -179,7 +179,7 @@ tdInputFeedback bHintFocus fsFeed fieldName val mPlaceholder
 htmlFeedForm :: [FeedForm] -> (String -> Maybe String) -> Html
 htmlFeedForm fsFeed fNiceName
  = do   let fsInvalid = [sField | FeedFormInvalid sField _ _sErr <- fsFeed]
-        let fsUpdated = [sField | FeedFormUpdated sField <- fsFeed]
+--        let fsUpdated = [sField | FeedFormUpdated sField <- fsFeed]
 
         when (not $ null fsInvalid)
          $ do   H.br
@@ -191,7 +191,7 @@ htmlFeedForm fsFeed fNiceName
                             | s <- fsInvalid ])
                        ++ "."
                 H.br
-
+{-
         when (not $ null fsUpdated)
          $ do   H.br
                 H.span ! A.class_ "updated"
@@ -202,3 +202,4 @@ htmlFeedForm fsFeed fNiceName
                             | s <- fsUpdated ])
                        ++ "."
                 H.br
+-}

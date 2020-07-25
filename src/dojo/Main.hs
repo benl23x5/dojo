@@ -10,6 +10,7 @@ import Dojo.Node.EventList
 import Dojo.Node.EventView
 import Dojo.Node.EventEdit
 import Dojo.Node.ClassList
+import Dojo.Node.ClassView
 import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Framework
@@ -79,5 +80,6 @@ cgiTop
          (Just ss, Just "ev")     -> cgiEventView  ss inputs
          (Just ss, Just "ee")     -> cgiEventEdit  ss inputs
          (Just ss, Just "cl")     -> cgiClassList  ss inputs
+         (Just ss, Just "cv")     -> cgiClassView  ss inputs
 
          _ -> CGI.redirect $ flatten $ pathLogin

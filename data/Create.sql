@@ -59,7 +59,8 @@ CREATE TABLE v1_Class
         , Type                  STRING  NOT NULL
         , Location              STRING  NOT NULL
         , Day                   STRING  NOT NULL
-        , Time                  TIME    NOT NULL
+        , TimeStart             TIME    NOT NULL
+        , TimeEnd               TIME
         , DateFirst             DATE    NOT NULL
         , DateFinal             DATE);
 

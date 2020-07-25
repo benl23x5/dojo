@@ -136,3 +136,10 @@ pathClassList ss
         , ("n", "cl")]
 
 
+pathClassView :: Session -> ClassId -> Path
+pathClassView ss (ClassId cid)
+ = Path "View Class"
+        cgiName
+        [ ("s", show $ sessionHash ss)
+        , ("n", "cv")
+        , ("cid", show cid)]

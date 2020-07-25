@@ -29,40 +29,31 @@ cgiClassList_list ss classes
  $ do   pageHeader "Classes"
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tableClasses ss classes
+                divClassList ss classes
 
 
 -- | Build the class table.
-tableClasses :: Session -> [Class] -> H.Html
-tableClasses ss classes
+divClassList :: Session -> [Class] -> H.Html
+divClassList  ss classes
  = H.div ! A.class_ "list class-list"
  $ H.table
  $ do   col ! A.class_ "Location"
-        col ! A.class_ "Type"
         col ! A.class_ "Day"
-        col ! A.class_ "Time"
-        tr $ do th "location"; th "type"; th "day"; th "time"
+        col ! A.class_ "TimeStart"
+        col ! A.class_ "Type"
+        tr $ do th "location"; th "day"; th "time"; th "type"
 
-        mapM_ (trClass ss) classes
+        forM_ classes $ \classs -> tr $ do
+         td' classs $ classLocation classs
+         td' classs $ classDay classs
+         td' classs $ classTimeStart classs
+         td' classs $ classType classs
 
+ where  td' classs val
+         | Just cid <- classId classs
+         = td $ (a ! A.href (H.toValue $ pathClassView ss cid))
+                (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 
--- | Build one row of the class table.
-trClass :: Session -> Class -> H.Html
-trClass _ss classs
- = tr
- $ do   -- Clicking on any column takes us to the person view page.
-        -- TODO: suppress link on no personid
---        let Just pid = personId person
---        let pathView = pathPersonView ss pid
-
-        -- Person data.
-        let tdField val
-             = td $ -- (a ! A.href (H.toValue pathView))
-                    (H.toMarkup val)
-
-        tdField (maybe "" pretty $ classLocation classs)
-        tdField (maybe "" pretty $ classType classs)
-        tdField (maybe "" pretty $ classDay classs)
-        tdField (maybe "" pretty $ classTime classs)
-
+         | otherwise
+         = td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 

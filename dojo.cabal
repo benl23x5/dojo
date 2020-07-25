@@ -88,6 +88,7 @@ Executable dojo
         Dojo.Node.EventEdit
 
         Dojo.Node.ClassList
+        Dojo.Node.ClassView
 
         Dojo.Node.Login
         Dojo.Node.Logout
