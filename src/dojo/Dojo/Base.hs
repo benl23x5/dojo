@@ -13,6 +13,7 @@ module Dojo.Base
         , module Data.Maybe
         , module Data.Convertible
         , module Control.Monad
+        , module Control.Exception
         , module Prelude
         , (!?)
         , takeHead)
@@ -46,6 +47,8 @@ import Data.Maybe
 import Data.Convertible
 
 import Control.Monad
+
+import Control.Exception
 
 import Prelude
         hiding (head, tail, last, undefined, span, div)

@@ -47,7 +47,7 @@ cgiPersonEdit ss inputs
              Just strPersonId
               -> do -- TODO: better parsing.
                     let Right pid = parse strPersonId
-                    Just person  <- liftIO $ getPerson conn pid
+                    person  <- liftIO $ getPerson conn pid
                     return (personId person, person)
 
              Nothing

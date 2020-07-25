@@ -3,42 +3,34 @@ module Dojo.Node.PersonView where
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Data.Event
-import Dojo.Paths
 import Dojo.Chrome
+import Dojo.Paths
+import Dojo.Fail
 import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
+-------------------------------------------------------------------------------
 -- | View a single person, using a vertical form.
---      &personId=INT   View the person with this id.
+--      &pid=NAT   View the person with this id.
 cgiPersonView
-        :: Session
-        -> [(String, String)]
+        :: Session -> [(String, String)]
         -> CGI CGIResult
 
 cgiPersonView ss inputs
  | Just strPersonId     <- lookup "pid" inputs
  , Right pid            <- parse strPersonId
- = do
-        -- Connect to the database.
-        conn <- liftIO $ connectSqlite3 databasePath
-
-        -- Read the current data for the user.
-        Just person  <- liftIO $ getPerson conn pid
-
-        -- Get the events they attended.
+ = do   conn    <- liftIO $ connectSqlite3 databasePath
+        person  <- liftIO $ getPerson conn pid
         events  <- liftIO $ getAttendanceOfPersonId conn pid
         liftIO $ disconnect conn
 
         cgiPersonView_page ss person events
 
  | otherwise
- = error $ "cgiPersonView: bad inputs" ++ show inputs
+ = throw $ FailNodeArgs "person view" inputs
 
-
-cgiPersonView_page
-        :: Session -> Person -> [Event] -> CGI CGIResult
 
 cgiPersonView_page ss person events
  = outputFPS $ renderHtml
@@ -47,34 +39,36 @@ cgiPersonView_page ss person events
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                -- TODO: add can cancel link if person does not
-                -- exist in the database yet.
                 tablePaths
                  $ case personId person of
                     Nothing  -> []
                     Just pid -> [pathPersonEdit ss $ Just pid]
 
-                divPersonView ss person events
+                H.div ! A.id "person-view"
+                 $ do   divPersonDetails person
+                        divEventList ss events
 
 
--- Person ---------------------------------------------------------------------
-divPersonView :: Session -> Person -> [Event] -> Html
-divPersonView ss person events
- = H.div   ! A.id "person-view"
- $ do
-        divPersonDetails person
-        divEventList ss events
-
-
+-------------------------------------------------------------------------------
 -- | Person Details
 divPersonDetails :: Person -> Html
 divPersonDetails person
  = H.div ! A.id "person-details-view" ! A.class_ "details"
- $ do   H.table
+ $ do
+        H.table
          $ do   let bHasPref = isJust $ personPreferredName person
+
+                (if bHasPref
+                 then do col ! A.class_ "Col3A"
+                         col ! A.class_ "Col3B"
+                         col ! A.class_ "Col3C"
+                 else do col ! A.class_ "Col2A"
+                         col ! A.class_ "Col2B")
+
                 tr $ do th "first"
                         when bHasPref $ th "preferred"
                         th "family"
+
                 tr $ do td  $ H.toMarkup $ pretty $ personFirstName person
                         when bHasPref $ td' $ personPreferredName person
                         td' $ personFamilyName   person
@@ -120,28 +114,29 @@ divPersonDetails person
  where  td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
 
--- | Events that a person attended.
+-------------------------------------------------------------------------------
+-- | Events that a person has attended.
 divEventList :: Session -> [Event] -> Html
 divEventList ss events
  = H.div ! A.class_ "list person-attendance"
  $ H.table
  $ do
-        col' "Date"; col' "Time"; col' "Location"
+        col ! A.class_ "Date"
+        col ! A.class_ "Time"
+        col ! A.class_ "Location"
         tr $ do th "date"; th "time"; th "location"
 
+        -- Clicking any column goes to event view page.
         forM_ events $ \event -> tr $ do
          td' event $ eventDate event
          td' event $ eventTime event
          td' event $ eventLocation  event
 
- where  col' c   = col ! A.class_ c
-
-        -- TODO: suppress link on no eid
-        pathView event
-         = let  Just eid = eventId event
-           in   pathEventView ss $ eid
-
-        td' event val
-         = td $ (a ! A.href (H.toValue $ pathView event))
+ where  td' event val
+         | Just eid <- eventId event
+         = td $ (a ! A.href (H.toValue $ pathEventView ss eid))
                 (H.toMarkup $ fromMaybe "" $ fmap pretty val)
+
+         | otherwise
+         = td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 

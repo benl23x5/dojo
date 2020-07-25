@@ -20,17 +20,19 @@ import qualified Text.Blaze.Html5                       as H
 import qualified Text.Blaze.Html5.Attributes            as A
 import qualified Text.Blaze.Html.Renderer.String        as S
 
+import Control.Monad.Catch                              as C
 
 main :: IO ()
 main
- = Control.catch (CGI.runCGI (CGI.handleErrors cgiTop))
+ = CGI.runCGI $ CGI.handleErrors
+ $ C.catch cgiTop
  $ (\(e :: Control.SomeException) -> sorry e)
 
 
 -- | Redirect all hard errors to the issue tracker.
-sorry :: Control.SomeException -> IO ()
+sorry :: Control.SomeException -> CGI CGIResult
 sorry e
- = putStrLn $ S.renderHtml $ H.docTypeHtml
+ = CGI.output $ S.renderHtml $ H.docTypeHtml
  $ do   H.string "Internal error in dojo server."
         H.br
         H.string "The dojo server issue tracker is at: "
@@ -40,7 +42,7 @@ sorry e
         H.br
         H.string "Please include the following message in new bug reports:"
         H.br
-        H.string $ show e
+        H.pre $ H.string $ show e
 
 
  where  sTracker = "http://github.com/benl23x5/dojo/issues"

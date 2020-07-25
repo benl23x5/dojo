@@ -22,7 +22,8 @@ Executable dojo
         containers      == 0.5.*,
         cgi             == 3001.5.*,
         HDBC            == 2.4.*,
-        HDBC-sqlite3    == 2.3.*
+        HDBC-sqlite3    == 2.3.*,
+        exceptions      == 0.10.*
 
 
   main-is:
@@ -95,6 +96,7 @@ Executable dojo
         Dojo.Chrome
 
         Dojo.Base
+        Dojo.Fail
         Dojo.Framework
         Dojo.Paths
 

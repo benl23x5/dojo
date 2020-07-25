@@ -10,17 +10,19 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
--- | A table of people which link to the per-person page.
-cgiPersonList :: Session -> [(String, String)] -> CGI CGIResult
-cgiPersonList sid _inputs
- = do   -- Connect to the database.
-        conn    <- liftIO $ connectSqlite3 databasePath
+-------------------------------------------------------------------------------
+-- | Table of all people with links to the per-person pages.
+--      no args.
+cgiPersonList
+        :: Session -> [(String, String)]
+        -> CGI CGIResult
 
-        -- Read current data for all people
+cgiPersonList sid _inputs
+ = do   conn    <- liftIO $ connectSqlite3 databasePath
         people  <- liftIO $ getPeople conn
         liftIO $ disconnect conn
-
         cgiPersonList_list sid people
+
 
 cgiPersonList_list ss people
  = outputFPS $ renderHtml
@@ -29,44 +31,38 @@ cgiPersonList_list ss people
         pageBody
          $ do   tablePaths $ pathsJump ss
                 tablePaths $ [pathPersonAdd ss]
-                tablePeople ss people
+                divPersonList ss people
 
 
+-------------------------------------------------------------------------------
 -- | Build the person table.
-tablePeople :: Session -> [Person] -> H.Html
-tablePeople ss people
+divPersonList :: Session -> [Person] -> H.Html
+divPersonList ss people
  = H.div ! A.class_ "list person-list"
  $ H.table
- $ do   col ! A.class_ "ShortName"
+ $ do
+        col ! A.class_ "ShortName"
         col ! A.class_ "FamilyName"
         col ! A.class_ "PhoneMobile"
         tr $ do th "pref / first"; th "family"; th "phone"
 
-        mapM_ (trPerson ss) people
+         -- Clicking on any column goes to person view page.
+        forM_ people $ \person -> tr $ do
+         td' person $ Just $ personShortName person
+         td' person $ personFamilyName person
 
+         -- Prefer showing the mobile number if we have one.
+         td' person
+          $ if |  Just mobile <- personPhoneMobile person
+               -> Just mobile
 
--- | Build one row of the person table.
-trPerson :: Session -> Person -> H.Html
-trPerson ss person
- = tr
- $ do   -- Clicking on any column takes us to the person view page.
-        -- TODO: suppress link on no personid
-        let Just pid = personId person
-        let pathView = pathPersonView ss pid
+               |  otherwise
+               -> personPhoneFixed person
 
-        -- Person data.
-        let tdField val
-             = td $ (a ! A.href (H.toValue pathView))
-                    (H.toMarkup val)
+ where  td' person val
+         | Just pid <- personId person
+         = td $ (a ! A.href (H.toValue $ pathPersonView ss pid))
+                (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 
-        tdField (personShortName person)
-        tdField (maybe "" pretty $ personFamilyName person)
-
-        -- Prefer showing the mobile number if we have one.
-        tdField
-         $ if | Just mobile <- personPhoneMobile person
-              -> pretty mobile
-              | otherwise
-              -> maybe "" pretty $ personPhoneFixed person
-
-
+         | otherwise
+         = td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)

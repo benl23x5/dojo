@@ -3,6 +3,7 @@ module Dojo.Data.Person.Database where
 import Dojo.Data.Person.Base
 import Dojo.Framework
 import Dojo.Trivia
+import Dojo.Fail
 
 
 ------------------------------------------------------------------------------
@@ -17,7 +18,7 @@ getPeople conn
 
 
 -- | Get the person with the given id.
-getPerson  :: IConnection conn => conn -> PersonId -> IO (Maybe Person)
+getPerson  :: IConnection conn => conn -> PersonId -> IO Person
 getPerson conn pid
  = do   vss     <- quickQuery' conn (unlines
                 [ sqlSelectAllFromEntity personEntity
@@ -25,8 +26,8 @@ getPerson conn pid
                 [ toSql pid ]
 
         case vss of
-         [vs] -> return $ Just $ personOfSqlValues vs
-         _    -> return Nothing
+         [vs] -> return $ personOfSqlValues vs
+         _    -> throw $ FailUnknownEntity "person" (pretty pid)
 
 
 -- | Insert a person.
