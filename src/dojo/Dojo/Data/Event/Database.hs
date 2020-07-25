@@ -1,16 +1,5 @@
 
-module Dojo.Data.Event.Database
-        ( eventOfSqlValues
-        , getEventList
-        , getEvent
-        , getEventOfLocalTime
-        , insertEvent
-        , updateEvent
-        , getAttendance
-        , getAttendanceOfPersonId
-        , insertAttendance
-        , deleteAttendance)
-where
+module Dojo.Data.Event.Database where
 import Dojo.Data.Event.Base
 import Dojo.Data.Person
 import Dojo.Base
@@ -173,3 +162,17 @@ updateEvent conn event
                 , toSql (eventLocalTime event)
                 , toSql (eventId        event) ]
 
+
+------------------------------------------------------------------------------
+-- | Get available event types.
+getEventTypes :: IConnection conn => conn -> IO [EventType]
+getEventTypes conn
+ = do   vss <- quickQuery' conn (unlines
+                [ "SELECT Name FROM v1_EventType"
+                , "ORDER BY SortOrder ASC" ]) []
+
+        let parseType [v]
+             = let Just typ = fromSql v
+               in  typ
+
+        return $ map parseType vss

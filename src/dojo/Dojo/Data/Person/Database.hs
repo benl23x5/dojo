@@ -61,7 +61,7 @@ getMembershipLevels
         :: IConnection conn => conn -> IO [PersonMembershipLevel]
 getMembershipLevels conn
  = do   vss <- quickQuery' conn (unlines
-                [ "SELECT Name FROM v1_MembershipLevel"
+                [ "SELECT Name FROM v1_PersonMembershipLevel"
                 , "ORDER BY SortOrder ASC" ]) []
 
         let parseLevel [v]

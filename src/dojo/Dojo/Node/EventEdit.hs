@@ -11,7 +11,6 @@ import Dojo.Data.Session
 import Dojo.Data.Dojo
 import Dojo.Paths
 import Dojo.Chrome
-import Dojo.Framework
 import Config
 import qualified Data.Time                      as Time
 import qualified Text.Blaze.Html5               as H
@@ -71,8 +70,9 @@ cgiEventEdit ss inputs
         -- People to add to this event.
         let newNames = [ name | ArgAddPerson name <- args ]
 
-        -- Get current dojos list.
-        dojos <- liftIO $ getDojos conn
+        -- Get current dims lists.
+        dojos      <- liftIO $ getDojos conn
+        eventTypes <- liftIO $ getEventTypes conn
 
         -- If we have an existing eventId then load the existing event data,
         --  otherwise start with an empty event record, using the current
@@ -106,14 +106,15 @@ cgiEventEdit ss inputs
          | (not $ null fieldUpdates) || (not $ null newNames)
          -> cgiEventEdit_update
                 ss conn fsForm fsEvent
-                meid event psAttend dojos
+                meid event psAttend dojos eventTypes
                 fieldUpdates newNames
 
          -- Show the form and wait for entry.
          | otherwise
          -> do  liftIO $ disconnect conn
                 outputFPS $ renderHtml
-                 $ htmlEventEdit ss fsForm fsEvent meid event psAttend dojos
+                 $ htmlEventEdit ss fsForm fsEvent
+                        meid event psAttend dojos eventTypes
 
 
 -------------------------------------------------------------------------------
@@ -158,6 +159,7 @@ cgiEventEdit_update
         -> Event                -- Event data to edit, shown in form.
         -> [Person]             -- Current attendance
         -> [PersonDojo]         -- Current dojos list
+        -> [EventType]          -- Current event types.
         -> [(String, String)]   -- Fields to update.
         -> [String]             -- Names of people to add as attendees.
         -> CGI CGIResult
@@ -166,18 +168,19 @@ cgiEventEdit_update
 -- then add now to create the event id.
 cgiEventEdit_update
         ss conn fsForm fsEvent
-        Nothing event psAttend dojos updates newNames
+        Nothing event psAttend dojos eventTypes updates newNames
  = do   event' <- liftIO $ insertEvent conn event
         cgiEventEdit_update
                 ss conn
                 fsForm fsEvent
-                (Just $ eventId event') event' psAttend dojos
+                (Just $ eventId event') event'
+                psAttend dojos eventTypes
                 updates newNames
 
 -- Edit an event already in the database.
 cgiEventEdit_update
         ss conn fsForm fsEvent
-        (Just eid) eventOld psAttend dojos updates newNames
+        (Just eid) eventOld psAttend dojos eventTypes updates newNames
  = case loadEvent updates eventOld of
         -- Some of the fields didn't parse.
         Left fieldErrors
@@ -188,7 +191,9 @@ cgiEventEdit_update
 
                 outputFPS $ renderHtml
                  $ htmlEventEdit ss
-                        fsForm' fsEvent (Just eid) eventOld psAttend dojos
+                        fsForm' fsEvent
+                        (Just eid) eventOld
+                        psAttend dojos eventTypes
 
         -- All the fields parsed.
         Right eventNew
@@ -265,10 +270,10 @@ searchAddPerson conn event psAttend ix sQuery
 htmlEventEdit
         :: Session
         -> [FeedForm] -> [FeedEvent]
-        -> Maybe EventId -> Event -> [Person] -> [PersonDojo]
+        -> Maybe EventId -> Event -> [Person] -> [PersonDojo] -> [EventType]
         -> Html
 
-htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos
+htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos eventTypes
  = H.docTypeHtml
  $ do   pageHeader "Editing Event"
         pageBody
@@ -281,4 +286,4 @@ htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos
                 H.div   ! A.class_ "event"
                         $ formEvent (pathEventEdit ss mEid)
                                 fsForm fsEvent
-                                event psAttend dojos
+                                event eventTypes psAttend dojos

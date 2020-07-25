@@ -31,11 +31,21 @@ CREATE TABLE v1_Person
         , EmergencyName2        TEXT
         , EmergencyPhone2       TEXT);
 
+CREATE TABLE v1_PersonMembershipLevel
+        ( SortOrder             INTEGER
+        , Name                  STRING  PRIMARY KEY);
+
+
 CREATE TABLE v1_Event
         ( EventId               INTEGER PRIMARY KEY
         , Type                  STRING
         , Location              STRING
         , Time                  DATETIME);
+
+CREATE TABLE v1_EventType
+        ( SortOrder             Integer
+        , Name                  STRING  PRIMARY KEY);
+
 
 CREATE TABLE v1_Attendance
         ( PersonId              INTEGER
@@ -57,7 +67,3 @@ CREATE TABLE v1_Class
 CREATE TABLE v1_Dojo
         ( Name                  STRING  PRIMARY KEY);
 
-/* Membership Level names. */
-CREATE TABLE v1_MembershipLevel
-        ( SortOrder             INTEGER
-        , Name                  STRING  PRIMARY KEY);
