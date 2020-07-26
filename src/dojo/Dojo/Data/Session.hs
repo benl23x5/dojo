@@ -16,3 +16,4 @@ sessionOwnsEvent ss event
  || (case eventCreatedBy event of
         Nothing  -> False
         Just uid -> uid == sessionUserId ss)
+

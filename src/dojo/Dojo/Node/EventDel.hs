@@ -5,7 +5,6 @@ import Dojo.Data.Event
 import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Fail
-import Config
 
 
 -- | Delete and existing event.
@@ -14,7 +13,7 @@ cgiEventDel ss inputs
  = goParseEid
  where
   goParseEid
-   = do conn <- liftIO $ connectSqlite3 databasePath
+   = do conn <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
 
         -- Parse an existing event id if we were given one.
         case lookup "eid" inputs of

@@ -9,7 +9,6 @@ import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
 import Dojo.Framework
-import Config
 import qualified Text.Blaze.Html5               as H
 
 
@@ -29,7 +28,7 @@ cgiPersonEdit ss inputs
     else cgiLogout ss
  where
   goPersonEdit
-   = do conn            <- liftIO $ connectSqlite3 databasePath
+   = do conn            <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         dojos           <- liftIO $ getDojos conn
         memberLevels    <- liftIO $ getMembershipLevels conn
 

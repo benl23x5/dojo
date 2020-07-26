@@ -5,7 +5,6 @@ import Dojo.Data.Person
 import Dojo.Framework
 import Dojo.Paths
 import Dojo.Chrome
-import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
@@ -17,11 +16,11 @@ cgiPersonList
         :: Session -> [(String, String)]
         -> CGI CGIResult
 
-cgiPersonList sid _inputs
- = do   conn    <- liftIO $ connectSqlite3 databasePath
+cgiPersonList ss _inputs
+ = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         people  <- liftIO $ getPeople conn
         liftIO $ disconnect conn
-        cgiPersonList_list sid people
+        cgiPersonList_list ss people
 
 
 cgiPersonList_list ss people

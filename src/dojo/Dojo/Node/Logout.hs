@@ -3,7 +3,6 @@ module Dojo.Node.Logout (cgiLogout) where
 import Dojo.Data.Session
 import Dojo.Framework
 import Dojo.Paths
-import Config
 import qualified Network.CGI            as CGI
 import qualified Data.Time              as Time
 
@@ -12,7 +11,7 @@ import qualified Data.Time              as Time
 cgiLogout :: Session -> CGI CGIResult
 cgiLogout ss
  = do
-        conn  <- liftIO $ connectSqlite3 databasePath
+        conn  <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
 
         -- Use current date/time to end the session.
         zonedTime <- liftIO $ Time.getZonedTime
@@ -24,5 +23,5 @@ cgiLogout ss
         liftIO $ commit conn
         liftIO $ disconnect conn
 
-        CGI.redirect $ flatten $ pathLogin
+        CGI.redirect $ flatten $ pathLogin (sessionConfig ss)
 

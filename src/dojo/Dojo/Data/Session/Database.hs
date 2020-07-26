@@ -1,6 +1,7 @@
 
 module Dojo.Data.Session.Database where
 import Dojo.Data.Session.Base
+import Dojo.Config
 import Dojo.Base
 
 
@@ -40,13 +41,14 @@ instance Convertible SqlValue SessionLocalTime where
 
 -------------------------------------------------------------------------------
 -- | Build an event from a list of Sql values.
-sessionOfSqlValues :: [SqlValue] -> Session
-sessionOfSqlValues
+sessionOfSqlValues :: Config -> [SqlValue] -> Session
+sessionOfSqlValues config
  [ sid, hash
  , uid, roleNative, roleActive
  , localStart, localEnd]
  = Session
-        { sessionId             = fromSql sid
+        { sessionConfig         = config
+        , sessionId             = fromSql sid
         , sessionHash           = fromSql hash
         , sessionUserId         = fromSql uid
         , sessionRoleNative     = fromSql roleNative
@@ -66,7 +68,7 @@ sessionOfSqlValues
              |  (edate', etime') <- splitSessionLocalTime $ fromSql ltime
              -> (Just edate', Just etime')
 
-sessionOfSqlValues _
+sessionOfSqlValues _ _
         = error "sessionOfValues: no match"
 
 
@@ -74,10 +76,11 @@ sessionOfSqlValues _
 -- | Get the session with the given hash.
 getSessionByHash
         :: IConnection conn
-        => conn -> SessionHash
+        => Config -> conn
+        -> SessionHash
         -> IO (Maybe Session)
 
-getSessionByHash conn hash
+getSessionByHash config conn hash
  = do   vss     <- quickQuery' conn (unlines
                 [ "SELECT SessionId, Hash,"
                 , "       UserId, RoleNative, RoleActive,"
@@ -87,7 +90,7 @@ getSessionByHash conn hash
                 [toSql hash]
 
         case vss of
-         [vs]   -> return $ Just $ sessionOfSqlValues vs
+         [vs]   -> return $ Just $ sessionOfSqlValues config vs
          _      -> return Nothing
 
 

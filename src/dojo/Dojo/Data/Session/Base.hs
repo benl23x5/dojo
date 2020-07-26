@@ -1,14 +1,20 @@
 
 module Dojo.Data.Session.Base where
 import Dojo.Trivia
+import Dojo.Config
 import qualified Data.Time      as Time
 
 
 -- | A login session.
+--   Includes static config info as well as dynamic data
+--   that we store in the database .
 data Session
         = Session
-        { -- | Numeric session id in the databse.
-          sessionId             :: SessionId    -- PRIMARY KEY
+        { -- | Static site config.
+          sessionConfig         :: Config
+
+          -- | Numeric session id in the databse.
+        , sessionId             :: SessionId    -- PRIMARY KEY
 
           -- | Session hash given to the user.
           --   We expose this hash to the user instead of the raw session
@@ -45,13 +51,31 @@ instance Show SessionHash where
 
 
 -- Projections ----------------------------------------------------------------
+-- | Get the site name from a session.
+sessionSiteName :: Session -> String
+sessionSiteName ss
+ = configCgiName $ sessionConfig ss
+
+
+-- | Get the base cgi name from a session, eg "dojo.cgi"
+sessionCgiName :: Session -> String
+sessionCgiName ss
+ = configCgiName $ sessionConfig ss
+
+
+-- | Get the full database path from a session.
+sessionDatabasePath :: Session -> FilePath
+sessionDatabasePath ss
+ = configDatabasePath $ sessionConfig ss
+
+
 -- | Take the local start time time of an event.
 sessionStartLocalTime :: Session -> SessionLocalTime
 sessionStartLocalTime session
-        = SessionLocalTime
-        $ makeSessionLocalTime
-                (sessionStartDate session)
-                (sessionStartTime session)
+ = SessionLocalTime
+ $ makeSessionLocalTime
+        (sessionStartDate session)
+        (sessionStartTime session)
 
 
 -- | Take the local end time of an event.

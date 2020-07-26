@@ -13,12 +13,13 @@ import Dojo.Node.EventEdit
 import Dojo.Node.EventDel
 import Dojo.Node.ClassList
 import Dojo.Node.ClassView
+
 import Dojo.Data.Session
 
+import Dojo.Config
 import Dojo.Paths
 import Dojo.Framework
 
-import qualified Config
 import qualified Network.CGI                            as CGI
 import qualified Control.Exception                      as Control
 import qualified Text.Blaze.Html5                       as H
@@ -27,11 +28,20 @@ import qualified Text.Blaze.Html.Renderer.String        as S
 import Control.Monad.Catch                              as C
 
 
+configDefault :: Config
+configDefault
+        = Config
+        { configSiteName        = "Aiki Kai Australia"
+        , configCgiName         = "dojo.cgi"
+        , configDatabasePath    = "/srv/dojo/test/aikikai-australia/data/dojo.db" }
+
+
 main :: IO ()
 main
- = CGI.runCGI $ CGI.handleErrors
- $ C.catch cgiTop
- $ (\(e :: Control.SomeException) -> sorry e)
+ = do   let config = configDefault
+        CGI.runCGI $ CGI.handleErrors
+         $ C.catch (cgiTop config)
+         $ (\(e :: Control.SomeException) -> sorry e)
 
 
 -- | Redirect all hard errors to the issue tracker.
@@ -54,8 +64,8 @@ sorry e
 
 
 -- | Top level CGI action.
-cgiTop :: CGI CGIResult
-cgiTop
+cgiTop :: Config -> CGI CGIResult
+cgiTop cc
  = goInputs
  where
 
@@ -64,19 +74,19 @@ cgiTop
    = do inputs  <- CGI.getInputs
         let mHash = lookup "s" inputs
         case mHash of
-         Nothing   -> cgiLogin inputs
+         Nothing   -> cgiLogin cc inputs
          Just hash -> goHash hash inputs
 
   -- Lookup the current session details from the db.
   goHash hash inputs
-   = do conn <- liftIO $ connectSqlite3 Config.databasePath
-        mss  <- liftIO $ getSessionByHash conn (SessionHash hash)
+   = do conn <- liftIO $ connectSqlite3 (configDatabasePath cc)
+        mss  <- liftIO $ getSessionByHash cc conn (SessionHash hash)
         liftIO $ disconnect conn
         case mss of
          -- When we are given a session key but it is not active
          --  then redirect the page so we clear the key from
          --  the current path.
-         Nothing -> CGI.redirect $ flatten $ pathLogin
+         Nothing -> CGI.redirect $ flatten $ pathLogin cc
          Just ss -> goSession ss inputs
 
   -- Dispatch to page handler based on the node id.

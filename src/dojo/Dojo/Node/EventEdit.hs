@@ -11,7 +11,6 @@ import Dojo.Data.Dojo
 import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
-import Config
 import qualified Data.Time                      as Time
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
@@ -40,7 +39,7 @@ import qualified Text.Blaze.Html5.Attributes    as A
 cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventEdit ss inputs
  = do   -- Connect to the database.
-        conn <- liftIO $ connectSqlite3 databasePath
+        conn <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
 
         -- Normalise incoming arguments.
         let ssArgs = filter (\(k, _) -> not $ elem k ["s", "n", "eid"]) inputs

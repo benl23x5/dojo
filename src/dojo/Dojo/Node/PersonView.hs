@@ -6,7 +6,6 @@ import Dojo.Data.Event
 import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Fail
-import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
@@ -21,7 +20,7 @@ cgiPersonView
 cgiPersonView ss inputs
  | Just strPersonId <- lookup "pid" inputs
  , Right pid        <- parse strPersonId
- = do   conn    <- liftIO $ connectSqlite3 databasePath
+ = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         person  <- liftIO $ getPerson conn pid
         events  <- liftIO $ getAttendanceOfPersonId conn pid
         liftIO $ disconnect conn

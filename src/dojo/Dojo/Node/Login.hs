@@ -5,10 +5,10 @@ import Dojo.Data.User
 import Dojo.Data.Session
 import Dojo.Framework
 import Dojo.Trivia
+import Dojo.Config
 import Dojo.Chrome
 import Dojo.Paths
 import Data.Word
-import qualified Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified System.Random                  as R
@@ -19,21 +19,21 @@ import qualified Data.Time                      as Time
 
 -------------------------------------------------------------------------------
 -- The entry login page
-cgiLogin :: [(String, String)] -> CGI CGIResult
-cgiLogin inputs
+cgiLogin :: Config -> [(String, String)] -> CGI CGIResult
+cgiLogin cc inputs
 
  -- Have username and password
  | Just username <- lookup "username" inputs
  , Just password <- lookup "password" inputs
  = do
-        conn    <- liftIO $ connectSqlite3 Config.databasePath
+        conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
         mUser   <- liftIO $ getMaybeUser conn (UserName username)
         liftIO $ disconnect conn
 
         -- Check if there is a user with this name.
         case mUser of
-         Nothing        -> loginFail
-         Just user      -> loginCheck user password
+         Nothing        -> loginFail cc
+         Just user      -> loginCheck cc user password
 
  -- Display login page.
  | otherwise
@@ -41,8 +41,8 @@ cgiLogin inputs
  $ H.docTypeHtml
  $ do   pageHeader "Login"
         pageBody
-         $ do   H.h1 $ H.string $ Config.siteName
-                formLogin pathLogin
+         $ do   H.h1 $ H.string $ configSiteName cc
+                formLogin (pathLogin cc)
 
 
 -------------------------------------------------------------------------------
@@ -76,8 +76,8 @@ formLogin path
 
 -------------------------------------------------------------------------------
 -- | Check user password.
-loginCheck :: User -> String -> CGI CGIResult
-loginCheck user password
+loginCheck :: Config -> User -> String -> CGI CGIResult
+loginCheck cc user password
  = do
         let UserPasswordHash hash = userPasswordHash user
         let UserPasswordSalt salt = userPasswordSalt user
@@ -95,24 +95,24 @@ loginCheck user password
         --  this just redidirects back to the login page, we should
         --  instead say "login failed" or something.
         if not match
-         then loginFail
-         else loginActivate user
+         then loginFail cc
+         else loginActivate cc user
 
 
 -- | Login failure, bad username or password.
-loginFail :: CGI CGIResult
-loginFail
-        = CGI.redirect $ flatten $ pathLogin
+loginFail :: Config -> CGI CGIResult
+loginFail cc
+ = CGI.redirect $ flatten $ pathLogin cc
 
 
 -- | Activate user session and go to main page.
-loginActivate :: User -> CGI CGIResult
-loginActivate user
+loginActivate :: Config -> User -> CGI CGIResult
+loginActivate cc user
  = do
         -- Make a session key based on a random number.
         gen :: Word64 <- liftIO $ R.randomIO
         let hash' =  take 12 $ show
-                  $  Digest.md5 $  BS.pack $ map convert $ show gen
+                  $  Digest.md5 $ BS.pack $ map convert $ show gen
 
         let hash  = SessionHash hash'
 
@@ -125,7 +125,8 @@ loginActivate user
 
         let session
                 = Session
-                { sessionId             = SessionId 0
+                { sessionConfig         = cc
+                , sessionId             = SessionId 0
                 , sessionHash           = hash
                 , sessionUserId         = userId user
                 , sessionRoleNative     = userRoleNative user
@@ -136,7 +137,7 @@ loginActivate user
                 , sessionEndTime        = Nothing }
 
         -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 $ Config.databasePath
+        conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
 
         -- Insert the new session
         _       <- liftIO $ insertSession conn session

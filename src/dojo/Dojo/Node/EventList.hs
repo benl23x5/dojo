@@ -4,7 +4,6 @@ import Dojo.Data.Session
 import Dojo.Data.Event
 import Dojo.Paths
 import Dojo.Chrome
-import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
@@ -17,7 +16,7 @@ cgiEventList
         -> CGI CGIResult
 
 cgiEventList ss _inputs
- = do   conn    <- liftIO $ connectSqlite3 databasePath
+ = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         events  <- liftIO $ getEventList conn
         liftIO $ disconnect conn
         cgiEventList_list ss events

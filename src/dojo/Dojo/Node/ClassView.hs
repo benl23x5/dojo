@@ -6,7 +6,6 @@ import Dojo.Framework
 import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Fail
-import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
@@ -21,7 +20,7 @@ cgiClassView
 cgiClassView ss inputs
  | Just strClassId  <- lookup "cid" inputs
  , Right cid        <- parse strClassId
- = do   conn    <- liftIO $ connectSqlite3 databasePath
+ = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         classs  <- liftIO $ getClass conn cid
         liftIO $ disconnect conn
 
@@ -40,7 +39,7 @@ cgiClassView_page ss classs
 
                 tablePaths
                  [ Path "New Event of Class"
-                        cgiName
+                        (sessionCgiName ss)
                         [ ("s",         show $ sessionHash ss)
                         , ("n",         "ee")
                         , ("Location",  maybe "" pretty $ classLocation classs)

@@ -97,11 +97,10 @@ Executable dojo
         Dojo.Chrome
 
         Dojo.Base
+        Dojo.Config
         Dojo.Fail
         Dojo.Framework
         Dojo.Paths
-
-        Config
 
   ghc-options:
         -Wall

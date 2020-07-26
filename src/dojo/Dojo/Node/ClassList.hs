@@ -5,22 +5,21 @@ import Dojo.Data.Class
 import Dojo.Framework
 import Dojo.Paths
 import Dojo.Chrome
-import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 
 -- | A table of classes.
 cgiClassList :: Session -> [(String, String)] -> CGI CGIResult
-cgiClassList sid _inputs
+cgiClassList ss _inputs
  = do   -- Connect to the database.
-        conn    <- liftIO $ connectSqlite3 databasePath
+        conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
 
         -- Read current data for all people
         classes <- liftIO $ getClasses conn
         liftIO $ disconnect conn
 
-        cgiClassList_list sid classes
+        cgiClassList_list ss classes
 
 
 cgiClassList_list ss classes

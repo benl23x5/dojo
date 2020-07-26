@@ -3,27 +3,29 @@ module Dojo.Paths where
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Framework
-import Config
-
+import Dojo.Config
 
 -- The paths to show at the top of each page.
 pathsJump :: Session -> [Path]
 pathsJump ss
- = [ pathPersonList ss, pathClassList ss, pathEventList ss, pathLogout ss]
+ =      [ pathPersonList ss
+        , pathClassList  ss
+        , pathEventList  ss
+        , pathLogout     ss]
 
 
 -- Session -------------------------------------------------------------------
-pathLogin :: Path
-pathLogin
+pathLogin :: Config -> Path
+pathLogin config
  = Path "Login"
-        cgiName
+        (configCgiName config)
         [ ("n", "login") ]
 
 
 pathLogout :: Session -> Path
 pathLogout ss
  = Path "Logout"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "logout") ]
 
@@ -32,7 +34,7 @@ pathLogout ss
 pathMain :: Session -> Path
 pathMain ss
  = Path "Main"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "main") ]
 
@@ -41,7 +43,7 @@ pathMain ss
 pathPersonList :: Session -> Path
 pathPersonList ss
  = Path "People"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "pl")]
 
@@ -49,7 +51,7 @@ pathPersonList ss
 pathPersonAdd :: Session -> Path
 pathPersonAdd ss
  = Path "Add Person"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "pe")]
 
@@ -57,14 +59,14 @@ pathPersonAdd ss
 pathPersonEdit :: Session -> Maybe PersonId -> Path
 pathPersonEdit ss (Just (PersonId pid))
  = Path "Edit Person"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "pe")
         , ("pid", show pid)]
 
 pathPersonEdit ss Nothing
  = Path "Edit Person"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "pe") ]
 
@@ -72,7 +74,7 @@ pathPersonEdit ss Nothing
 pathPersonView :: Session -> PersonId -> Path
 pathPersonView ss (PersonId pid)
  = Path "View Person"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "pv")
         , ("pid", show pid)]
@@ -81,7 +83,7 @@ pathPersonView ss (PersonId pid)
 pathPersonDiscard :: Session -> PersonId -> Path
 pathPersonDiscard ss (PersonId pid)
  = Path "Discard Change"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "pv")
         , ("pid", show pid)]
@@ -91,7 +93,7 @@ pathPersonDiscard ss (PersonId pid)
 pathEventList :: Session -> Path
 pathEventList ss
  = Path "Events"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "el")]
 
@@ -99,7 +101,7 @@ pathEventList ss
 pathEventView :: Session -> EventId -> Path
 pathEventView ss (EventId eid)
  = Path "View Event"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "ev")
         , ("eid", show eid)]
@@ -108,7 +110,7 @@ pathEventView ss (EventId eid)
 pathEventAdd :: Session -> Path
 pathEventAdd ss
  = Path "Add Event"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "ee")]
 
@@ -116,7 +118,7 @@ pathEventAdd ss
 pathEventDel :: Session -> EventId -> Path
 pathEventDel ss (EventId eid)
  = Path "Del Event"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "ed")
         , ("eid", show eid) ]
@@ -125,14 +127,14 @@ pathEventDel ss (EventId eid)
 pathEventEdit :: Session -> Maybe EventId -> Path
 pathEventEdit ss (Just (EventId eid))
  = Path "Edit Event"
-        cgiName
+        (sessionCgiName ss)
         [ ("s",   show $ sessionHash ss)
         , ("n",   "ee")
         , ("eid", show eid)]
 
 pathEventEdit ss Nothing
  = Path "Edit Event"
-        cgiName
+        (sessionCgiName ss)
         [ ("s",   show $ sessionHash ss)
         , ("n",   "ee")]
 
@@ -142,7 +144,7 @@ pathEventEdit ss Nothing
 pathClassList :: Session -> Path
 pathClassList ss
  = Path "Classes"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "cl")]
 
@@ -150,7 +152,7 @@ pathClassList ss
 pathClassView :: Session -> ClassId -> Path
 pathClassView ss (ClassId cid)
  = Path "View Class"
-        cgiName
+        (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "cv")
         , ("cid", show cid)]

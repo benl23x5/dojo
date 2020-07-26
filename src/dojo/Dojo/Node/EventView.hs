@@ -7,7 +7,6 @@ import Dojo.Data.User
 import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
-import Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
@@ -22,8 +21,8 @@ cgiEventView
 cgiEventView ss inputs
  | Just strEventId  <- lookup "eid" inputs
  , Right eid       <- parse strEventId
- = do   conn       <- liftIO $ connectSqlite3 databasePath
-
+ = do
+        conn       <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         -- TODO: handle concurrent event deletion.
         Just event <- liftIO $ getEvent conn eid
         attend     <- liftIO $ getAttendance conn eid
