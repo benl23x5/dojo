@@ -113,6 +113,15 @@ pathEventAdd ss
         , ("n", "ee")]
 
 
+pathEventDel :: Session -> EventId -> Path
+pathEventDel ss (EventId eid)
+ = Path "Del Event"
+        cgiName
+        [ ("s", show $ sessionHash ss)
+        , ("n", "ed")
+        , ("eid", show eid) ]
+
+
 pathEventEdit :: Session -> Maybe EventId -> Path
 pathEventEdit ss (Just (EventId eid))
  = Path "Edit Event"
@@ -126,6 +135,7 @@ pathEventEdit ss Nothing
         cgiName
         [ ("s",   show $ sessionHash ss)
         , ("n",   "ee")]
+
 
 
 -- Classes ---------------------------------------------------------------------

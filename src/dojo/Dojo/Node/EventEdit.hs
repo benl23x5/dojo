@@ -121,7 +121,7 @@ cgiEventEdit ss inputs
                 then cgiEventEdit_del ss conn mEidIn pidsDel
                 else cgiLogout ss
 
-         -- Appply updates or add new people as attendees.
+         -- Apply updates or add new people as attendees.
          | (not $ null updates) || (not $ null newNames)
          -> if bSessionOwnsEvent
                 then cgiEventEdit_update

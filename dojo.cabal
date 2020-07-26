@@ -86,6 +86,7 @@ Executable dojo
         Dojo.Node.EventList
         Dojo.Node.EventView
         Dojo.Node.EventEdit
+        Dojo.Node.EventDel
 
         Dojo.Node.ClassList
         Dojo.Node.ClassView

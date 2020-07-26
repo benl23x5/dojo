@@ -10,6 +10,7 @@ import Dojo.Node.PersonEdit
 import Dojo.Node.EventList
 import Dojo.Node.EventView
 import Dojo.Node.EventEdit
+import Dojo.Node.EventDel
 import Dojo.Node.ClassList
 import Dojo.Node.ClassView
 import Dojo.Data.Session
@@ -90,6 +91,7 @@ cgiTop
          Just "el"      -> cgiEventList  ss inputs
          Just "ev"      -> cgiEventView  ss inputs
          Just "ee"      -> cgiEventEdit  ss inputs
+         Just "ed"      -> cgiEventDel   ss inputs
          Just "cl"      -> cgiClassList  ss inputs
          Just "cv"      -> cgiClassView  ss inputs
 

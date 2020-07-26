@@ -170,6 +170,17 @@ updateEvent conn event
                 , toSql (eventId        event) ]
 
 
+-- | Delete an event.
+deleteEvent :: IConnection conn => conn -> Event -> IO Integer
+deleteEvent conn event
+ = do   stmt    <- prepare conn $ unlines
+                [ "DELETE FROM v1_Event"
+                , "WHERE EventId=?" ]
+
+        execute stmt
+                [ toSql (eventId event) ]
+
+
 ------------------------------------------------------------------------------
 -- | Get available event types.
 getEventTypes :: IConnection conn => conn -> IO [EventType]

@@ -47,11 +47,13 @@ cgiEventView_page ss event _userCreatedBy personCreatedBy attendance
          $ do   tablePaths $ pathsJump ss
 
                 -- Event can be edited by admin or the user that created it.
-                when (  sessionIsAdmin ss
-                     || (case eventCreatedBy event of
-                         Nothing  -> False
-                         Just uid -> uid == sessionUserId ss))
-                 $ tablePaths $ [pathEventEdit ss $ eventId event]
+                when (sessionOwnsEvent ss event)
+                 $ tablePaths
+                 $  [ pathEventEdit ss $ eventId event ]
+                 ++ (case eventId event of
+                      Just eid | null attendance
+                        -> [pathEventDel ss eid]
+                      _ -> [])
 
                 H.div ! A.id "event-view"
                  $ do   divEventDetails event personCreatedBy
