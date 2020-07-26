@@ -1,9 +1,5 @@
 
-module Dojo.Data.Session.Database
-        ( sessionOfSqlValues
-        , getSessionByHash
-        , insertSession)
-where
+module Dojo.Data.Session.Database where
 import Dojo.Data.Session.Base
 import Dojo.Base
 
@@ -46,7 +42,7 @@ instance Convertible SqlValue SessionLocalTime where
 -- | Build an event from a list of Sql values.
 sessionOfSqlValues :: [SqlValue] -> Session
 sessionOfSqlValues [sid, uid, hash, localStart, localEnd]
-        = Session
+ = Session
         { sessionId             = fromSql sid
         , sessionHash           = fromSql hash
         , sessionUserId         = fromSql uid
@@ -55,16 +51,15 @@ sessionOfSqlValues [sid, uid, hash, localStart, localEnd]
         , sessionEndDate        = edate
         , sessionEndTime        = etime }
 
-        where   (sdate, stime)
-                 = splitSessionLocalTime $ fromSql localStart
+ where  (sdate, stime)
+         = splitSessionLocalTime $ fromSql localStart
 
-                (edate, etime)
-                 = case fromSql localEnd of
-                     Nothing     -> (Nothing, Nothing)
-                     Just ltime
-                      |  (edate', etime') <- splitSessionLocalTime $ fromSql ltime
-                      -> (Just edate', Just etime')
-
+        (edate, etime)
+         = case fromSql localEnd of
+            Nothing -> (Nothing, Nothing)
+            Just ltime
+             |  (edate', etime') <- splitSessionLocalTime $ fromSql ltime
+             -> (Just edate', Just etime')
 
 sessionOfSqlValues _
         = error "sessionOfValues: no match"
@@ -72,15 +67,21 @@ sessionOfSqlValues _
 
 -------------------------------------------------------------------------------
 -- | Get the session with the given hash.
-getSessionByHash :: IConnection conn => conn -> SessionHash -> IO Session
+getSessionByHash
+        :: IConnection conn
+        => conn -> SessionHash
+        -> IO (Maybe Session)
+
 getSessionByHash conn hash
- = do   [values] <- quickQuery' conn (unlines
+ = do   vss     <- quickQuery' conn (unlines
                 [ "SELECT SessionId,UserId,Hash,StartTime,EndTime"
                 , "FROM   v1_Session"
-                , "WHERE  Hash=?" ])
+                , "WHERE  Hash=? AND EndTime IS NULL"])
                 [toSql hash]
 
-        return $ sessionOfSqlValues values
+        case vss of
+         [vs]   -> return $ Just $ sessionOfSqlValues vs
+         _      -> return Nothing
 
 
 -- | Insert a record showing a person attended this event.
@@ -96,3 +97,30 @@ insertSession conn session
                 , toSql (sessionUserId         session)
                 , toSql (sessionStartLocalTime session) ]
 
+
+-- | Update the session with the given end time.
+--   The end date and time fields are overwritten with the given ones.
+endSession
+        :: IConnection conn
+        => conn -> SessionDate -> SessionTime -> Session -> IO Session
+endSession conn sdate stime session
+ = do
+        -- update the session end date/time fields.
+        let session'
+                = session
+                { sessionEndDate        = Just sdate
+                , sessionEndTime        = Just stime }
+
+        -- will always succeed as we set the end date/time above.
+        let Just eltime = sessionEndLocalTime session'
+
+        stmt    <- prepare conn $ unlines
+                [ "UPDATE v1_Session"
+                , "SET   EndTime=?"
+                , "WHERE SessionId=?" ]
+
+        execute stmt
+                [ toSql eltime
+                , toSql (sessionId session) ]
+
+        return session'

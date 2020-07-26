@@ -1,5 +1,6 @@
 
 module Main where
+
 import Dojo.Node.Login
 import Dojo.Node.Logout
 import Dojo.Node.Main
@@ -12,16 +13,18 @@ import Dojo.Node.EventEdit
 import Dojo.Node.ClassList
 import Dojo.Node.ClassView
 import Dojo.Data.Session
+
 import Dojo.Paths
 import Dojo.Framework
+
 import qualified Config
 import qualified Network.CGI                            as CGI
 import qualified Control.Exception                      as Control
 import qualified Text.Blaze.Html5                       as H
 import qualified Text.Blaze.Html5.Attributes            as A
 import qualified Text.Blaze.Html.Renderer.String        as S
-
 import Control.Monad.Catch                              as C
+
 
 main :: IO ()
 main
@@ -52,34 +55,46 @@ sorry e
 -- | Top level CGI action.
 cgiTop :: CGI CGIResult
 cgiTop
- = do   inputs  <- CGI.getInputs
+ = goInputs
+ where
 
-        -- Grab the current session details.
+  -- See if we have a session key specified.
+  goInputs
+   = do inputs  <- CGI.getInputs
         let mHash = lookup "s" inputs
-        mSession
-         <- case mHash of
-                Nothing
-                 -> return Nothing
+        case mHash of
+         Nothing   -> cgiLogin inputs
+         Just hash -> goHash hash inputs
 
-                Just hash
-                 -> do  conn    <- liftIO $ connectSqlite3 Config.databasePath
-                        ss      <- liftIO $ getSessionByHash conn (SessionHash hash)
-                        liftIO $ disconnect conn
-                        return $ Just ss
+  -- Lookup the current session details from the db.
+  goHash hash inputs
+   = do conn <- liftIO $ connectSqlite3 Config.databasePath
+        mss  <- liftIO $ getSessionByHash conn (SessionHash hash)
+        liftIO $ disconnect conn
+        case mss of
+         -- When we are given a session key but it is not active
+         --  then redirect the page so we clear the key from
+         --  the current path.
+         Nothing -> CGI.redirect $ flatten $ pathLogin
+         Just ss -> goSession ss inputs
 
-        -- Dispatch on the node id argument.
-        let mNode = lookup "n" inputs
-        case (mSession, mNode) of
-         (_,       Just "login")  -> cgiLogin         inputs
-         (_,       Just "logout") -> cgiLogout        inputs
-         (Just ss, Just "main")   -> cgiMain       ss inputs
-         (Just ss, Just "pl")     -> cgiPersonList ss inputs
-         (Just ss, Just "pv")     -> cgiPersonView ss inputs
-         (Just ss, Just "pe")     -> cgiPersonEdit ss inputs
-         (Just ss, Just "el")     -> cgiEventList  ss inputs
-         (Just ss, Just "ev")     -> cgiEventView  ss inputs
-         (Just ss, Just "ee")     -> cgiEventEdit  ss inputs
-         (Just ss, Just "cl")     -> cgiClassList  ss inputs
-         (Just ss, Just "cv")     -> cgiClassView  ss inputs
+  -- Dispatch to page handler based on the node id.
+  goSession ss inputs
+   = do let mNode = lookup "n" inputs
+        case mNode of
+         Just "logout"  -> cgiLogout     ss
+         Just "main"    -> cgiMain       ss inputs
+         Just "pl"      -> cgiPersonList ss inputs
+         Just "pv"      -> cgiPersonView ss inputs
+         Just "pe"      -> cgiPersonEdit ss inputs
+         Just "el"      -> cgiEventList  ss inputs
+         Just "ev"      -> cgiEventView  ss inputs
+         Just "ee"      -> cgiEventEdit  ss inputs
+         Just "cl"      -> cgiClassList  ss inputs
+         Just "cv"      -> cgiClassView  ss inputs
 
-         _ -> CGI.redirect $ flatten $ pathLogin
+         -- If there is no node name, or it is not recognized
+         --  then just logout the current session, which will
+         --  redirect back to the login page.
+         _  -> CGI.redirect $ flatten $ pathLogout ss
+

@@ -11,7 +11,8 @@ CREATE TABLE v1_Session
         , UserId                INTEGER   NOT NULL
         , Hash                  TEXT      NOT NULL
         , StartTime             DATETIME  NOT NULL
-        , EndTime               DATETIME);
+        , EndTime               DATETIME
+        , UNIQUE(UserId, Hash));
 
 CREATE TABLE v1_Person
         ( PersonId              INTEGER PRIMARY KEY

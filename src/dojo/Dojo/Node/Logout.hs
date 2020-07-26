@@ -1,13 +1,28 @@
 
 module Dojo.Node.Logout (cgiLogout) where
-import Dojo.Paths
+import Dojo.Data.Session
 import Dojo.Framework
+import Dojo.Paths
+import Config
 import qualified Network.CGI            as CGI
+import qualified Data.Time              as Time
 
 
 -- | Logout of the current session.
---   ISSUE #29: On logout, clear the current session key.
-cgiLogout :: [(String, String)] -> CGI CGIResult
-cgiLogout _inputs
-        = CGI.redirect $ flatten $ pathLogin
+cgiLogout :: Session -> CGI CGIResult
+cgiLogout ss
+ = do
+        conn  <- liftIO $ connectSqlite3 databasePath
+
+        -- Use current date/time to end the session.
+        zonedTime <- liftIO $ Time.getZonedTime
+        let (endDate, endTime)
+                = splitSessionLocalTime
+                $ Time.zonedTimeToLocalTime zonedTime
+
+        liftIO $ endSession conn endDate endTime ss
+        liftIO $ commit conn
+        liftIO $ disconnect conn
+
+        CGI.redirect $ flatten $ pathLogin
 

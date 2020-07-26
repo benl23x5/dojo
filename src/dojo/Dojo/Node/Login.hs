@@ -6,6 +6,7 @@ import Dojo.Data.Session
 import Dojo.Framework
 import Dojo.Chrome
 import Dojo.Paths
+import Data.Word
 import qualified Config
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
@@ -14,7 +15,6 @@ import qualified Network.CGI                    as CGI
 import qualified Data.Digest.Pure.MD5           as Digest
 import qualified Data.ByteString.Lazy           as BS
 import qualified Data.Time                      as Time
-
 
 -------------------------------------------------------------------------------
 -- The entry login page
@@ -109,7 +109,7 @@ loginActivate :: User -> CGI CGIResult
 loginActivate user
  = do
         -- Make a session key based on a random number.
-        gen :: Int  <- liftIO $ R.randomRIO (0 :: Int, 2^ (64 :: Int) :: Int)
+        gen :: Word64 <- liftIO $ R.randomIO
         let hash' =  take 12 $ show
                   $  Digest.md5 $  BS.pack $ map convert $ show gen
 
@@ -123,9 +123,7 @@ loginActivate user
                 $ Time.zonedTimeToLocalTime zonedTime
 
         let session
-                = makeSession
-                        hash (userId user)
-                        startDate startTime
+                = makeSession hash (userId user) startDate startTime
 
         -- Connect to database.
         conn    <- liftIO $ connectSqlite3 $ Config.databasePath

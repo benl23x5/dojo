@@ -17,7 +17,7 @@ data User
         = User
         { userId                :: UserId               -- PRIMARY KEY
         , userName              :: UserName
-        
+
         -- | User password hash and salt.
         , userPasswordHash      :: UserPasswordHash
         , userPasswordSalt      :: UserPasswordSalt
@@ -26,10 +26,10 @@ data User
         , userPersonId          :: PersonId }
 
 
-data UserId             = UserId Integer                deriving (Eq, Ord)
-data UserName           = UserName String               deriving (Eq, Ord)
-data UserPasswordHash   = UserPasswordHash String       deriving Eq
-data UserPasswordSalt   = UserPasswordSalt String       deriving Eq
+data UserId             = UserId Integer            deriving (Show, Eq, Ord)
+data UserName           = UserName String           deriving (Show, Eq, Ord)
+data UserPasswordHash   = UserPasswordHash String   deriving (Show, Eq)
+data UserPasswordSalt   = UserPasswordSalt String   deriving (Show, Eq)
 
 
 -- Constructors ---------------------------------------------------------------

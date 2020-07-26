@@ -1,20 +1,5 @@
 
-module Dojo.Data.Session.Base
-        ( Session               (..)
-        , SessionId             (..)
-        , SessionTime           (..)
-        , SessionDate           (..)
-        , SessionHash           (..)
-        , SessionLocalTime      (..)
-        , makeSession
-
-        -- * Projections
-        , sessionStartLocalTime
-
-        -- * Conversions
-        , makeSessionLocalTime
-        , splitSessionLocalTime)
-where
+module Dojo.Data.Session.Base where
 import Dojo.Data.User
 import qualified Data.Time      as Time
 
@@ -29,7 +14,7 @@ data Session
           --   We expose this hash to the user instead of the raw session
           --   key so that users can't guess the keys of other sessions
           --   that might be in progress.
-        , sessionHash           :: SessionHash 
+        , sessionHash           :: SessionHash
 
           -- | The id of the user attached to this session.
         , sessionUserId         :: UserId
@@ -41,16 +26,20 @@ data Session
           -- | Time the session ended.
         , sessionEndDate        :: Maybe SessionDate
         , sessionEndTime        :: Maybe SessionTime }
+        deriving Show
 
 data SessionId
         = SessionId Integer
-        deriving (Eq, Ord)
+        deriving (Eq, Ord, Show)
 
 
 data SessionHash        = SessionHash String
-data SessionDate        = SessionDate Time.Day
-data SessionTime        = SessionTime Time.TimeOfDay
-data SessionLocalTime   = SessionLocalTime Time.LocalTime     deriving Eq
+data SessionDate        = SessionDate Time.Day              deriving Show
+data SessionTime        = SessionTime Time.TimeOfDay        deriving Show
+data SessionLocalTime   = SessionLocalTime Time.LocalTime   deriving (Show, Eq)
+
+instance Show SessionHash where
+ show (SessionHash hash) = hash
 
 
 -- Constructors ---------------------------------------------------------------
@@ -68,13 +57,24 @@ makeSession hash uid dateStart timeStart
 
 
 -- Projections ----------------------------------------------------------------
--- | Take the local time of an event.
+-- | Take the local start time time of an event.
 sessionStartLocalTime :: Session -> SessionLocalTime
 sessionStartLocalTime session
         = SessionLocalTime
-        $ makeSessionLocalTime 
-                (sessionStartDate session) 
+        $ makeSessionLocalTime
+                (sessionStartDate session)
                 (sessionStartTime session)
+
+
+-- | Take the local end time of an event.
+sessionEndLocalTime :: Session -> Maybe SessionLocalTime
+sessionEndLocalTime session
+ | Just edate   <- sessionEndDate session
+ , Just etime   <- sessionEndTime session
+ = Just $ SessionLocalTime
+        $ makeSessionLocalTime edate etime
+
+ | otherwise = Nothing
 
 
 -- Conversions ----------------------------------------------------------------
