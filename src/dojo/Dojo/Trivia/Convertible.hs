@@ -4,6 +4,22 @@ import Dojo.Trivia.Base
 import Dojo.Framework
 
 -- toSql ----------------------------------------------------------------------
+instance Convertible UserId SqlValue where
+ safeConvert (UserId uid)               = safeConvert uid
+
+instance Convertible UserName SqlValue where
+ safeConvert (UserName uname)           = safeConvert uname
+
+instance Convertible UserPasswordHash SqlValue where
+ safeConvert (UserPasswordHash str)     = safeConvert str
+
+instance Convertible UserPasswordSalt SqlValue where
+ safeConvert (UserPasswordSalt str)     = safeConvert str
+
+instance Convertible UserRole SqlValue where
+ safeConvert (UserRole str)             = safeConvert str
+
+
 instance Convertible PersonId   SqlValue where
  safeConvert (PersonId n)               = safeConvert n
 
@@ -58,6 +74,22 @@ instance Convertible ClassDay SqlValue where
 
 
 -- fromSql --------------------------------------------------------------------
+instance Convertible SqlValue UserId where
+ safeConvert val        = liftM UserId (safeConvert val)
+
+instance Convertible SqlValue UserName where
+ safeConvert val        = liftM UserName (safeConvert val)
+
+instance Convertible SqlValue UserPasswordHash where
+ safeConvert val        = liftM UserPasswordHash (safeConvert val)
+
+instance Convertible SqlValue UserPasswordSalt where
+ safeConvert val        = liftM UserPasswordSalt (safeConvert val)
+
+instance Convertible SqlValue UserRole where
+ safeConvert val        = liftM UserRole (safeConvert val)
+
+
 instance Convertible SqlValue PersonId where
  safeConvert val        = liftM PersonId (safeConvert val)
 

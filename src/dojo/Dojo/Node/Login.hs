@@ -4,6 +4,7 @@ import Dojo.Data.Session        ()
 import Dojo.Data.User
 import Dojo.Data.Session
 import Dojo.Framework
+import Dojo.Trivia
 import Dojo.Chrome
 import Dojo.Paths
 import Data.Word

@@ -22,12 +22,3 @@ data User
         --    The active role in the sesson may be lower for testing purposes.
         , userRoleNative        :: UserRole }
 
-
-
-
-data UserId             = UserId Integer            deriving (Show, Eq, Ord)
-data UserName           = UserName String           deriving (Show, Eq, Ord)
-data UserPasswordHash   = UserPasswordHash String   deriving (Show, Eq)
-data UserPasswordSalt   = UserPasswordSalt String   deriving (Show, Eq)
-data UserRole           = UserRole String           deriving (Show, Eq)
-

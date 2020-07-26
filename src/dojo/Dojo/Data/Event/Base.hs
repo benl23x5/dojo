@@ -29,7 +29,10 @@ data Event
         , eventDate             :: Maybe EventDate
 
           -- | Local time when the event was held.
-        , eventTime             :: Maybe EventTime }
+        , eventTime             :: Maybe EventTime
+
+          -- | The user that created this event.
+        , eventCreatedBy        :: Maybe UserId }
 
 
 -- | Create a zero event.
@@ -40,7 +43,8 @@ zeroEvent
         , eventType             = Nothing
         , eventLocation         = Nothing
         , eventDate             = Nothing
-        , eventTime             = Nothing }
+        , eventTime             = Nothing
+        , eventCreatedBy        = Nothing }
 
 
 -- Entity ---------------------------------------------------------------------
@@ -80,6 +84,11 @@ eventFields
         (fmap toSql . loadInput @EventTime)
         (toSql . eventTime)
         (\v x -> x { eventTime = fromSql v})
+
+   , Field "CreatedBy"  "created by"
+        (fmap toSql . loadInput @UserId)
+        (toSql . eventCreatedBy)
+        (\v x -> x { eventCreatedBy = fromSql v})
    ]
 
 

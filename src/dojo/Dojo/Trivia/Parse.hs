@@ -4,6 +4,11 @@ import Dojo.Trivia.Base
 import Dojo.Framework
 
 
+-- User -----------------------------------------------------------------------
+instance Parse UserId where
+ parse str      = liftM UserId $ parse str
+
+
 -- Person ---------------------------------------------------------------------
 instance Parse PersonId where
  parse str      = liftM PersonId $ parse str

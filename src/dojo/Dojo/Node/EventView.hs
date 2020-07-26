@@ -3,6 +3,7 @@ module Dojo.Node.EventView (cgiEventView) where
 import Dojo.Data.Session
 import Dojo.Data.Event
 import Dojo.Data.Person
+import Dojo.Data.User
 import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
@@ -20,34 +21,47 @@ cgiEventView
 
 cgiEventView ss inputs
  | Just strEventId  <- lookup "eid" inputs
- , Right eid        <- parse strEventId
+ , Right eid    <- parse strEventId
  = do   conn    <- liftIO $ connectSqlite3 databasePath
         event   <- liftIO $ getEvent conn eid
         attend  <- liftIO $ getAttendance conn eid
-        liftIO $ disconnect conn
 
-        cgiEventView_page ss event attend
+        (userCreatedBy, personCreatedBy)
+         <- do  let Just uidCreatedBy = eventCreatedBy event
+                Just user <- liftIO $ getUserOfId conn uidCreatedBy
+                person    <- liftIO $ getPerson conn $ userPersonId user
+                return (user, person)
+
+        liftIO $ disconnect conn
+        cgiEventView_page ss event userCreatedBy personCreatedBy attend
 
  | otherwise
  = throw $ FailNodeArgs "event view" inputs
 
 
-cgiEventView_page ss event attendance
+cgiEventView_page ss event _userCreatedBy personCreatedBy attendance
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ pretty $ eventDisplayName event
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths $ [pathEventEdit ss $ eventId event]
+
+                -- Event can be edited by admin or the user that created it.
+                when (  sessionIsAdmin ss
+                     || (case eventCreatedBy event of
+                         Nothing  -> False
+                         Just uid -> uid == sessionUserId ss))
+                 $ tablePaths $ [pathEventEdit ss $ eventId event]
+
                 H.div ! A.id "event-view"
-                 $ do   divEventDetails event
+                 $ do   divEventDetails event personCreatedBy
                         divPersonList ss attendance
 
 
 -------------------------------------------------------------------------------
 -- | Event details.
-divEventDetails :: Event -> Html
-divEventDetails event
+divEventDetails :: Event -> Person -> Html
+divEventDetails event personCreatedBy
  = H.div ! A.class_ "details" ! A.id "event-details-view"
  $ do
         H.table
@@ -64,6 +78,11 @@ divEventDetails event
 
                 tr $ do td' (eventLocation event)
                         td' (eventType     event)
+
+        H.table
+         $ do   col' "CreatedBy"
+                tr $ do th "created by"
+                tr $ do td' $ personDisplayName personCreatedBy
 
  where  col' c  = col ! A.class_ c
         td' val = td $ H.toMarkup $ maybe "" pretty $ val

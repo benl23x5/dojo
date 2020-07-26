@@ -98,8 +98,9 @@ cgiEventEdit ss inputs
                                 $ Time.zonedTimeToLocalTime zonedTime
 
                         let event = zeroEvent
-                                  { eventDate = Just edate
-                                  , eventTime = Just etime }
+                                  { eventDate      = Just edate
+                                  , eventTime      = Just etime
+                                  , eventCreatedBy = Just $ sessionUserId ss }
                         return  (Nothing, event, [])
 
         if

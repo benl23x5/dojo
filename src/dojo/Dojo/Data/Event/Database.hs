@@ -10,13 +10,14 @@ import qualified Data.Time      as Time
 -------------------------------------------------------------------------------
 -- | Build an event from a list of Sql values.
 eventOfSqlValues :: [SqlValue] -> Event
-eventOfSqlValues [eid, etype, loc, ltime]
+eventOfSqlValues [eid, etype, loc, ltime, createdBy]
  = Event
-        { eventId       = fromSql eid
-        , eventType     = fromSql etype
-        , eventLocation = fromSql loc
-        , eventDate     = edate
-        , eventTime     = etime }
+        { eventId               = fromSql eid
+        , eventType             = fromSql etype
+        , eventLocation         = fromSql loc
+        , eventDate             = edate
+        , eventTime             = etime
+        , eventCreatedBy        = fromSql createdBy}
 
  where (edate, etime)
          = case fmap splitEventLocalTime $ fromSql ltime of
@@ -31,15 +32,17 @@ eventOfSqlValues _ = error "eventOfValues: no match"
 getEventList :: IConnection conn => conn -> IO [(Event, Int)]
 getEventList conn
  = do   valuess <- quickQuery' conn (unlines
-                [ "SELECT v1_Event.EventId, v1_Event.Type, v1_Event.Location, v1_Event.Time"
-                , "     , (SELECT count(PersonId) from v1_Attendance"
+                [ "SELECT v1_Event.EventId,"
+                , "       v1_Event.Type, v1_Event.Location, v1_Event.Time,"
+                , "       v1_Event.CreatedBy,"
+                , "       (SELECT count(PersonId) from v1_Attendance"
                 , "        WHERE  v1_Attendance.EventId = v1_Event.EventId)"
                 , "FROM   v1_Event"
                 , "ORDER BY Time DESC" ]) []
 
         let elemOfSqlValues values
-                | [eid, etype, loc, ttime, people] <- values
-                = ( eventOfSqlValues [eid, etype, loc, ttime]
+                | [eid, etype, loc, ttime, createdBy, people] <- values
+                = ( eventOfSqlValues [eid, etype, loc, ttime, createdBy]
                   , fromSql people)
 
                 | otherwise
@@ -52,7 +55,7 @@ getEventList conn
 getEvent :: IConnection conn => conn -> EventId -> IO Event
 getEvent conn eid
  = do   [values] <- quickQuery' conn (unlines
-                [ "SELECT EventId,Type,Location,Time"
+                [ "SELECT EventId, Type, Location, Time, CreatedBy"
                 , "FROM  v1_Event"
                 , "WHERE EventId=?" ])
                 [toSql eid]
@@ -67,7 +70,7 @@ getEventOfLocalTime
 
 getEventOfLocalTime conn ttime
  = do   [values] <- quickQuery' conn (unlines
-                [ "SELECT EventId,Type,Location,Time"
+                [ "SELECT EventId, Type, Location, Time, CreatedBy"
                 , "FROM   v1_Event"
                 , "WHERE  Time=?"])
                 [toSql ttime]
@@ -80,7 +83,7 @@ getAttendance :: IConnection conn => conn -> EventId -> IO [Person]
 getAttendance conn eid
  = do   valuess <- quickQuery' conn (unlines
                 [ "SELECT " ++ intercalate "," (map ("v1_Person." ++) personFieldNames)
-                , "FROM  v1_Person,v1_Attendance"
+                , "FROM  v1_Person, v1_Attendance"
                 , "WHERE v1_Person.PersonId = v1_Attendance.PersonId"
                 , "  AND EventId=?"
                 , "ORDER BY FamilyName"])
@@ -93,7 +96,7 @@ getAttendance conn eid
 getAttendanceOfPersonId :: IConnection conn => conn -> PersonId -> IO [Event]
 getAttendanceOfPersonId conn pid
  = do   valuess <- quickQuery' conn (unlines
-                [ "SELECT v1_Event.EventId, Type, Location, Time"
+                [ "SELECT v1_Event.EventId, Type, Location, Time, CreatedBy"
                 , "FROM   v1_Event,v1_Attendance"
                 , "WHERE  v1_Event.EventId = v1_Attendance.EventId"
                 , "AND    PersonId=?"
@@ -135,13 +138,14 @@ insertEvent conn_ event
  = withTransaction conn_ $ \conn
  -> do  stmt    <- prepare conn $ unlines
                 [  "INSERT INTO v1_Event"
-                ,  "(Type,Location,Time)"
-                ,  "VALUES (?,?,?)" ]
+                ,  "(Type,Location,Time,CreatedBy)"
+                ,  "VALUES (?,?,?,?)" ]
 
         execute stmt
                 [ toSql (eventType      event)
                 , toSql (eventLocation  event)
-                , toSql (eventLocalTime event) ]
+                , toSql (eventLocalTime event)
+                , toSql (eventCreatedBy event) ]
 
         [[v]]   <- quickQuery' conn (unlines
                 [ "SELECT last_insert_rowid()"])

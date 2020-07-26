@@ -1,6 +1,6 @@
 
 module Dojo.Data.Session.Base where
-import Dojo.Data.User
+import Dojo.Trivia
 import qualified Data.Time      as Time
 
 

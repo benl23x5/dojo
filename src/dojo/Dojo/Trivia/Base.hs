@@ -3,6 +3,29 @@ module Dojo.Trivia.Base where
 import qualified Data.Time      as Time
 
 
+
+-------------------------------------------------------------------------------
+data UserId
+        = UserId Integer
+        deriving (Show, Eq, Ord)
+
+data UserName
+        = UserName String
+        deriving (Show, Eq, Ord)
+
+data UserPasswordHash
+        = UserPasswordHash String
+        deriving (Show, Eq)
+
+data UserPasswordSalt
+        = UserPasswordSalt String
+        deriving (Show, Eq)
+
+data UserRole
+        = UserRole String
+        deriving (Show, Eq)
+
+
 -------------------------------------------------------------------------------
 data PersonId
         = PersonId Integer
