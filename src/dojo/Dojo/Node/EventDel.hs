@@ -25,8 +25,9 @@ cgiEventDel ss inputs
          Nothing -> cgiLogout ss
 
   goGetEvent conn eid
-   = do event    <- liftIO $ getEvent      conn eid
-        psAttend <- liftIO $ getAttendance conn eid
+   = do -- TODO: handle concurrent event deletion.
+        Just event <- liftIO $ getEvent      conn eid
+        psAttend   <- liftIO $ getAttendance conn eid
 
         if |  sessionOwnsEvent ss event
            ,  null psAttend

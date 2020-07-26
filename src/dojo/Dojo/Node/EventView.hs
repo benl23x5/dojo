@@ -21,10 +21,12 @@ cgiEventView
 
 cgiEventView ss inputs
  | Just strEventId  <- lookup "eid" inputs
- , Right eid    <- parse strEventId
- = do   conn    <- liftIO $ connectSqlite3 databasePath
-        event   <- liftIO $ getEvent conn eid
-        attend  <- liftIO $ getAttendance conn eid
+ , Right eid       <- parse strEventId
+ = do   conn       <- liftIO $ connectSqlite3 databasePath
+
+        -- TODO: handle concurrent event deletion.
+        Just event <- liftIO $ getEvent conn eid
+        attend     <- liftIO $ getAttendance conn eid
 
         (userCreatedBy, personCreatedBy)
          <- do  let Just uidCreatedBy = eventCreatedBy event

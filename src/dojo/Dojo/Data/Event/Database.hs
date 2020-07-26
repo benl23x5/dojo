@@ -52,15 +52,18 @@ getEventList conn
 
 
 -- | Get the event with the given id.
-getEvent :: IConnection conn => conn -> EventId -> IO Event
+getEvent :: IConnection conn => conn -> EventId -> IO (Maybe Event)
 getEvent conn eid
- = do   [values] <- quickQuery' conn (unlines
+ = do   vss     <- quickQuery' conn (unlines
                 [ "SELECT EventId, Type, Location, Time, CreatedBy"
                 , "FROM  v1_Event"
                 , "WHERE EventId=?" ])
                 [toSql eid]
 
-        return $ eventOfSqlValues values
+        case vss of
+         []   -> return $ Nothing
+         [vs] -> return $ Just $ eventOfSqlValues vs
+         _    -> error "getEvent: too many results"
 
 
 -- | Get the event with the given time.

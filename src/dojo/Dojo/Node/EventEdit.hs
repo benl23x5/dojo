@@ -88,8 +88,9 @@ cgiEventEdit ss inputs
         (event, psAttend)
          <- case mEidIn of
                 Just eid
-                 -> do  event    <- liftIO $ getEvent      conn eid
-                        psAttend <- liftIO $ getAttendance conn eid
+                 -> do  -- TODO: handle concurrent event deletion
+                        Just event <- liftIO $ getEvent      conn eid
+                        psAttend   <- liftIO $ getAttendance conn eid
                         return (event, psAttend)
 
                 Nothing
