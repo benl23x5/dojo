@@ -98,7 +98,13 @@ cgiPersonEdit_update
 
 cgiPersonEdit_update ss conn
         Nothing person dojos memberLevels updates
- = do   person' <- liftIO $ insertPerson conn person
+ = do
+        -- TODO: we're using name 'TEMP' for a moment to get around
+        --  the NOT NULL constraint so we can allocate a pid,
+        --  do this a better way.
+        let person_temp = person
+                { personFirstName = Just $ PersonName "TEMP"}
+        person' <- liftIO $ insertPerson conn person_temp
         cgiPersonEdit_update ss conn
                 (personId person') person' dojos memberLevels
                 updates

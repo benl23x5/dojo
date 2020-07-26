@@ -34,7 +34,7 @@ getPerson conn pid
 insertPerson :: IConnection conn => conn -> Person -> IO Person
 insertPerson conn person
  = do   -- Insert all the fields as a new row.
-        stmt    <- prepare conn $ sqlInsertAllIntoEntity personEntity
+        stmt     <- prepare conn $ sqlInsertAllIntoEntity personEntity
         execute stmt [fieldToSql pf person | pf <- personFieldsNoKey]
 
         -- Get the primary key of the new row.

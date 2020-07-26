@@ -34,6 +34,10 @@ data Fail
         { failParseType         :: String
         , failParseText         :: String
         , failParseError        :: ParseError }
+
+        -- | Some other exception for testing only.
+        | FailTest
+        { failMessage           :: String }
         deriving Show
 
 instance Exception Fail
