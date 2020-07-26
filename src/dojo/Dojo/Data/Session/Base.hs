@@ -65,6 +65,12 @@ sessionEndLocalTime session
  | otherwise = Nothing
 
 
+-- | Check if the active role of this session is at least admin.
+sessionIsAdmin :: Session -> Bool
+sessionIsAdmin ss
+ = sessionRoleActive ss == UserRole "Admin"
+
+
 -- Conversions ----------------------------------------------------------------
 -- | Make a `LocalTime` from the date and time portions.
 makeSessionLocalTime  :: SessionDate -> SessionTime -> Time.LocalTime

@@ -47,13 +47,13 @@ cgiClassView_page ss classs
                         , ("Type",      maybe "" pretty $ classType classs)
                         , ("Time",      maybe "" pretty $ classTimeStart classs) ]]
 
-                divClassDetails classs
+                divClassDetails ss classs
 
 
 -------------------------------------------------------------------------------
 -- | Class Details
-divClassDetails :: Class -> Html
-divClassDetails classs
+divClassDetails :: Session -> Class -> Html
+divClassDetails ss classs
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
@@ -72,7 +72,10 @@ divClassDetails classs
          $ do   tr $ do th "type"
                 tr $ do td' $ classType classs
 
-        H.table
+        -- First / final date tracking only matters when searching
+        -- for events, so only relevant to admins.
+        when (sessionIsAdmin ss)
+         $ H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
                 tr $ do th "first date"; th "final date"
                 tr $ do td' $ classDateFirst classs

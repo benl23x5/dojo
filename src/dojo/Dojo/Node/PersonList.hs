@@ -30,7 +30,10 @@ cgiPersonList_list ss people
  $ do   pageHeader "People"
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths $ [pathPersonAdd ss]
+
+                when (sessionIsAdmin ss)
+                 $ tablePaths $ [pathPersonAdd ss]
+
                 divPersonList ss people
 
 

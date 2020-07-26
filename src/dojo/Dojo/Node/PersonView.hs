@@ -41,18 +41,23 @@ cgiPersonView_page ss person events
 
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths [pathPersonEdit ss $ personId person]
+
+                when (sessionIsAdmin ss)
+                 $ tablePaths [pathPersonEdit ss $ personId person]
+
                 H.div ! A.id "person-view"
-                 $ do   divPersonDetails person
+                 $ do   divPersonDetails ss person
                         divEventList ss events
 
 
 -------------------------------------------------------------------------------
 -- | Person Details
-divPersonDetails :: Person -> Html
-divPersonDetails person
+divPersonDetails :: Session -> Person -> Html
+divPersonDetails ss person
  = H.div ! A.class_ "details" ! A.id "person-details-view"
  $ do
+        let isAdmin     = sessionIsAdmin ss
+
         H.table
          $ do   let bHasPref = isJust $ personPreferredName person
 
@@ -71,11 +76,13 @@ divPersonDetails person
                         when bHasPref $ td' $ personPreferredName person
                         td' $ personFamilyName   person
 
+        -- Suppress date of birth if the role is less than Admin.
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "date of birth"; th "home dojo"
-                tr $ do td' $ personDateOfBirth  person
-                        td' $ personDojoHome person
+                tr $ do th "home dojo"
+                        when isAdmin $ th "date of birth"
+                tr $ do td' $ personDojoHome person
+                        when isAdmin $ td' $ personDateOfBirth  person
 
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
@@ -83,21 +90,25 @@ divPersonDetails person
                 tr $ do td' $ personMemberId person
                         td' $ personMembershipRenewal person
 
+        -- Keep this on a single line as the values are long.
         H.table
          $ do   tr $ th "membership level"
                 tr $ td' $ personMembershipLevel person
 
+        -- Keep this on a single line as the values are long.
         H.table
          $ do   tr $ th "email address"
                 tr $ td' $ personEmail person
 
+        let hasPhoneFixed = isJust $ personPhoneFixed person
         H.table
          $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "mobile phone"; th "fixed phone"
+                tr $ do th "mobile phone"
+                        when hasPhoneFixed $ th "fixed phone"
                 tr $ do td' $ personPhoneMobile  person
-                        td' $ personPhoneFixed person
+                        when hasPhoneFixed $ td' $ personPhoneFixed person
 
-        -- suppress emergency contact if not filled.
+        -- Suppress emergency contact if not filled.
         when (or [ isJust $ personEmergencyName1  person
                  , isJust $ personEmergencyPhone1 person])
          $ H.table
@@ -107,7 +118,7 @@ divPersonDetails person
                         td' $ personEmergencyPhone1 person
 
 
-        -- suppress emergency contact if not filled.
+        -- Suppress emergency contact if not filled.
         when (or [ isJust $ personEmergencyName2  person
                  , isJust $ personEmergencyPhone2 person])
          $ H.table

@@ -1,6 +1,7 @@
 
 module Dojo.Node.PersonEdit (cgiPersonEdit) where
 import Dojo.Node.PersonEdit.Form
+import Dojo.Node.Logout
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Data.Dojo
@@ -23,8 +24,12 @@ import qualified Text.Blaze.Html5               as H
 --
 cgiPersonEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiPersonEdit ss inputs
- = do
-        conn            <- liftIO $ connectSqlite3 databasePath
+ = if sessionIsAdmin ss
+    then goPersonEdit
+    else cgiLogout ss
+ where
+  goPersonEdit
+   = do conn            <- liftIO $ connectSqlite3 databasePath
         dojos           <- liftIO $ getDojos conn
         memberLevels    <- liftIO $ getMembershipLevels conn
 

@@ -29,7 +29,10 @@ cgiEventList_list ss events
  $ do   pageHeader "Events"
         pageBody
          $ do   tablePaths $ pathsJump ss
-                tablePaths [pathEventAdd ss]
+
+                when (sessionIsAdmin ss)
+                 $ tablePaths [pathEventAdd ss]
+
                 divEventList ss events
 
 
