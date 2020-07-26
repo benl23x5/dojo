@@ -20,25 +20,21 @@ import Dojo.Config
 import Dojo.Paths
 import Dojo.Framework
 
+import qualified System.Environment                     as S
 import qualified Network.CGI                            as CGI
-import qualified Control.Exception                      as Control
 import qualified Text.Blaze.Html5                       as H
 import qualified Text.Blaze.Html5.Attributes            as A
 import qualified Text.Blaze.Html.Renderer.String        as S
+import qualified Control.Exception                      as Control
 import Control.Monad.Catch                              as C
 
 
-configDefault :: Config
-configDefault
-        = Config
-        { configSiteName        = "Aiki Kai Australia"
-        , configCgiName         = "dojo.cgi"
-        , configDatabasePath    = "/srv/dojo/test/aikikai-australia/data/dojo.db" }
 
 
 main :: IO ()
 main
- = do   let config = configDefault
+ = do   args   <- S.getArgs
+        config <- loadConfig args configDefault
         CGI.runCGI $ CGI.handleErrors
          $ C.catch (cgiTop config)
          $ (\(e :: Control.SomeException) -> sorry e)
