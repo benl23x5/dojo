@@ -123,7 +123,16 @@ loginActivate user
                 $ Time.zonedTimeToLocalTime zonedTime
 
         let session
-                = makeSession hash (userId user) startDate startTime
+                = Session
+                { sessionId             = SessionId 0
+                , sessionHash           = hash
+                , sessionUserId         = userId user
+                , sessionRoleNative     = userRoleNative user
+                , sessionRoleActive     = userRoleNative user
+                , sessionStartDate      = startDate
+                , sessionStartTime      = startTime
+                , sessionEndDate        = Nothing
+                , sessionEndTime        = Nothing }
 
         -- Connect to database.
         conn    <- liftIO $ connectSqlite3 $ Config.databasePath

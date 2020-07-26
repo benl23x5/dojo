@@ -1,17 +1,7 @@
 
 module Dojo.Data.User
-        ( User                  (..)
-        , UserId                (..)
-        , UserName              (..)
-        , UserPasswordHash      (..)
-        , UserPasswordSalt      (..)
-
-        -- * Constructors
-        , zeroUser
-
-        -- * Database
-        , userOfSqlValues
-        , getMaybeUser)
+        ( module Dojo.Data.User.Base
+        , module Dojo.Data.User.Database)
 where
 import Dojo.Data.User.Base
 import Dojo.Data.User.Database

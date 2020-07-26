@@ -1,12 +1,5 @@
 
-module Dojo.Data.User.Base
-        ( User                  (..)
-        , UserId                (..)
-        , UserName              (..)
-        , UserPasswordHash      (..)
-        , UserPasswordSalt      (..)
-        , zeroUser)
-where
+module Dojo.Data.User.Base where
 import Dojo.Data.Person
 
 
@@ -23,21 +16,18 @@ data User
         , userPasswordSalt      :: UserPasswordSalt
 
         -- | Person the user is attached to, if any.
-        , userPersonId          :: PersonId }
+        , userPersonId          :: PersonId
+
+        -- | The native role of this user.
+        --    The active role in the sesson may be lower for testing purposes.
+        , userRoleNative        :: UserRole }
+
+
 
 
 data UserId             = UserId Integer            deriving (Show, Eq, Ord)
 data UserName           = UserName String           deriving (Show, Eq, Ord)
 data UserPasswordHash   = UserPasswordHash String   deriving (Show, Eq)
 data UserPasswordSalt   = UserPasswordSalt String   deriving (Show, Eq)
+data UserRole           = UserRole String           deriving (Show, Eq)
 
-
--- Constructors ---------------------------------------------------------------
-zeroUser :: UserId -> UserName -> User
-zeroUser uid uname
-        = User
-        { userId                = uid
-        , userName              = uname
-        , userPasswordHash      = UserPasswordHash ""
-        , userPasswordSalt      = UserPasswordSalt ""
-        , userPersonId          = PersonId 0 }

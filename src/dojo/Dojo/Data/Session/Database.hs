@@ -41,11 +41,16 @@ instance Convertible SqlValue SessionLocalTime where
 -------------------------------------------------------------------------------
 -- | Build an event from a list of Sql values.
 sessionOfSqlValues :: [SqlValue] -> Session
-sessionOfSqlValues [sid, uid, hash, localStart, localEnd]
+sessionOfSqlValues
+ [ sid, hash
+ , uid, roleNative, roleActive
+ , localStart, localEnd]
  = Session
         { sessionId             = fromSql sid
         , sessionHash           = fromSql hash
         , sessionUserId         = fromSql uid
+        , sessionRoleNative     = fromSql roleNative
+        , sessionRoleActive     = fromSql roleActive
         , sessionStartDate      = sdate
         , sessionStartTime      = stime
         , sessionEndDate        = edate
@@ -74,7 +79,9 @@ getSessionByHash
 
 getSessionByHash conn hash
  = do   vss     <- quickQuery' conn (unlines
-                [ "SELECT SessionId,UserId,Hash,StartTime,EndTime"
+                [ "SELECT SessionId, Hash,"
+                , "       UserId, RoleNative, RoleActive,"
+                , "       StartTime, EndTime"
                 , "FROM   v1_Session"
                 , "WHERE  Hash=? AND EndTime IS NULL"])
                 [toSql hash]
@@ -89,13 +96,15 @@ insertSession :: IConnection conn  => conn -> Session -> IO Integer
 insertSession conn session
  = do   stmt    <- prepare conn $ unlines
                 [ "INSERT INTO v1_Session"
-                , "(Hash, UserId, StartTime)"
-                , "VALUES (?,?,?)" ]
+                , "(Hash, UserId, RoleNative, RoleActive, StartTime)"
+                , "VALUES (?,?,?,?,?)" ]
 
         execute stmt
-                [ toSql (sessionHash           session)
-                , toSql (sessionUserId         session)
-                , toSql (sessionStartLocalTime session) ]
+                [ toSql (sessionHash            session)
+                , toSql (sessionUserId          session)
+                , toSql (sessionRoleNative      session)
+                , toSql (sessionRoleActive      session)
+                , toSql (sessionStartLocalTime  session) ]
 
 
 -- | Update the session with the given end time.

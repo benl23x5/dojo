@@ -1,15 +1,19 @@
 
 CREATE TABLE v1_User
         ( UserId                INTEGER   PRIMARY KEY
-        , UserName              TEXT
-        , PasswordHash          TEXT
-        , PasswordSalt          TEXT
-        , UserPersonId          INTEGER);
+        , UserName              TEXT      NOT NULL
+        , PasswordHash          TEXT      NOT NULL
+        , PasswordSalt          TEXT      NOT NULL
+        , UserPersonId          INTEGER   NOT NULL
+        , RoleNative            TEXT      NOT NULL
+        , UNIQUE(UserName));
 
 CREATE TABLE v1_Session
         ( SessionId             INTEGER   PRIMARY KEY
         , UserId                INTEGER   NOT NULL
         , Hash                  TEXT      NOT NULL
+        , RoleNative            TEXT      NOT NULL
+        , RoleActive            TEXT      NOT NULL
         , StartTime             DATETIME  NOT NULL
         , EndTime               DATETIME
         , UNIQUE(UserId, Hash));
@@ -35,7 +39,6 @@ CREATE TABLE v1_Person
 CREATE TABLE v1_PersonMembershipLevel
         ( SortOrder             INTEGER
         , Name                  STRING  PRIMARY KEY);
-
 
 CREATE TABLE v1_Event
         ( EventId               INTEGER PRIMARY KEY

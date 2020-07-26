@@ -18,6 +18,8 @@ data Session
 
           -- | The id of the user attached to this session.
         , sessionUserId         :: UserId
+        , sessionRoleNative     :: UserRole
+        , sessionRoleActive     :: UserRole
 
           -- | Time the session started.
         , sessionStartDate      :: SessionDate
@@ -40,20 +42,6 @@ data SessionLocalTime   = SessionLocalTime Time.LocalTime   deriving (Show, Eq)
 
 instance Show SessionHash where
  show (SessionHash hash) = hash
-
-
--- Constructors ---------------------------------------------------------------
--- | Create an new session.
-makeSession :: SessionHash -> UserId -> SessionDate -> SessionTime -> Session
-makeSession hash uid dateStart timeStart
-        = Session
-        { sessionId             = SessionId 0
-        , sessionHash           = hash
-        , sessionUserId         = uid
-        , sessionStartDate      = dateStart
-        , sessionStartTime      = timeStart
-        , sessionEndDate        = Nothing
-        , sessionEndTime        = Nothing }
 
 
 -- Projections ----------------------------------------------------------------
