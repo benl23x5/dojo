@@ -3,6 +3,7 @@ module Dojo.Node.EventEdit (cgiEventEdit) where
 import Dojo.Node.EventEdit.Feed
 import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Arg
+import Dojo.Node.Logout
 import Dojo.Data.Event
 import Dojo.Data.Person
 import Dojo.Data.Session
@@ -38,8 +39,7 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --
 cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventEdit ss inputs
- = do
-        -- Connect to the database.
+ = do   -- Connect to the database.
         conn <- liftIO $ connectSqlite3 databasePath
 
         -- Normalise incoming arguments.
@@ -74,23 +74,26 @@ cgiEventEdit ss inputs
         dojos      <- liftIO $ getDojos conn
         eventTypes <- liftIO $ getEventTypes conn
 
-        -- If we have an existing eventId then load the existing event data,
-        --  otherwise start with an empty event record, using the current
-        --  local time as a placeholder until the client updates it.
-        (meid, event, psAttend)
-          <- case lookup "eid" inputs of
-              Just strEventId
-               -> case parse strEventId of
-                   Left err
-                    -> throw $ FailParse "event id" strEventId err
+        -- Parse an existing event id if we were given one.
+        mEidIn
+         <- case lookup "eid" inputs of
+                Just strEid
+                 -> case parse strEid of
+                     Left err  -> throw $ FailParse "event id" strEid err
+                     Right eid -> return $ Just eid
+                Nothing -> return Nothing
 
-                   Right eid
-                    -> do event    <- liftIO $ getEvent      conn eid
-                          psAttend <- liftIO $ getAttendance conn eid
-                          return  (eventId event, event, psAttend)
+        -- Lookup the current event and attendance if one was specified,
+        --  otherwise create a new placeholder that we can update.
+        (event, psAttend)
+         <- case mEidIn of
+                Just eid
+                 -> do  event    <- liftIO $ getEvent      conn eid
+                        psAttend <- liftIO $ getAttendance conn eid
+                        return (event, psAttend)
 
-              Nothing
-               -> do    -- Use the current time as a placeholder until the
+                Nothing
+                 -> do  -- Use the current time as a placeholder until the
                         -- client provides the real event time.
                         zonedTime <- liftIO $ Time.getZonedTime
                         let (edate, etime)
@@ -101,26 +104,49 @@ cgiEventEdit ss inputs
                                   { eventDate      = Just edate
                                   , eventTime      = Just etime
                                   , eventCreatedBy = Just $ sessionUserId ss }
-                        return  (Nothing, event, [])
+                        return  (event, [])
+
+        -- If user is an admin or created the event themselves
+        --  then they can edit it.
+        let bSessionOwnsEvent
+             =  sessionIsAdmin ss
+             || (case eventCreatedBy event of
+                  Nothing  -> False
+                  Just uid -> uid == sessionUserId ss)
 
         if
-         -- Delete some people from the event.
+         -- Apply deletions of attendees from the event.
          | not $ null pidsDel
-         ->     cgiEventEdit_del ss conn meid pidsDel
+         -> if bSessionOwnsEvent
+                then cgiEventEdit_del ss conn mEidIn pidsDel
+                else cgiLogout ss
 
-         -- Update the event details or add new people as attendees.
+         -- Appply updates or add new people as attendees.
          | (not $ null updates) || (not $ null newNames)
-         -> cgiEventEdit_update
-                ss conn fsForm fsEvent
-                meid event psAttend dojos eventTypes
-                updates newNames
+         -> if bSessionOwnsEvent
+                then cgiEventEdit_update
+                        ss conn fsForm fsEvent
+                        mEidIn event psAttend dojos eventTypes
+                        updates newNames
+                else cgiLogout ss
 
-         -- Show the form and wait for entry.
+         -- Show form to update an existing event,
+         --  which is possible for admins and the user that created them.
+         | isJust mEidIn
+         -> if bSessionOwnsEvent
+                then do liftIO $ disconnect conn
+                        outputFPS $ renderHtml
+                         $ htmlEventEdit ss fsForm fsEvent
+                                mEidIn event psAttend dojos eventTypes
+                else cgiLogout ss
+
+         -- Show the form to create a new event,
+         --  which is possible for everyone.
          | otherwise
          -> do  liftIO $ disconnect conn
                 outputFPS $ renderHtml
                  $ htmlEventEdit ss fsForm fsEvent
-                        meid event psAttend dojos eventTypes
+                        mEidIn event psAttend dojos eventTypes
 
 
 -------------------------------------------------------------------------------
