@@ -48,7 +48,7 @@ argOfKeyVal kv@(key, val)
         | Just fe       <- takeFeedEventOfKeyVal kv
         = Just $ ArgFeedEvent fe
 
-        | elem key eventFieldNames
+        | elem key $ tableFieldNamesOfEntity eventEntity
         = Just $ ArgUpdate key val
 
         | otherwise
@@ -81,12 +81,11 @@ takeKeyValOfFeedEvent fe
 
 
 -- | Parse a CGI key/value pair as a `FeedEvent`
---   TODO: safe read.
 --   TODO: error on unrecognized
 takeFeedEventOfKeyVal :: (String, String) -> Maybe FeedEvent
 takeFeedEventOfKeyVal (key, val)
         -- Details field of this name was updated.
-        | "fu" <- key
+        | "fu"          <- key
         = Just $ FeedEventFieldUpdated val
 
         -- A person with this pid was added.

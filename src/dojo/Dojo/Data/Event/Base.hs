@@ -1,5 +1,6 @@
 
 module Dojo.Data.Event.Base where
+import Dojo.Framework
 import Dojo.Trivia
 import qualified Data.Time      as Time
 
@@ -41,20 +42,66 @@ zeroEvent
         , eventDate             = Nothing
         , eventTime             = Nothing }
 
-eventFieldNames
-        = ["Id", "Type", "Location", "Date", "Time"]
+
+-- Entity ---------------------------------------------------------------------
+-- | Event entity.
+eventEntity :: Entity Event
+eventEntity
+        = Entity
+        { entityTable   = "v1_Event"
+        , entityKey     = "EvendId"
+        , entityFields  = eventFields }
+
+
+-- | Field definitions of the event entity.
+eventFields :: [Field Event]
+eventFields
+ = [ Field "EventId"    "id"
+        (\s -> fmap toSql $ (parse s :: Either ParseError EventId))
+        (toSql . eventId)
+        (\v x -> x { eventId = fromSql v})
+
+   , Field "Type"       "type"
+        (fmap toSql . loadInput @EventType)
+        (toSql . eventType)
+        (\v x -> x { eventType = fromSql v})
+
+   , Field "Location"    "location"
+        (fmap toSql . loadInput @EventLocation)
+        (toSql . eventLocation)
+        (\v x -> x { eventLocation = fromSql v})
+
+   , Field "Date"       "date"
+        (fmap toSql . loadInput @EventDate)
+        (toSql . eventDate)
+        (\v x -> x { eventDate = fromSql v})
+
+   , Field "Time"       "time"
+        (fmap toSql . loadInput @EventTime)
+        (toSql . eventTime)
+        (\v x -> x { eventTime = fromSql v})
+   ]
 
 
 -- Projections ----------------------------------------------------------------
 -- | Take the local time of an event.
 eventLocalTime :: Event -> Maybe EventLocalTime
 eventLocalTime event
- | Just date <- eventDate event
- , Just time <- eventTime event
- = Just $ EventLocalTime $ makeEventLocalTime date time
+ | Just edate <- eventDate event
+ , Just etime <- eventTime event
+ = Just $ EventLocalTime $ makeEventLocalTime edate etime
 
  | otherwise
  = Nothing
+
+
+-- Constructors ---------------------------------------------------------------
+-- | Load differences to an event record specified in a query path.
+loadEvent
+        :: [(String, String)]   -- ^ Table field name and new value.
+        -> Event                -- ^ Old event to be updated.
+        -> Either [LoadError] Event
+loadEvent = loadEntity eventEntity
 
 
 -- Conversions ----------------------------------------------------------------
@@ -69,3 +116,8 @@ splitEventLocalTime :: Time.LocalTime -> (EventDate, EventTime)
 splitEventLocalTime (Time.LocalTime edate etime)
         = (EventDate edate, EventTime etime)
 
+
+-- Comparisons  ---------------------------------------------------------------
+-- | Get the table field names of fields that differ in two event records.
+diffEvent :: Event -> Event -> [String]
+diffEvent = diffEntity eventEntity

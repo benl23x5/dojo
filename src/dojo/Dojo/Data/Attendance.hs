@@ -20,8 +20,11 @@ trAttendance (Attendance person flags)
  $ do   tdPerson person
         mapM_ tdFlag flags
 
- where  tdPerson person'
-         = td   $ toMarkup $ personDisplayName person'
+ where  -- If we've lost the name due to an internal bug then still
+        --  display a '(person)' placeholder so we can click on the row.
+        tdPerson person'
+         = td   $ toMarkup
+                $ fromMaybe "(person)" $ personDisplayName person'
 
         tdFlag _flag
          = td   $ H.input

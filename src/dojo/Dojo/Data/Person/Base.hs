@@ -20,7 +20,7 @@ data Person
           --   and leave the others empty. We need at least one name to refer
           --   to them, but some people only have a single name.
         , personPreferredName           :: Maybe PersonName
-        , personFirstName               :: PersonName           -- NOT NULL
+        , personFirstName               :: Maybe PersonName     -- NOT NULL
         , personFamilyName              :: Maybe PersonName
 
         , personDateOfBirth             :: Maybe PersonDate
@@ -39,13 +39,13 @@ data Person
 
 
 -- | Create a zero person with just the first name.
-zeroPerson :: String -> Person
-zeroPerson firstName
+zeroPerson :: Person
+zeroPerson
         = Person
         { personId                      = Nothing
         , personMemberId                = Nothing
         , personPreferredName           = Nothing
-        , personFirstName               = PersonName firstName
+        , personFirstName               = Nothing
         , personFamilyName              = Nothing
         , personDateOfBirth             = Nothing
         , personPhoneMobile             = Nothing
@@ -80,91 +80,80 @@ personFields
         (\v x -> x { personId = fromSql v})
 
     , Field "MemberId"              "member id"
-        (fmap toSql . load @PersonMemberId)
+        (fmap toSql . loadInput @PersonMemberId)
         (toSql . personMemberId)
         (\v x -> x { personMemberId = fromSql v})
 
     , Field "PreferredName"         "preferred name"
-        (fmap toSql . load @PersonName)
+        (fmap toSql . loadInput @PersonName)
         (toSql . personPreferredName)
         (\v x -> x { personPreferredName = fromSql v})
 
     , Field "FirstName"             "first name"
-        (fmap toSql . load @PersonName)
+        (fmap toSql . loadInput @PersonName)
         (toSql . personFirstName)
         (\v x -> x { personFirstName = fromSql v})
 
     , Field "FamilyName"            "family name"
-        (fmap toSql . load @PersonName)
+        (fmap toSql . loadInput @PersonName)
         (toSql . personFamilyName)
         (\v x -> x { personFamilyName = fromSql v})
 
     , Field "DateOfBirth"           "date of birth"
-        (fmap toSql . load @PersonDate)
+        (fmap toSql . loadInput @PersonDate)
         (toSql . personDateOfBirth)
         (\v x -> x { personDateOfBirth = fromSql v})
 
     , Field "PhoneMobile"           "mobile phone number"
-        (fmap toSql . load @PersonPhone)
+        (fmap toSql . loadInput @PersonPhone)
         (toSql . personPhoneMobile)
         (\v x -> x { personPhoneMobile = fromSql v})
 
     , Field "PhoneFixed"            "fixed phone number"
-        (fmap toSql . load @PersonPhone)
+        (fmap toSql . loadInput @PersonPhone)
         (toSql . personPhoneFixed)
         (\v x -> x { personPhoneFixed = fromSql v})
 
     , Field "Email"                 "email address"
-        (fmap toSql . load @PersonEmail)
+        (fmap toSql . loadInput @PersonEmail)
         (toSql . personEmail)
         (\v x -> x { personEmail = fromSql v})
 
     , Field "DojoHome"              "home dojo"
-        (fmap toSql . load @PersonDojo)
+        (fmap toSql . loadInput @PersonDojo)
         (toSql . personDojoHome)
         (\v x -> x { personDojoHome = fromSql v})
 
     , Field "MembershipLevel"       "membership level"
-        (fmap toSql . load @PersonMembershipLevel)
+        (fmap toSql . loadInput @PersonMembershipLevel)
         (toSql . personMembershipLevel)
         (\v x -> x { personMembershipLevel = fromSql v})
 
     , Field "MembershipRenewal"     "membership renewal data"
-        (fmap toSql . load @PersonDate)
+        (fmap toSql . loadInput @PersonDate)
         (toSql . personMembershipRenewal)
         (\v x -> x { personMembershipRenewal = fromSql v})
 
     , Field "EmergencyName1"        "emergency contact name 1"
-        (fmap toSql . load @PersonName)
+        (fmap toSql . loadInput @PersonName)
         (toSql . personEmergencyName1)
         (\v x -> x { personEmergencyName1 = fromSql v})
 
     , Field "EmergencyPhone1"       "emergency contact phone 1"
-        (fmap toSql . load @PersonPhone)
+        (fmap toSql . loadInput @PersonPhone)
         (toSql . personEmergencyPhone1)
         (\v x -> x { personEmergencyPhone1 = fromSql v})
 
     , Field "EmergencyName2"        "emergency contact name 2"
-        (fmap toSql . load @PersonName)
+        (fmap toSql . loadInput @PersonName)
         (toSql . personEmergencyName2)
         (\v x -> x { personEmergencyName2 = fromSql v})
 
     , Field "EmergencyPhone2"       "emergency contact phone 2"
-        (fmap toSql . load @PersonPhone)
+        (fmap toSql . loadInput @PersonPhone)
         (toSql . personEmergencyPhone2)
         (\v x -> x { personEmergencyPhone2 = fromSql v})
     ]
-
-
--- | Squash empty fields to null
---   TODO: squash all white fields to null as well.
-load :: forall a. Parse a => String -> Either ParseError (Maybe a)
-load ss
- | length ss == 0       = Right Nothing
- | otherwise
- = case parse @a ss of
-        Left err        -> Left  err
-        Right x         -> Right (Just x)
 
 
 
@@ -179,7 +168,7 @@ personFieldsNoKey
 -- | Construct a person from a list of Sql values for each field.
 personOfSqlValues :: [SqlValue] -> Person
 personOfSqlValues vs
- = foldl (\person (v, inj) -> inj v person) (zeroPerson "")     -- TODO: avoid empty name init
+ = foldl (\person (v, inj) -> inj v person) zeroPerson
  $ zip vs $ map fieldFromSql personFields
 
 
@@ -202,25 +191,29 @@ personFieldNames
 
 -- | Get the short name of a Person,
 --   which is a perferred name if we have one, otherwise the first name.
-personShortName :: Person -> String
+personShortName :: Person -> Maybe String
 personShortName person
  | Just (PersonName sPreferred) <- personPreferredName person
- = sPreferred
+ = Just sPreferred
 
- | PersonName sFirst <- personFirstName person
- = sFirst
+ | Just (PersonName sFirst) <- personFirstName person
+ = Just sFirst
+
+ | otherwise
+ = Nothing
 
 
 -- | Get the standard display name of a Person.
 --   We use the prefered name if set, and ignore middle names.
-personDisplayName :: Person -> String
+personDisplayName :: Person -> Maybe String
 personDisplayName person
  = case personFamilyName person of
         Nothing
          -> personShortName person
 
         Just (PersonName sFamily)
-         -> personShortName person ++ " " ++ sFamily
+         -> fmap (\s -> s ++ " " ++ sFamily)
+         $  personShortName person
 
 
 -- Comparisons  ---------------------------------------------------------------

@@ -46,7 +46,12 @@ divPersonList ss people
 
          -- Clicking on any column goes to person view page.
         forM_ people $ \person -> tr $ do
-         td' person $ Just $ personShortName person
+         -- If we've lost the name due to an internal bug then still
+         --  display a '(person)' placeholder so we can click on the row.
+         td' person
+          $ Just $ fromMaybe "(person)"
+          $ personShortName person
+
          td' person $ personFamilyName person
 
          -- Prefer showing the mobile number if we have one.

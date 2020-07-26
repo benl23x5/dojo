@@ -102,7 +102,6 @@ cgiEventEdit ss inputs
                                   , eventTime = Just etime }
                         return  (Nothing, event, [])
 
-
         if
          -- Delete some people from the event.
          | not $ null pidsDel
@@ -121,6 +120,7 @@ cgiEventEdit ss inputs
                 outputFPS $ renderHtml
                  $ htmlEventEdit ss fsForm fsEvent
                         meid event psAttend dojos eventTypes
+
 
 -------------------------------------------------------------------------------
 -- Delete some people from the event.

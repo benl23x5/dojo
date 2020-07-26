@@ -35,7 +35,10 @@ cgiPersonView ss inputs
 cgiPersonView_page ss person events
  = outputFPS $ renderHtml
  $ H.docTypeHtml
- $ do   pageHeader $ personDisplayName person
+ $ do   pageHeader
+         $ fromMaybe "(person)"
+         $ personDisplayName person
+
         pageBody
          $ do   tablePaths $ pathsJump ss
                 tablePaths [pathPersonEdit ss $ personId person]
@@ -64,7 +67,7 @@ divPersonDetails person
                         when bHasPref $ th "preferred"
                         th "family"
 
-                tr $ do td  $ H.toMarkup $ pretty $ personFirstName person
+                tr $ do td' $ personFirstName person
                         when bHasPref $ td' $ personPreferredName person
                         td' $ personFamilyName   person
 

@@ -1,11 +1,13 @@
 
 module Dojo.Framework.Parse
         ( Parse         (..)
-        , ParseError    (..))
+        , ParseError    (..)
+        , chompInput
+        , loadInput)
 where
 import Dojo.Base
 import qualified Data.Time      as Time
-
+import qualified Data.Char      as Char
 
 class Parse a where
  parse :: String -> Either ParseError a
@@ -13,6 +15,36 @@ class Parse a where
 data ParseError
         = ParseError String
         deriving Show
+
+
+-------------------------------------------------------------------------------
+-- | Check an input string contains only printable characters,
+--   chomp pre and post whitespace from the ends,
+--   hard limit input to 4k chars,
+--   and replace all white strings with Nothing.
+chompInput :: String -> Either ParseError (Maybe String)
+chompInput ss
+ | ssTrash <- take 5 $ filter (not . Char.isPrint) ss
+ , not $ null ssTrash
+ = Left $ ParseError
+        $ "string contains non-printable characters " ++ (show ssTrash)
+
+ | otherwise
+ = let ss1 = dropWhile Char.isSpace ss
+       ss2 = reverse $ dropWhile Char.isSpace $ reverse ss1
+       n   = length ss2
+   in if | n == 0    -> Right Nothing
+         | n >  4096 -> Left $ ParseError "string exceeds hard size limit"
+         | otherwise -> Right (Just ss2)
+
+
+-- | Squash empty fields to null
+loadInput :: forall a. Parse a => String -> Either ParseError (Maybe a)
+loadInput ss
+ = do   mss <- chompInput ss
+        case mss of
+         Nothing  -> Right Nothing
+         Just ss' -> fmap Just (parse @a ss')
 
 
 -------------------------------------------------------------------------------
@@ -63,7 +95,6 @@ instance Parse Time.Day where
          = case Time.fromGregorianValid nYear nMonth nDay of
             Just date -> Right date
             Nothing   -> Left (ParseError "date must be valid in Gregorian calendar")
-
 
 
 instance Parse Time.TimeOfDay where

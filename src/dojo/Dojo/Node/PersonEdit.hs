@@ -47,10 +47,7 @@ cgiPersonEdit ss inputs
                          return (personId person, person)
 
              Nothing
-              -> do -- First name starts off empty, and we won't be able
-                    -- to add the record to the db until it's filled.
-                    let person = zeroPerson ""
-                    return (Nothing, person)
+              -> return (Nothing, zeroPerson)
 
         if
          -- We were given new details as args to the path,

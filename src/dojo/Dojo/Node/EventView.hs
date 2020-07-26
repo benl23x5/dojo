@@ -80,7 +80,7 @@ divPersonList ss people
 
         forM_ (zip [(1 :: Int)..] people) $ \(ix, person) -> tr $ do
          td $ H.toMarkup $ show ix
-         td' person $ pretty $ personDisplayName person
+         td' person $ maybe "(person)" pretty $ personDisplayName person
 
  where  col' c  = col ! A.class_ c
 

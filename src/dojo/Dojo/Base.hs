@@ -49,6 +49,7 @@ import Data.Convertible
 import Control.Monad
 
 import Control.Exception
+        (throw)
 
 import Prelude
         hiding (head, tail, last, undefined, span, div)

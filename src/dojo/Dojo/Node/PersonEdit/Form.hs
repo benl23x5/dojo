@@ -58,9 +58,11 @@ divPersonDetails
 divPersonDetails fsFeed person dojos memberLevels
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
+        -- If the first name is not filled in then the form
+        --  will not accept the update.
         H.table $ trInputWithFocus fsFeed
                 "FirstName"     "first name"
-                (pretty $ personFirstName person)
+                (maybe "" pretty $ personFirstName person)
                 (Just "(required)")
 
         fieldm  "PreferredName" "preferred name"
