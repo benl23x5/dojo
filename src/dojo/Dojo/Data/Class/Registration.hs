@@ -9,6 +9,7 @@ import qualified Crypto.Hash.MD5                as MD5
 import qualified Data.Text                      as T
 
 
+-- | Generate a registration link for the given class.
 registrationLinkOfClass
  :: String       -- ^ Base web server name, with "http://" prefix.
  -> String       -- ^ Salt for the generated registration code.
@@ -23,6 +24,9 @@ registrationLinkOfClass sUrl sSalt classs
  = Nothing
 
 
+-- | Generate an 8 character registration code for this class.
+--   The code is produced by hashing the URL and class details
+--   along with the salt, so will not be practical to guess.
 registrationHashOfClass
  :: String       -- ^ Base web server name.
  -> String       -- ^ Salt for the generated registration code.
@@ -72,3 +76,4 @@ registrationHashOfClass sUrl sSalt classs
 
  | otherwise
  = Nothing
+

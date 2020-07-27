@@ -68,24 +68,20 @@ divEventDetails event personCreatedBy
  = H.div ! A.class_ "details" ! A.id "event-details-view"
  $ do
         H.table
-         $ do   col' "EventId"; col' "Date"; col' "Time"
-                tr $ do th "id"; th "date"; th "time"
+         $ do   col' "EventId";  col' "Location"; col' "Date"; col' "Time"
+                tr $ do th "id"; th   "location"; th   "date"; th   "time"
 
                 tr $ do td' (eventId       event)
+                        td' (eventLocation event)
                         td' (eventDate     event)
                         td' (eventTime     event)
 
         H.table
-         $ do   col' "Location"; col' "Type"
-                tr $ do th "location"; th "type"
-
-                tr $ do td' (eventLocation event)
-                        td' (eventType     event)
-
-        H.table
-         $ do   col' "CreatedBy"
-                tr $ do th "created by"
+         $ do   col' "CreatedBy"; col' "Type";
+                tr $ do th   "created by"; th "type"
                 tr $ do td' $ personDisplayName personCreatedBy
+                        td' $ eventType event
+
 
  where  col' c  = col ! A.class_ c
         td' val = td $ H.toMarkup $ maybe "" pretty $ val
