@@ -40,52 +40,52 @@ cgiEventView ss inputs
  = throw $ FailNodeArgs "event view" inputs
 
 
-cgiEventView_page ss event _userCreatedBy personCreatedBy attendance
+cgiEventView_page ss event userCreatedBy personCreatedBy attendance
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ pretty $ eventDisplayName event
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                -- Event can be edited by admin or the user that created it.
-                when (sessionOwnsEvent ss event)
-                 $ tablePaths
-                 $  [ pathEventEdit ss $ eventId event ]
-                 ++ (case eventId event of
-                      Just eid | null attendance
-                        -> [pathEventDel ss eid]
-                      _ -> [])
-
                 H.div ! A.id "event-view"
-                 $ do   divEventDetails event personCreatedBy
+                 $ do   divEventDetails ss event
+                                userCreatedBy personCreatedBy attendance
                         divPersonList ss attendance
 
 
 -------------------------------------------------------------------------------
 -- | Event details.
-divEventDetails :: Event -> Person -> Html
-divEventDetails event personCreatedBy
+divEventDetails :: Session -> Event -> User -> Person -> [Person] -> Html
+divEventDetails ss event userCreatedBy personCreatedBy attendance
  = H.div ! A.class_ "details" ! A.id "event-details-view"
- $ do
-        H.table
-         $ do   col' "EventId";  col' "Location"; col' "Date"; col' "Time"
-                tr $ do th "id"; th   "location"; th   "date"; th   "time"
+ $ H.table
+ $ do   tr $ do th "event"
 
-                tr $ do td' (eventId       event)
-                        td' (eventLocation event)
-                        td' (eventDate     event)
-                        td' (eventTime     event)
+        tr $ td $ H.string
+           $  maybe "[somewhere]" pretty  (eventLocation event)
+           ++ maybe "[someday]"  (\v -> " on " ++ pretty v)  (eventDate event)
+           ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
 
-        H.table
-         $ do   col' "CreatedBy"; col' "Type";
-                tr $ do th   "created by"; th "type"
-                tr $ do td' $ personDisplayName personCreatedBy
-                        td' $ eventType event
+        tr $ td $ H.string
+           $ maybe "[sometype]" (\v -> pretty v) (eventType event)
+           ++ ", by "
+           ++ maybe "" pretty (personDisplayName personCreatedBy)
+           ++ " (" ++ pretty (userName userCreatedBy) ++ ")"
 
+        -- Event can be edited by admin or the user that created it.
+        when (sessionOwnsEvent ss event)
+         $ tr $ td $ do
+                pathLink (pathEventEdit ss $ eventId event)
+                preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
+                (case eventId event of
+                  Just eid | null attendance
+                    -> pathLink $ pathEventDel ss eid
+                  _ -> return ())
 
- where  col' c  = col ! A.class_ c
-        td' val = td $ H.toMarkup $ maybe "" pretty $ val
-
+ where
+        pathLink path
+         = H.a  ! A.href (H.toValue path)
+                $ H.toMarkup $ pathName path
 
 -------------------------------------------------------------------------------
 -- | People that attended an event.

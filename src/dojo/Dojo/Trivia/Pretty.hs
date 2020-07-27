@@ -4,6 +4,11 @@ import Dojo.Trivia.Base
 import Dojo.Framework
 
 
+-- User -----------------------------------------------------------------------
+instance Pretty UserName where
+ pretty (UserName name)         = name
+
+
 -- Person ---------------------------------------------------------------------
 instance Pretty PersonId where
  pretty (PersonId pid)          = show pid

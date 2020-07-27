@@ -46,15 +46,6 @@ cgiClassView_page ss classs
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                tablePaths
-                 [ Path "New Event of Class"
-                        (sessionCgiName ss)
-                        [ ("s",         show $ sessionHash ss)
-                        , ("n",         "ee")
-                        , ("Location",  maybe "" pretty $ classLocation classs)
-                        , ("Type",      maybe "" pretty $ classType classs)
-                        , ("Time",      maybe "" pretty $ classTimeStart classs) ]]
-
                 divClassDetails ss classs
 
 
@@ -65,21 +56,18 @@ divClassDetails ss classs
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
-         $ do   col ! A.class_ "ColClass2A"
-                col ! A.class_ "ColClass2B"
-                tr $ do th "location"; th "day"
-                tr $ do td' $ classLocation classs
-                        td' $ classDay classs
+         $ do   tr $ th "class"
+                tr $ td $ H.string
+                   $  maybe "" pretty (classLocation classs)
+                   ++ maybe "" (\v -> " "    ++ pretty v) (classDay classs)
+                   ++ maybe "" (\v -> " "    ++ pretty v) (classTimeStart classs)
+                   ++ maybe "" (\v -> " to " ++ pretty v) (classTimeEnd classs)
 
-        H.table
-         $ do   col ! A.class_ "ColClass3A"
-                col ! A.class_ "ColClass3B"
-                col ! A.class_ "ColClass3C"
-                tr $ do th "type"; th "start time"; th "end time"
-                tr $ do td' $ classType classs
-                        td' $ classTimeStart classs
-                        td' $ classTimeEnd classs
+                tr $ td $ H.string
+                   $ maybe "" (\v -> pretty v) (classType classs)
 
+                tr $ td $ (H.a ! A.href (H.toValue pathNew))
+                        $ H.toMarkup $ pathName pathNew
 
         -- Try to generate the registration code.
         --  We need to have the type, location day,
@@ -100,14 +88,23 @@ divClassDetails ss classs
         -- for events, so only relevant to admins.
         when (sessionIsAdmin ss)
          $ H.table
-         $ do   col ! A.class_ "ColClass2A"
-                col ! A.class_ "ColClass2B"
+         $ do   col ! A.class_ "Col2bA"
+                col ! A.class_ "Col2bB"
                 tr $ do th "first event date"; th "final event date"
                 tr $ do td' $ classDateFirst classs
                         td' $ classDateFinal classs
 
  where
   td' val = td $ H.toMarkup $ maybe "" pretty $ val
+
+  pathNew
+    = Path "Create New Event of Class"
+        (sessionCgiName ss)
+        [ ("s",         show $ sessionHash ss)
+        , ("n",         "ee")
+        , ("Location",  maybe "" pretty $ classLocation classs)
+        , ("Type",      maybe "" pretty $ classType classs)
+        , ("Time",      maybe "" pretty $ classTimeStart classs) ]
 
   goCode sRegLink sRegId
    = do -- Generate inline QR image.

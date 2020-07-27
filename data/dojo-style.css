@@ -168,12 +168,12 @@ select
 .Col3B                          { width: 30% }
 .Col3C                          { width: 50% }
 
-.ColClass2A                     { width: 40% }
-.ColClass2B                     { width: 60% }
+.Col2bA                         { width: 40% }
+.Col2bB                         { width: 60% }
 
-.ColClass3A                     { width: 40% }
-.ColClass3B                     { width: 30% }
-.ColClass3C                     { width: 30% }
+.Col3bA                         { width: 40% }
+.Col3bB                         { width: 30% }
+.Col3bC                         { width: 30% }
 
 
 /* Person List ********************************************/
