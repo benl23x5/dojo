@@ -12,7 +12,14 @@ data Config
         , configCgiName         :: String
 
           -- | Full path to sqlite3 database.
-        , configDatabasePath    :: FilePath }
+        , configDatabasePath    :: FilePath
+
+          -- | Salt to generate the active QR codes.
+        , configQrSaltActive    :: String
+
+          -- | Salt to generate the legacy QR codes,
+          --   which still work now but will be removed in the next rotation.
+        , configQrSaltLegacy    :: String }
         deriving Show
 
 
@@ -22,7 +29,9 @@ configDefault
         = Config
         { configSiteName        = "Aiki Dojo"
         , configCgiName         = "dojo.cgi"
-        , configDatabasePath    = "dojo.db" }
+        , configDatabasePath    = "dojo.db"
+        , configQrSaltActive    = "salt-active"
+        , configQrSaltLegacy    = "salt-legacy" }
 
 
 -- | Load args into site config.
@@ -43,6 +52,14 @@ loadConfig aa cc
  = loadConfig rest
  $ cc { configDatabasePath = sDbPath }
 
+ | "-qr-salt-active" : sSalt : rest <- aa
+ = loadConfig rest
+ $ cc { configQrSaltActive = sSalt }
+
+ | "-qr-salt-legacy" : sSalt : rest <- aa
+ = loadConfig rest
+ $ cc { configQrSaltLegacy = sSalt }
+
  | otherwise
  = error usage
 
@@ -51,7 +68,9 @@ loadConfig aa cc
 usage :: String
 usage = unlines
  [ "dojo ARGS.."
- , " -site-name     STRING    Display name of site."
- , " -cgi-name      STRING    Base name of script, eg dojo.cgi."
- , " -db-path       PATH      Full path to sqlite3 database."
+ , " -site-name       STRING    Display name of site."
+ , " -cgi-name        STRING    Base name of script, eg dojo.cgi."
+ , " -db-path         PATH      Full path to sqlite3 database."
+ , " -qr-salt-active  STRING    Salt to generate active QR codes."
+ , " -qr-salt-legacy  STRING    Salt to generate legacy QR codes."
  , "" ]

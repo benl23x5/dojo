@@ -6,9 +6,15 @@ import Dojo.Framework
 import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Fail
+import Data.String
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
+import qualified Codec.Picture                  as CP
+import qualified Data.ByteString.Lazy           as BL
+import qualified Data.ByteString.Char8          as BC
+import qualified Data.ByteString.Base64         as B64
+import Data.Word
 
 -------------------------------------------------------------------------------
 -- | View a single class, using a vertical form.
@@ -79,5 +85,25 @@ divClassDetails ss classs
                 tr $ do th "first date"; th "final date"
                 tr $ do td' $ classDateFirst classs
                         td' $ classDateFinal classs
+
+        -- Write out inline QR registration code.
+        let iimg :: CP.Image Word8
+                = CP.generateImage
+                        (\x y -> truncate
+                                $ ((fromIntegral x / (100 :: Float))
+                                 * (fromIntegral y / 100) * 256))
+                        100 100
+
+        let bsPng   = CP.encodePng iimg
+        let bsPng64 = B64.encodeBase64' $ BL.toStrict bsPng
+        let ssPng64 = BC.unpack bsPng64
+
+        H.table
+         $ do   tr $ do th "registration QR code"
+                tr $ td $ (H.img
+                         ! A.src (fromString $ "data:image/png;base64, " ++ ssPng64)
+                         ! A.height "500vw"
+                         ! A.width  "auto")
+
 
  where  td' val = td $ H.toMarkup $ maybe "" pretty $ val

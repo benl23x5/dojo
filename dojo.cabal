@@ -23,7 +23,10 @@ Executable dojo
         cgi             == 3001.5.*,
         HDBC            == 2.4.*,
         HDBC-sqlite3    == 2.3.*,
-        exceptions      == 0.10.*
+        exceptions      == 0.10.*,
+        JuicyPixels     == 3.3.*,
+        base64          == 0.4.*
+
 
 
   main-is:
