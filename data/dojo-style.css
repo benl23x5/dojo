@@ -186,7 +186,6 @@ select
 .event-list .Location           { min-width: 6em;  }
 .event-list .Pax                { width: 2em;   }
 
-
 /* Event View/Edit ******************************************/
 
 /* View Mode */
@@ -202,3 +201,11 @@ select
 
 #event-attendance-new .index    { width: 3em; }
 
+
+/* Class **************************************************/
+.qrcode
+{       display:        block;
+        margin-left:    auto;
+        margin-right:   auto;
+        width:          90%
+}

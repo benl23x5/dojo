@@ -11,22 +11,23 @@ Synopsis:       Aiki Dojo Web App
 
 Executable dojo
   build-depends:
-        base            == 4.11.*,
-        bytestring      == 0.10.*,
-        random          == 1.1.*,
-        time            == 1.8.*,
-        pureMD5         == 2.1.*,
-        convertible     == 1.1.*,
-        blaze-html      == 0.9.*,
-        blaze-markup    == 0.8.*,
-        containers      == 0.5.*,
-        cgi             == 3001.5.*,
-        HDBC            == 2.4.*,
-        HDBC-sqlite3    == 2.3.*,
-        exceptions      == 0.10.*,
-        JuicyPixels     == 3.3.*,
-        base64          == 0.4.*
-
+        base                    == 4.11.*,
+        bytestring              == 0.10.*,
+        random                  == 1.1.*,
+        time                    == 1.8.*,
+        pureMD5                 == 2.1.*,
+        convertible             == 1.1.*,
+        blaze-html              == 0.9.*,
+        blaze-markup            == 0.8.*,
+        containers              == 0.5.*,
+        cgi                     == 3001.5.*,
+        HDBC                    == 2.4.*,
+        HDBC-sqlite3            == 2.3.*,
+        exceptions              == 0.10.*,
+        base64                  == 0.4.*,
+        JuicyPixels             == 3.3.*,
+        qrcode-juicypixels      == 0.8.*,
+        qrcode-core             == 0.9.*
 
 
   main-is:

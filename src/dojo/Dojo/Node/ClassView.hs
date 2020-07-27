@@ -11,10 +11,12 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
 import qualified Codec.Picture                  as CP
+import qualified Codec.QRCode                   as QR
+import qualified Codec.QRCode.JuicyPixels       as QRP
 import qualified Data.ByteString.Lazy           as BL
 import qualified Data.ByteString.Char8          as BC
 import qualified Data.ByteString.Base64         as B64
-import Data.Word
+
 
 -------------------------------------------------------------------------------
 -- | View a single class, using a vertical form.
@@ -86,24 +88,24 @@ divClassDetails ss classs
                 tr $ do td' $ classDateFirst classs
                         td' $ classDateFinal classs
 
-        -- Write out inline QR registration code.
-        let iimg :: CP.Image Word8
-                = CP.generateImage
-                        (\x y -> truncate
-                                $ ((fromIntegral x / (100 :: Float))
-                                 * (fromIntegral y / 100) * 256))
-                        100 100
+        -- Generate inline QR image.
+        let ssContent :: String
+                = "http://dojo.ouroborus.net?r=abcdefgh"
 
+        let Just qrimg
+                = QR.encodeText
+                        (QR.defaultQRCodeOptions QR.L)
+                        QR.Utf8WithECI ssContent
+
+        let iimg    = QRP.toImage 2 20 qrimg
         let bsPng   = CP.encodePng iimg
         let bsPng64 = B64.encodeBase64' $ BL.toStrict bsPng
         let ssPng64 = BC.unpack bsPng64
-
+        let ssPage  = "data:image/png;base64, " ++ ssPng64
         H.table
          $ do   tr $ do th "registration QR code"
-                tr $ td $ (H.img
-                         ! A.src (fromString $ "data:image/png;base64, " ++ ssPng64)
-                         ! A.height "500vw"
-                         ! A.width  "auto")
-
+                tr $ td $ do
+                        (H.img ! A.class_ "qrcode" ! A.src (fromString ssPage))
 
  where  td' val = td $ H.toMarkup $ maybe "" pretty $ val
+
