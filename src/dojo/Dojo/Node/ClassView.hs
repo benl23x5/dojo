@@ -3,6 +3,7 @@ module Dojo.Node.ClassView (cgiClassView) where
 import Dojo.Data.Session
 import Dojo.Data.Class
 import Dojo.Framework
+import Dojo.Config
 import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Fail
@@ -64,48 +65,67 @@ divClassDetails ss classs
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
+         $ do   col ! A.class_ "ColClass2A"
+                col ! A.class_ "ColClass2B"
                 tr $ do th "location"; th "day"
                 tr $ do td' $ classLocation classs
                         td' $ classDay classs
 
         H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "start time"; th "end time"
-                tr $ do td' $ classTimeStart classs
+         $ do   col ! A.class_ "ColClass3A"
+                col ! A.class_ "ColClass3B"
+                col ! A.class_ "ColClass3C"
+                tr $ do th "type"; th "start time"; th "end time"
+                tr $ do td' $ classType classs
+                        td' $ classTimeStart classs
                         td' $ classTimeEnd classs
 
-        H.table
-         $ do   tr $ do th "type"
-                tr $ do td' $ classType classs
+
+        -- Try to generate the registration code.
+        --  We need to have the type, location day,
+        --  start and end times set.
+        let mReg = registrationLinkOfClass
+                        "http://dojo.ouroborus.net"
+                        (configQrSaltActive $ sessionConfig ss)
+                        classs
+
+        (case mReg of
+         Nothing -> return ()
+         Just (sRegLink, sRegId)
+          -> goCode sRegLink sRegId)
 
         -- First / final date tracking only matters when searching
         -- for events, so only relevant to admins.
         when (sessionIsAdmin ss)
          $ H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "first date"; th "final date"
+         $ do   col ! A.class_ "ColClass2A"
+                col ! A.class_ "ColClass2B"
+                tr $ do th "first event date"; th "final event date"
                 tr $ do td' $ classDateFirst classs
                         td' $ classDateFinal classs
 
-        -- Generate inline QR image.
-        let ssContent :: String
-                = "http://dojo.ouroborus.net?r=abcdefgh"
+ where
+  td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
+  goCode sRegLink sRegId
+   = do -- Generate inline QR image.
         let Just qrimg
                 = QR.encodeText
                         (QR.defaultQRCodeOptions QR.L)
-                        QR.Utf8WithECI ssContent
+                        QR.Utf8WithECI sRegLink
 
         let iimg    = QRP.toImage 2 20 qrimg
         let bsPng   = CP.encodePng iimg
         let bsPng64 = B64.encodeBase64' $ BL.toStrict bsPng
         let ssPng64 = BC.unpack bsPng64
         let ssPage  = "data:image/png;base64, " ++ ssPng64
+
         H.table
          $ do   tr $ do th "registration QR code"
-                tr $ td $ do
-                        (H.img ! A.class_ "qrcode" ! A.src (fromString ssPage))
+                tr $ td $ (H.a ! A.href (H.toValue sRegLink))
+                           (H.img ! A.class_ "qrcode" ! A.src (fromString ssPage))
 
- where  td' val = td $ H.toMarkup $ maybe "" pretty $ val
+        H.table
+         $ do   tr $ th "registration QR identifier"
+                tr $ td $ (H.div ! A.class_ "qrident") $ H.string sRegId
 

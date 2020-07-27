@@ -168,6 +168,13 @@ select
 .Col3B                          { width: 30% }
 .Col3C                          { width: 50% }
 
+.ColClass2A                     { width: 40% }
+.ColClass2B                     { width: 60% }
+
+.ColClass3A                     { width: 40% }
+.ColClass3B                     { width: 30% }
+.ColClass3C                     { width: 30% }
+
 
 /* Person List ********************************************/
 .person-list .ShortName         { width: 8em; }
@@ -208,4 +215,10 @@ select
         margin-left:    auto;
         margin-right:   auto;
         width:          90%
+}
+
+.qrident
+{
+        font-family:    monospace;
+
 }

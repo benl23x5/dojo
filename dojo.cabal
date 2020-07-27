@@ -15,6 +15,7 @@ Executable dojo
         bytestring              == 0.10.*,
         random                  == 1.1.*,
         time                    == 1.8.*,
+        text                    == 1.2.*,
         pureMD5                 == 2.1.*,
         convertible             == 1.1.*,
         blaze-html              == 0.9.*,
@@ -27,7 +28,8 @@ Executable dojo
         base64                  == 0.4.*,
         JuicyPixels             == 3.3.*,
         qrcode-juicypixels      == 0.8.*,
-        qrcode-core             == 0.9.*
+        qrcode-core             == 0.9.*,
+        cryptohash-md5          == 0.11.*
 
 
   main-is:
@@ -40,6 +42,7 @@ Executable dojo
 
         Dojo.Data.Class.Base
         Dojo.Data.Class.Database
+        Dojo.Data.Class.Registration
         Dojo.Data.Class
 
         Dojo.Data.Dojo.Database
