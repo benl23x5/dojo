@@ -57,9 +57,13 @@ divClassDetails ss classs
  $ do
         H.table
          $ do   tr $ th "class"
+
                 tr $ td $ H.string
-                   $  "In "
-                   ++ maybe "[somewhere]" pretty (classLocation classs)
+                   $  maybe "" (\v -> pretty v) (classType classs)
+                   ++ " class."
+
+                tr $ td $ H.string
+                   $  maybe "[somewhere]" pretty (classLocation classs)
                    ++ " on "
                    ++ maybe "[someday]"   (\v -> " "    ++ pretty v) (classDay classs)
                    ++ " at "
@@ -67,9 +71,6 @@ divClassDetails ss classs
                    ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
                    ++ "."
 
-                tr $ td $ H.string
-                   $  maybe "" (\v -> pretty v) (classType classs)
-                   ++ " class."
 
                 tr $ td $ (H.a ! A.href (H.toValue pathNew))
                         $ H.toMarkup $ pathName pathNew

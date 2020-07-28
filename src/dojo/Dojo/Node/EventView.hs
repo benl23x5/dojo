@@ -62,17 +62,17 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
  $ do   tr $ do th "event"
 
         tr $ td $ H.string
-           $  "In "
-           ++ maybe "[somewhere]" pretty  (eventLocation event)
-           ++ maybe "[someday]"  (\v -> " on " ++ pretty v)  (eventDate event)
-           ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
-           ++ "."
-
-        tr $ td $ H.string
            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
            ++ " by "
            ++ maybe "" pretty (personDisplayName personCreatedBy)
            ++ " (" ++ pretty (userName userCreatedBy) ++ ")."
+
+        tr $ td $ H.string
+           $  maybe "[somewhere]" pretty  (eventLocation event)
+           ++ maybe "[someday]"  (\v -> " on " ++ pretty v)  (eventDate event)
+           ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
+           ++ "."
+
 
         -- Event can be edited by admin or the user that created it.
         when (sessionOwnsEvent ss event)
