@@ -117,8 +117,13 @@ cgiRegister_multi _conn sRegId cls events
 -------------------------------------------------------------------------------
 -- We are trying to register for a class but there is not event
 -- record for it yet.
-cgiRegister_create _conn cls
+cgiRegister_create conn cls
  = do
+        -- Lookup owner info
+        let Just uname = classOwnerUserName cls
+        Just uOwner  <- liftIO $ getMaybeUser conn uname
+        pOwner       <- liftIO $ getPerson conn $ userPersonId uOwner
+
         -- First decide if the class is actually on today.
         zonedTime    <- liftIO $ Time.getZonedTime
         let localTime = Time.zonedTimeToLocalTime zonedTime
@@ -126,14 +131,14 @@ cgiRegister_create _conn cls
         let sDay      = ssDays !! nDay
 
         if classDay cls == Just (ClassDay sDay)
-         then cgiRegister_create_new cls
-         else cgiRegister_create_notToday cls sDay
+         then cgiRegister_create_new cls uOwner pOwner
+         else cgiRegister_create_notToday cls sDay uOwner pOwner
 
  where  ssDays :: [String]
          = [ "Sunday", "Monday", "Tuesday"
            , "Wednesday", "Thursday", "Friday", "Saturday" ]
 
-cgiRegister_create_new cls
+cgiRegister_create_new cls uOwner pOwner
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader "Event Registration"
@@ -142,12 +147,12 @@ cgiRegister_create_new cls
          $ do   H.h2 "Event Registration"
 
                 H.table
-                 $ trClassSummary cls
+                 $ trClassSummary cls uOwner pOwner
 
                 H.string $ "need to make a new event" ++ show cls
 
 
-cgiRegister_create_notToday cls sDay
+cgiRegister_create_notToday cls sDay uOwner pOwner
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader "Event Registration"
@@ -156,7 +161,7 @@ cgiRegister_create_notToday cls sDay
          $ do   H.h2 "Event Registration"
 
                 H.table
-                 $ trClassSummary cls
+                 $ trClassSummary cls uOwner pOwner
 
                 H.br
                 H.string $ "Today is " ++ sDay

@@ -6,6 +6,8 @@ import Dojo.Node.EventList
 import Dojo.Data.Event
 import Dojo.Data.Session
 import Dojo.Data.Class
+import Dojo.Data.Person
+import Dojo.Data.User
 import Dojo.Config
 import Dojo.Chrome
 import Dojo.Paths
@@ -32,53 +34,66 @@ cgiClassView
 cgiClassView ss inputs
  | Just strClassId  <- lookup "cid" inputs
  , Right cid        <- parse strClassId
- = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
-        classs  <- liftIO $ getClass conn cid
-        events  <- liftIO $ getEventsOfClassId conn cid
+ = do   conn      <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
+        classs    <- liftIO $ getClass conn cid
+        events    <- liftIO $ getEventsOfClassId conn cid
+        let Just uname = classOwnerUserName classs
+        Just uOwner  <- liftIO $ getMaybeUser conn uname
+        pOwner    <- liftIO $ getPerson conn $ userPersonId uOwner
         liftIO $ disconnect conn
 
-        cgiClassView_page ss classs events
+        cgiClassView_page ss classs events uOwner pOwner
 
  | otherwise
  = throw $ FailNodeArgs "class view" inputs
 
 
-cgiClassView_page ss classs events
+cgiClassView_page ss classs events uOwner pOwner
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ classDisplayName classs
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                divClassDetails ss classs events
+                divClassDetails ss classs uOwner pOwner events
 
 -- TODO: export this separately to the register node.
-trClassSummary :: Class -> Html
-trClassSummary classs
+trClassSummary :: Class -> User -> Person -> Html
+trClassSummary classs uOwner pOwner
  = do
         tr $ td $ H.string
            $  maybe "" (\v -> pretty v) (classType classs)
-           ++ " class."
+           ++ " class"
+           ++ " by "
+           ++ maybe "" pretty (personDisplayName pOwner)
+           ++ " (" ++ pretty (userName uOwner) ++ ")"
+           ++ "."
+
 
         tr $ td $ H.string
            $  maybe "[somewhere]" pretty (classLocation classs)
            ++ " on "
-           ++ maybe "[someday]"   (\v -> " "    ++ pretty v) (classDay classs)
+           ++ maybe "[someday]"   pretty (classDay classs)
            ++ " at "
-           ++ maybe "[sometime]"  (\v -> " "    ++ pretty v) (classTimeStart classs)
+           ++ maybe "[sometime]"  pretty (classTimeStart classs)
            ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
            ++ "."
 
 
 -------------------------------------------------------------------------------
 -- | Class Details
-divClassDetails :: Session -> Class -> [(Event, Int)] -> Html
-divClassDetails ss classs eventList
+divClassDetails
+        :: Session
+        -> Class -> User -> Person
+        -> [(Event, Int)]
+        -> Html
+
+divClassDetails ss classs uOwner pOwner eventList
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
          $ do   tr $ th "class"
-                trClassSummary classs
+                trClassSummary classs uOwner pOwner
 
                 tr $ td $ (H.a ! A.href (H.toValue pathNew))
                         $ H.toMarkup $ pathName pathNew

@@ -8,6 +8,9 @@ import Dojo.Framework
 instance Parse UserId where
  parse str      = liftM UserId $ parse str
 
+instance Parse UserName where
+ parse str      = Right (UserName str)
+
 
 -- Person ---------------------------------------------------------------------
 instance Parse PersonId where

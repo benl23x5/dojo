@@ -9,9 +9,9 @@ CREATE TABLE v1_DimDay
 CREATE TABLE v1_User
         ( UserId                INTEGER   PRIMARY KEY
         , UserName              TEXT      NOT NULL
+        , UserPersonId          INTEGER   NOT NULL
         , PasswordHash          TEXT      NOT NULL
         , PasswordSalt          TEXT      NOT NULL
-        , UserPersonId          INTEGER   NOT NULL
         , RoleNative            TEXT      NOT NULL
         , UNIQUE(UserName));
 
@@ -70,13 +70,15 @@ CREATE TABLE v1_Attendance
  * to create a new event. */
 CREATE TABLE v1_Class
         ( ClassId               INTEGER PRIMARY KEY
+        , OwnerUserName         STRING  NOT NULL
         , Type                  STRING  NOT NULL
         , Location              STRING  NOT NULL
         , Day                   STRING  NOT NULL
         , TimeStart             TIME    NOT NULL
         , TimeEnd               TIME
         , DateFirst             DATE    NOT NULL
-        , DateFinal             DATE);
+        , DateFinal             DATE
+        , FOREIGN KEY(OwnerUserName) REFERENCES v1_User(Name));
 
 /* Dojo names. */
 CREATE TABLE v1_Dojo

@@ -9,6 +9,7 @@ import Dojo.Trivia
 data Class
         = Class
         { classId               :: Maybe ClassId
+        , classOwnerUserName    :: Maybe UserName
         , classType             :: Maybe EventType
         , classLocation         :: Maybe EventLocation
         , classDay              :: Maybe ClassDay
@@ -36,6 +37,11 @@ classFields
         (fmap toSql . load @ClassId)
         (toSql . classId)
         (\v x -> x { classId = fromSql v})
+
+    , Field "OwnerUserName"     "owner user name"
+        (fmap toSql . load @UserName)
+        (toSql . classOwnerUserName)
+        (\v x -> x { classOwnerUserName = fromSql v})
 
     , Field "Type"              "type"
         (fmap toSql . load @EventType)
@@ -78,6 +84,7 @@ zeroClass :: Class
 zeroClass
         = Class
         { classId               = Nothing
+        , classOwnerUserName    = Nothing
         , classType             = Nothing
         , classLocation         = Nothing
         , classDay              = Nothing
