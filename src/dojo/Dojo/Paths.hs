@@ -31,6 +31,14 @@ pathLogout ss
 
 
 -- Main -----------------------------------------------------------------------
+pathRegister :: Config -> String -> Path
+pathRegister cc sRegId
+ = Path "Register"
+        (configCgiName cc)
+        [ ("r", sRegId) ]
+
+
+-- Main -----------------------------------------------------------------------
 pathMain :: Session -> Path
 pathMain ss
  = Path "Main"

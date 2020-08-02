@@ -13,7 +13,7 @@ data Path
 
           -- | CGI key value pairs for this path.
         , pathFields    :: [(String, String)] }
-
+        deriving Show
 
 instance ToValue Path where
  toValue path = toValue (flatten path)
@@ -23,7 +23,7 @@ flatten  :: Path -> String
 flatten path
         =  pathBase path
         ++ "?"
-        ++ intercalate "&" 
+        ++ intercalate "&"
                 [field ++ "=" ++ value
                         | (field, value) <- pathFields path ]
 

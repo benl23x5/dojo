@@ -1,7 +1,5 @@
 
-module Dojo.Node.EventEdit.Form
-        (formEvent)
-where
+module Dojo.Node.EventEdit.Form (formEvent, EventForm(..)) where
 import Dojo.Node.EventEdit.Arg
 import Dojo.Data.Event
 import Dojo.Data.Person
@@ -10,22 +8,34 @@ import qualified Text.Blaze.Html5.Attributes    as A
 import Data.String
 
 -------------------------------------------------------------------------------
+data EventForm
+        = EventForm
+        { eventFormPath         :: Path
+        , eventFormFeedForm     :: [FeedForm]
+        , eventFormFeedEvent    :: [FeedEvent]
+        , eventFormEventValue   :: Event
+        , eventFormEventTypes   :: [EventType]
+        , eventFormAttendance   :: [Person]
+        , eventFormDojosAvail   :: [PersonDojo] }
+        deriving Show
+
+
+-------------------------------------------------------------------------------
 -- | Form to change the details of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
-formEvent
-        :: Path
-        -> [FeedForm]
-        -> [FeedEvent]
-        -> Event                -- ^ Event values.
-        -> [EventType]          -- ^ Available event types.
-        -> [Person]             -- ^ Attendance at this event.
-        -> [PersonDojo]         -- ^ Available dojos list.
-        -> Html
-
-formEvent path fsForm fsEvent event eventTypes attendance dojos
- = form ! A.action (H.toValue path)
+formEvent :: EventForm -> Html
+formEvent eform
+ = form ! A.action (H.toValue $ eventFormPath eform)
  $ do
+        let path        = eventFormPath eform
+        let fsForm      = eventFormFeedForm eform
+        let fsEvent     = eventFormFeedEvent eform
+        let event       = eventFormEventValue eform
+        let eventTypes  = eventFormEventTypes eform
+        let attendance  = eventFormAttendance eform
+        let dojos       = eventFormDojosAvail eform
+
         -- Stash args from the target path as hidden fields.
         mapM_   (\(fieldName, fieldData)
                  -> input ! A.type_ "hidden"
@@ -36,11 +46,6 @@ formEvent path fsForm fsEvent event eventTypes attendance dojos
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsForm niceNameOfEventField
 
-        -- Save button.
-        H.br
-        input   ! A.type_  "submit"
-                ! A.class_ "buttonFull"
-                ! A.value  "Save"
 
         -- Event details.
         divEventDetails    fsForm event eventTypes dojos

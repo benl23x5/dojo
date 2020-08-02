@@ -322,6 +322,11 @@ htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos eventTypes
                     Just eid    -> [pathEventView ss eid]
 
                 H.div ! A.class_ "event"
-                 $ formEvent (pathEventEdit ss mEid)
-                        fsForm fsEvent
-                        event eventTypes psAttend dojos
+                 $ formEvent $ EventForm
+                 { eventFormPath         = pathEventEdit ss mEid
+                 , eventFormFeedForm     = fsForm
+                 , eventFormFeedEvent    = fsEvent
+                 , eventFormEventValue   = event
+                 , eventFormEventTypes   = eventTypes
+                 , eventFormAttendance   = psAttend
+                 , eventFormDojosAvail   = dojos }
