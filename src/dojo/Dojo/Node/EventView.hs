@@ -73,7 +73,6 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
            ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
            ++ "."
 
-
         -- Event can be edited by admin or the user that created it.
         when (sessionOwnsEvent ss event)
          $ tr $ td $ do

@@ -1,14 +1,17 @@
 
 module Dojo.Node.Register (cgiRegister) where
+import Dojo.Node.EventEdit.Search
 import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Feed
 import Dojo.Node.EventEdit.Arg
+import Dojo.Data.User
 import Dojo.Data.Event
 import Dojo.Data.Person
 import Dojo.Data.Class
 import Dojo.Chrome
 import Dojo.Config
 import Dojo.Paths
+import Dojo.Fail
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Data.Time                      as Time
@@ -23,9 +26,29 @@ cgiRegister
  -> String              -- ^ Registration Id.
  -> CGI CGIResult
 
-cgiRegister cc _inputs sRegId
+cgiRegister cc inputs sRegId
  = do   conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
         classs  <- liftIO $ getClasses conn
+
+        -- Normalise incoming arguments.
+        let ssArgs = filter (\(k, _) -> not $ elem k ["r"]) inputs
+        let args   = case sequence $ map argOfKeyVal ssArgs of
+                        Just aa -> aa
+                        Nothing -> throw $ FailNodeArgs "event edit" inputs
+
+        -- If there is feedback saying that a person search found multiple
+        --  matching person ids then lookup the full details so we can display
+        --  the multiple names in feedback. Also renumber the feedback so any
+        --  search terms that are still unresolved are packed to the front
+        --  of the input list.
+        fsEvent <- liftIO $ fmap concat
+                $  mapM (expandMultiPersonId conn)
+                $  renumberSearchFeedback
+                $  [fe | ArgFeedEvent fe <- args]
+
+        -- People to add to this event.
+        let newNames = [ name | ArgAddPerson name <- args ]
+
 
         let sUrl  = configSiteUrl cc
         let sSalt = configQrSaltActive cc
@@ -37,7 +60,7 @@ cgiRegister cc _inputs sRegId
                   Nothing           -> Nothing
 
         case lookup sRegId lsActive of
-         Just cls -> cgiRegister_class cc conn sRegId cls
+         Just cls -> cgiRegister_class cc conn sRegId cls fsEvent newNames
          Nothing  -> cgiRegister_unknown sRegId
 
 
@@ -48,7 +71,16 @@ cgiRegister_unknown sRegId
         H.string $ "registration link unknown " ++ sRegId
 
 
-cgiRegister_class cc conn sRegId cls
+-- Make a new empty event record for the given class.
+cgiRegister_create _conn sRegId cls
+ = outputFPS $ renderHtml
+ $ H.docTypeHtml
+ $ do   pageHeader "Register"
+        H.string $ "need to make a new event" ++ sRegId ++ " " ++ show cls
+        H.br
+
+
+cgiRegister_class cc conn sRegId cls fsEvent newNames
  = do
         -- Get all the events for the specified class.
         let Just cid = classId cls
@@ -66,17 +98,13 @@ cgiRegister_class cc conn sRegId cls
 
         case eventsToday of
          []      -> cgiRegister_create   conn sRegId cls
-         [event] -> cgiRegister_existing cc sRegId cls event edate
+         [event]
+          -> do let Just eid = eventId event
+                cgiRegister_existing
+                        cc conn sRegId cls event eid edate
+                        fsEvent newNames
+
          events  -> cgiRegister_multi    conn sRegId cls events
-
-
--- Make a new empty event record for the given class.
-cgiRegister_create _conn sRegId cls
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Register"
-        H.string $ "need to make a new event" ++ sRegId ++ " " ++ show cls
-        H.br
 
 
 -- There are already multiple events belonging to the same class,
@@ -91,32 +119,70 @@ cgiRegister_multi _conn sRegId cls events
 
 
 -- There is a single existing event record today for this class.
-cgiRegister_existing cc sRegId _cls event _edate
- = outputFPS $ renderHtml
- $ htmlEventRegister cc sRegId [] [] event  []
+cgiRegister_existing
+        cc conn sRegId cls event eid edate
+        fsEvent newNames
+ | not $ null newNames
+ = cgiRegister_existing_update
+        cc conn sRegId cls event eid edate
+        newNames
+
+ | otherwise
+ = cgiRegister_existing_form
+        cc conn sRegId cls event eid edate
+        fsEvent
 
 
+cgiRegister_existing_update
+        cc conn sRegId _cls event eid _edate
+        newNames
+ = do
+        psAttend <- liftIO $ getAttendance conn eid
 
--------------------------------------------------------------------------------
--- | Html for event registration edit page.
-htmlEventRegister
-        :: Config -> String
-        -> [FeedForm] -> [FeedEvent]
-        -> Event -> [Person]
-        -> Html
+        fsSearch <- liftM concat $ liftIO
+                 $  zipWithM (searchAddPerson conn event psAttend)
+                        [0..] newNames
 
-htmlEventRegister cc sRegId fsForm fsEvent event psAttend
- = H.docTypeHtml
- $ do   pageHeader "Event Registration"
-        pageBody
-         $ H.div ! A.class_ "event"
-         $ do   H.h2 "Event Registration"
-                formEvent $ EventForm
-                 { eventFormPath         = pathRegister cc sRegId
-                 , eventFormFeedForm     = fsForm
-                 , eventFormFeedEvent    = fsEvent
-                 , eventFormEventValue   = event
-                 , eventFormEventTypes   = []
-                 , eventFormAttendance   = psAttend
-                 , eventFormDojosAvail   = [] }
+        liftIO $ commit conn
+        liftIO $ disconnect conn
+
+        -- Redirect to the same page with a clean path,
+        --  that includes updated feedback.
+        redirect $ flatten
+         $   pathRegister cc sRegId
+         <&> mapMaybe takeKeyValOfFeedEvent fsSearch
+
+
+cgiRegister_existing_form
+        cc conn sRegId _cls event eid _edate
+        fsEvent
+ = do
+        psAttend <- liftIO $ getAttendance conn eid
+
+        (userCreatedBy, personCreatedBy)
+         <- do  let Just uidCreatedBy = eventCreatedBy event
+                Just user <- liftIO $ getUserOfId conn uidCreatedBy
+                person    <- liftIO $ getPerson conn $ userPersonId user
+                return (user, person)
+
+        liftIO $ disconnect conn
+
+        outputFPS $ renderHtml
+         $ H.docTypeHtml
+         $ do   pageHeader "Event Registration"
+                pageBody
+                 $ H.div ! A.class_ "event"
+                 $ do   H.h2 "Event Registration"
+                        formEvent $ EventForm
+                         { eventFormPath                = pathRegister cc sRegId
+                         , eventFormFeedForm            = []
+                         , eventFormFeedEvent           = fsEvent
+                         , eventFormEventValue          = event
+                         , eventFormEventTypes          = []
+                         , eventFormAttendance          = psAttend
+                         , eventFormDojosAvail          = []
+                         , eventFormDetailsEditable     = False
+                         , eventFormAttendanceDeletable = False
+                         , eventFormCreatedByUser       = Just userCreatedBy
+                         , eventFormCreatedByPerson     = Just personCreatedBy }
 

@@ -2,6 +2,7 @@
 module Dojo.Node.EventEdit.Form (formEvent, EventForm(..)) where
 import Dojo.Node.EventEdit.Arg
 import Dojo.Data.Event
+import Dojo.Data.User
 import Dojo.Data.Person
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
@@ -10,13 +11,23 @@ import Data.String
 -------------------------------------------------------------------------------
 data EventForm
         = EventForm
-        { eventFormPath         :: Path
-        , eventFormFeedForm     :: [FeedForm]
-        , eventFormFeedEvent    :: [FeedEvent]
-        , eventFormEventValue   :: Event
-        , eventFormEventTypes   :: [EventType]
-        , eventFormAttendance   :: [Person]
-        , eventFormDojosAvail   :: [PersonDojo] }
+        { eventFormPath                 :: Path
+        , eventFormFeedForm             :: [FeedForm]
+        , eventFormFeedEvent            :: [FeedEvent]
+        , eventFormEventValue           :: Event
+        , eventFormEventTypes           :: [EventType]
+        , eventFormAttendance           :: [Person]
+        , eventFormDojosAvail           :: [PersonDojo]
+
+          -- | Whether to display edit control for date, time, loc, type etc.
+          --   or just the natural language summary.
+        , eventFormDetailsEditable      :: Bool
+
+          -- | Whether to show controls for deleting names from the list.
+        , eventFormAttendanceDeletable  :: Bool
+
+        , eventFormCreatedByUser        :: Maybe User
+        , eventFormCreatedByPerson      :: Maybe Person }
         deriving Show
 
 
@@ -30,11 +41,6 @@ formEvent eform
  $ do
         let path        = eventFormPath eform
         let fsForm      = eventFormFeedForm eform
-        let fsEvent     = eventFormFeedEvent eform
-        let event       = eventFormEventValue eform
-        let eventTypes  = eventFormEventTypes eform
-        let attendance  = eventFormAttendance eform
-        let dojos       = eventFormDojosAvail eform
 
         -- Stash args from the target path as hidden fields.
         mapM_   (\(fieldName, fieldData)
@@ -46,10 +52,12 @@ formEvent eform
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsForm niceNameOfEventField
 
-
         -- Event details.
-        divEventDetails    fsForm event eventTypes dojos
-        divEventAttendance path fsForm fsEvent event attendance
+        (if eventFormDetailsEditable eform
+          then divEventEditDetails eform
+          else divEventShowDetails eform)
+
+        divEventAttendance  eform
         H.br
 
         -- Save button.
@@ -57,14 +65,43 @@ formEvent eform
                 ! A.class_ "buttonFull"
                 ! A.value  "Save"
 
-
 -------------------------------------------------------------------------------
-divEventDetails
-        :: [FeedForm] -> Event -> [EventType] -> [PersonDojo] -> Html
-divEventDetails fsFeed event eventTypes dojos
+divEventShowDetails :: EventForm -> Html
+divEventShowDetails eform
  = H.div ! A.id "event-details-edit" ! A.class_ "details"
  $ do
-        tableFields fsFeed
+        let event       = eventFormEventValue eform
+        let mpCreated    = eventFormCreatedByPerson eform
+        let muCreated    = eventFormCreatedByUser eform
+
+        H.table $ do
+         tr $ td $ H.string
+            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
+            ++ " by "
+            ++ (fromMaybe "[someperson]"
+                (join $ fmap personDisplayName mpCreated))
+            ++ " ("
+            ++ (maybe "[someuser]"   (pretty . userName) muCreated)
+            ++ ")."
+
+         tr $ td $ H.string
+            $  maybe "[somewhere]" pretty  (eventLocation event)
+            ++ maybe "[someday]"  (\v -> " on " ++ pretty v)  (eventDate event)
+            ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
+            ++ "."
+
+
+-------------------------------------------------------------------------------
+divEventEditDetails :: EventForm  -> Html
+divEventEditDetails eform
+ = H.div ! A.id "event-details-edit" ! A.class_ "details"
+ $ do
+        let fsForm      = eventFormFeedForm eform
+        let event       = eventFormEventValue eform
+        let eventTypes  = eventFormEventTypes eform
+        let dojos       = eventFormDojosAvail eform
+
+        tableFields fsForm
          [ ( "Date", "date (dd-mm-yyyy)"
            , maybe "" pretty $ eventDate event
            , Just "(required)"
@@ -103,41 +140,50 @@ divEventDetails fsFeed event eventTypes dojos
                 (H.toHtml sVal)
 
 -------------------------------------------------------------------------------
-divEventAttendance
-        :: Path -> [FeedForm] -> [FeedEvent]
-        -> Event -> [Person] -> Html
-
-divEventAttendance path fsForm fsEvent event attendance
+divEventAttendance :: EventForm -> Html
+divEventAttendance eform
  = do
-        divAttendanceCur path fsEvent attendance
+        let fsForm      = eventFormFeedForm eform
+        let event       = eventFormEventValue eform
+        let fsEvent     = eventFormFeedEvent eform
+        let psAttend    = eventFormAttendance eform
 
-        let curStudents = fromIntegral $ length attendance
+        divAttendanceCur eform
+
+        let curStudents = fromIntegral $ length psAttend
         divAttendanceNew fsForm fsEvent event curStudents
 
 
 -------------------------------------------------------------------------------
 -- | Table of people currently listed as attending the event.
-divAttendanceCur path fsEvent attendance
+divAttendanceCur eform
  = H.div ! A.id     "event-attendance-cur"
          ! A.class_ "list"
  $ H.table
- $ do   col ! A.class_ "index"
+ $ do   let path        = eventFormPath eform
+        let fsEvent     = eventFormFeedEvent eform
+        let psAttend    = eventFormAttendance eform
+        let bCanDel     = eventFormAttendanceDeletable eform
+
+        col ! A.class_ "index"
         col ! A.class_ "name"
-        col ! A.class_ "actions"
+
+        when bCanDel
+         $ col ! A.class_ "actions"
 
         tr $ do th "#"
                 th "attendees"
-                th "del"
+                when bCanDel $ th "del"
 
         -- Highlight the people that were just added.
         let pidsAdded = [pid | FeedEventPersonAdded pid <- fsEvent ]
 
-        zipWithM_ (trCurAttendance pidsAdded path) [1..] attendance
+        zipWithM_ (trCurAttendance bCanDel pidsAdded path) [1..] psAttend
 
 
 -- | Row for person that is currently listed as attending the event.
-trCurAttendance :: [PersonId] -> Path -> Int -> Person -> Html
-trCurAttendance pidsAdded path ix person
+trCurAttendance :: Bool -> [PersonId] -> Path -> Int -> Person -> Html
+trCurAttendance bCanDel pidsAdded path ix person
  = tr $ do
         td $ H.toMarkup (show ix)
 
@@ -151,11 +197,12 @@ trCurAttendance pidsAdded path ix person
            $ maybe "(person)" pretty $ personDisplayName person
 
         -- TODO: fix case of no pid
-        let Just pid = personId person
-        td $ H.a ! A.class_ "link"
-                 ! (A.href $ H.toValue
-                           $ path <&> [("delPerson", pretty pid)])
-                 $ "X"
+        when bCanDel
+         $ do   let Just pid = personId person
+                td $ H.a ! A.class_ "link"
+                         ! (A.href $ H.toValue
+                                   $ path <&> [("delPerson", pretty pid)])
+                         $ "X"
 
 
 -------------------------------------------------------------------------------
@@ -197,7 +244,7 @@ trNewAttendance fsEvent takeFocus disable curStudents ix
  = tr
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
         tdFeedback disable (takeFocus && ix == 0)
-                names ["(no matches)"]
+                names ["(unknown name)"]
 
  -- Search feedback, where multiple matches were found.
  | [str]   <- [names  | FeedEventSearchFoundMultiString ix' names  <- fsEvent

@@ -21,4 +21,5 @@ data User
         -- | The native role of this user.
         --    The active role in the sesson may be lower for testing purposes.
         , userRoleNative        :: UserRole }
+        deriving Show
 
