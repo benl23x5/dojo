@@ -256,8 +256,6 @@ cgiEventEdit_update
          <&> mapMaybe takeKeyValOfFeedEvent fsFeed
 
 
-
-
 -------------------------------------------------------------------------------
 -- | Html for event edit page.
 htmlEventEdit

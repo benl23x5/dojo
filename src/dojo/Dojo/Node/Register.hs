@@ -1,5 +1,6 @@
 
 module Dojo.Node.Register (cgiRegister) where
+import Dojo.Node.ClassView
 import Dojo.Node.EventEdit.Search
 import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Feed
@@ -15,6 +16,7 @@ import Dojo.Fail
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Data.Time                      as Time
+import qualified Data.Time.Calendar.OrdinalDate as Time
 
 
 -------------------------------------------------------------------------------
@@ -49,7 +51,6 @@ cgiRegister cc inputs sRegId
         -- People to add to this event.
         let newNames = [ name | ArgAddPerson name <- args ]
 
-
         let sUrl  = configSiteUrl cc
         let sSalt = configQrSaltActive cc
 
@@ -71,15 +72,7 @@ cgiRegister_unknown sRegId
         H.string $ "registration link unknown " ++ sRegId
 
 
--- Make a new empty event record for the given class.
-cgiRegister_create _conn sRegId cls
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Register"
-        H.string $ "need to make a new event" ++ sRegId ++ " " ++ show cls
-        H.br
-
-
+-------------------------------------------------------------------------------
 cgiRegister_class cc conn sRegId cls fsEvent newNames
  = do
         -- Get all the events for the specified class.
@@ -97,16 +90,19 @@ cgiRegister_class cc conn sRegId cls fsEvent newNames
                   , eventDate event == Just edate ]
 
         case eventsToday of
-         []      -> cgiRegister_create   conn sRegId cls
+         [] -> cgiRegister_create conn cls
+
          [event]
           -> do let Just eid = eventId event
                 cgiRegister_existing
                         cc conn sRegId cls event eid edate
                         fsEvent newNames
 
-         events  -> cgiRegister_multi    conn sRegId cls events
+         events
+            -> cgiRegister_multi conn sRegId cls events
 
 
+-------------------------------------------------------------------------------
 -- There are already multiple events belonging to the same class,
 --   which should only happen if an admin has messed something up.
 --   We don't currently have a constraint in the db to prevent this.
@@ -118,6 +114,57 @@ cgiRegister_multi _conn sRegId cls events
                 ++ sRegId ++ " " ++ show cls ++ " " ++ show events
 
 
+-------------------------------------------------------------------------------
+-- We are trying to register for a class but there is not event
+-- record for it yet.
+cgiRegister_create _conn cls
+ = do
+        -- First decide if the class is actually on today.
+        zonedTime    <- liftIO $ Time.getZonedTime
+        let localTime = Time.zonedTimeToLocalTime zonedTime
+        let (_, nDay) = Time.sundayStartWeek $ Time.localDay localTime
+        let sDay      = ssDays !! nDay
+
+        if classDay cls == Just (ClassDay sDay)
+         then cgiRegister_create_new cls
+         else cgiRegister_create_notToday cls sDay
+
+ where  ssDays :: [String]
+         = [ "Sunday", "Monday", "Tuesday"
+           , "Wednesday", "Thursday", "Friday", "Saturday" ]
+
+cgiRegister_create_new cls
+ = outputFPS $ renderHtml
+ $ H.docTypeHtml
+ $ do   pageHeader "Event Registration"
+        pageBody
+         $ H.div ! A.class_ "event"
+         $ do   H.h2 "Event Registration"
+
+                H.table
+                 $ trClassSummary cls
+
+                H.string $ "need to make a new event" ++ show cls
+
+
+cgiRegister_create_notToday cls sDay
+ = outputFPS $ renderHtml
+ $ H.docTypeHtml
+ $ do   pageHeader "Event Registration"
+        pageBody
+         $ H.div ! A.class_ "event"
+         $ do   H.h2 "Event Registration"
+
+                H.table
+                 $ trClassSummary cls
+
+                H.br
+                H.string $ "Today is " ++ sDay
+                H.br
+                H.string "This class is not on today."
+
+
+-------------------------------------------------------------------------------
 -- There is a single existing event record today for this class.
 cgiRegister_existing
         cc conn sRegId cls event eid edate

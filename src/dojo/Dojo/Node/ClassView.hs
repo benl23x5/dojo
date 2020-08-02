@@ -1,5 +1,7 @@
 
-module Dojo.Node.ClassView (cgiClassView) where
+module Dojo.Node.ClassView
+        ( cgiClassView
+        , trClassSummary) where
 import Dojo.Node.EventList
 import Dojo.Data.Event
 import Dojo.Data.Session
@@ -50,6 +52,23 @@ cgiClassView_page ss classs events
 
                 divClassDetails ss classs events
 
+-- TODO: export this separately to the register node.
+trClassSummary :: Class -> Html
+trClassSummary classs
+ = do
+        tr $ td $ H.string
+           $  maybe "" (\v -> pretty v) (classType classs)
+           ++ " class."
+
+        tr $ td $ H.string
+           $  maybe "[somewhere]" pretty (classLocation classs)
+           ++ " on "
+           ++ maybe "[someday]"   (\v -> " "    ++ pretty v) (classDay classs)
+           ++ " at "
+           ++ maybe "[sometime]"  (\v -> " "    ++ pretty v) (classTimeStart classs)
+           ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
+           ++ "."
+
 
 -------------------------------------------------------------------------------
 -- | Class Details
@@ -59,20 +78,7 @@ divClassDetails ss classs eventList
  $ do
         H.table
          $ do   tr $ th "class"
-
-                tr $ td $ H.string
-                   $  maybe "" (\v -> pretty v) (classType classs)
-                   ++ " class."
-
-                tr $ td $ H.string
-                   $  maybe "[somewhere]" pretty (classLocation classs)
-                   ++ " on "
-                   ++ maybe "[someday]"   (\v -> " "    ++ pretty v) (classDay classs)
-                   ++ " at "
-                   ++ maybe "[sometime]"  (\v -> " "    ++ pretty v) (classTimeStart classs)
-                   ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
-                   ++ "."
-
+                trClassSummary classs
 
                 tr $ td $ (H.a ! A.href (H.toValue pathNew))
                         $ H.toMarkup $ pathName pathNew

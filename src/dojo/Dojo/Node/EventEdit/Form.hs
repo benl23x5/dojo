@@ -71,8 +71,8 @@ divEventShowDetails eform
  = H.div ! A.id "event-details-edit" ! A.class_ "details"
  $ do
         let event       = eventFormEventValue eform
-        let mpCreated    = eventFormCreatedByPerson eform
-        let muCreated    = eventFormCreatedByUser eform
+        let mpCreated   = eventFormCreatedByPerson eform
+        let muCreated   = eventFormCreatedByUser eform
 
         H.table $ do
          tr $ td $ H.string
