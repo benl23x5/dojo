@@ -98,6 +98,8 @@ Executable dojo
         Dojo.Node.ClassList
         Dojo.Node.ClassView
 
+        Dojo.Node.Register
+
         Dojo.Node.Login
         Dojo.Node.Logout
 

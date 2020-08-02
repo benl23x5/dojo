@@ -16,9 +16,10 @@ registrationLinkOfClass
  -> Class        -- ^ Class details
  -> Maybe (String, String)
 
+-- TODO: get cgi name from config.
 registrationLinkOfClass sUrl sSalt classs
  | Just sHash   <- registrationHashOfClass sUrl sSalt classs
- = Just (sUrl ++ "?r=" ++ sHash, sHash)
+ = Just (sUrl ++ "/dojo.cgi?r=" ++ sHash, sHash)
 
  | otherwise
  = Nothing

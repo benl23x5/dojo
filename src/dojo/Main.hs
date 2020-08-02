@@ -1,18 +1,19 @@
 
 module Main where
 
+import Dojo.Node.Main
 import Dojo.Node.Login
 import Dojo.Node.Logout
-import Dojo.Node.Main
-import Dojo.Node.PersonList
-import Dojo.Node.PersonView
-import Dojo.Node.PersonEdit
+import Dojo.Node.ClassList
+import Dojo.Node.ClassView
 import Dojo.Node.EventList
 import Dojo.Node.EventView
 import Dojo.Node.EventEdit
 import Dojo.Node.EventDel
-import Dojo.Node.ClassList
-import Dojo.Node.ClassView
+import Dojo.Node.PersonList
+import Dojo.Node.PersonView
+import Dojo.Node.PersonEdit
+import Dojo.Node.Register
 
 import Dojo.Data.Session
 
@@ -66,10 +67,17 @@ cgiTop cc
   -- See if we have a session key specified.
   goInputs
    = do inputs  <- CGI.getInputs
-        let mHash = lookup "s" inputs
-        case mHash of
-         Nothing   -> cgiLogin cc inputs
-         Just hash -> goHash hash inputs
+        if -- Access via a class registration key.
+           | Just sRegId <- lookup "r" inputs
+           -> cgiRegister inputs sRegId
+
+           -- Access via an existing session key.
+           | Just sHash <- lookup "s" inputs
+           -> goHash sHash inputs
+
+           -- Default redirect to the login page.
+           | otherwise
+           -> cgiLogin cc inputs
 
   -- Lookup the current session details from the db.
   goHash hash inputs
@@ -85,22 +93,25 @@ cgiTop cc
 
   -- Dispatch to page handler based on the node id.
   goSession ss inputs
-   = do let mNode = lookup "n" inputs
-        case mNode of
-         Just "logout"  -> cgiLogout     ss
-         Just "main"    -> cgiMain       ss inputs
-         Just "pl"      -> cgiPersonList ss inputs
-         Just "pv"      -> cgiPersonView ss inputs
-         Just "pe"      -> cgiPersonEdit ss inputs
-         Just "el"      -> cgiEventList  ss inputs
-         Just "ev"      -> cgiEventView  ss inputs
-         Just "ee"      -> cgiEventEdit  ss inputs
-         Just "ed"      -> cgiEventDel   ss inputs
-         Just "cl"      -> cgiClassList  ss inputs
-         Just "cv"      -> cgiClassView  ss inputs
+   -- Regular node for logged-in user.
+   | Just sNode <- lookup "n" inputs
+   = case sNode of
+        "logout"-> cgiLogout     ss
+        "main"  -> cgiMain       ss inputs
+        "pl"    -> cgiPersonList ss inputs
+        "pv"    -> cgiPersonView ss inputs
+        "pe"    -> cgiPersonEdit ss inputs
+        "el"    -> cgiEventList  ss inputs
+        "ev"    -> cgiEventView  ss inputs
+        "ee"    -> cgiEventEdit  ss inputs
+        "ed"    -> cgiEventDel   ss inputs
+        "cl"    -> cgiClassList  ss inputs
+        "cv"    -> cgiClassView  ss inputs
+        -- Unrecognized node name.
+        _ -> CGI.redirect $ flatten $ pathLogout ss
 
-         -- If there is no node name, or it is not recognized
-         --  then just logout the current session, which will
-         --  redirect back to the login page.
-         _  -> CGI.redirect $ flatten $ pathLogout ss
+   -- We have a valid session id, but we have no node identifier.
+   -- Either the user is experimenting with the API or there is a bug.
+   | otherwise
+   = CGI.redirect $ flatten $ pathLogout ss
 
