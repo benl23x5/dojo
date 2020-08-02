@@ -102,7 +102,8 @@ loginCheck cc user password
 -- | Login failure, bad username or password.
 loginFail :: Config -> CGI CGIResult
 loginFail cc
- = CGI.redirect $ flatten $ pathLogin cc
+ = CGI.redirect $ flatten
+ $ pathDebug cc "login failed"
 
 
 -- | Activate user session and go to main page.

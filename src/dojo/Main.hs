@@ -17,8 +17,9 @@ import Dojo.Node.Register
 
 import Dojo.Data.Session
 
-import Dojo.Config
+import Dojo.Chrome
 import Dojo.Paths
+import Dojo.Config
 import Dojo.Framework
 
 import qualified System.Environment                     as S
@@ -67,7 +68,14 @@ cgiTop cc
   -- See if we have a session key specified.
   goInputs
    = do inputs  <- CGI.getInputs
-        if -- Access via a class registration key.
+        if -- Debug
+           | Just sJunk <- lookup "d" inputs
+           -> outputFPS $ renderHtml
+           $  H.docTypeHtml
+           $  do pageHeader "Debug"
+                 pageBody $ H.string sJunk
+
+           -- Access via a class registration key.
            | Just sRegId <- lookup "r" inputs
            -> cgiRegister cc inputs sRegId
 

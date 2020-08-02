@@ -14,6 +14,14 @@ pathsJump ss
         , pathLogout     ss]
 
 
+-- Debug -------------------------------------------------------------------
+pathDebug :: Config -> String -> Path
+pathDebug config junk
+ = Path "Debug"
+        (configCgiName config)
+        [ ("d", junk) ]
+
+
 -- Session -------------------------------------------------------------------
 pathLogin :: Config -> Path
 pathLogin config

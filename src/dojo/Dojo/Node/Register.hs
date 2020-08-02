@@ -90,7 +90,7 @@ cgiRegister_class cc conn sRegId cls fsEvent newNames
                   , eventDate event == Just edate ]
 
         case eventsToday of
-         [] -> cgiRegister_create conn cls
+         [] -> cgiRegister_create cc conn sRegId cls
 
          [event]
           -> do let Just eid = eventId event
@@ -117,7 +117,7 @@ cgiRegister_multi _conn sRegId cls events
 -------------------------------------------------------------------------------
 -- We are trying to register for a class but there is not event
 -- record for it yet.
-cgiRegister_create conn cls
+cgiRegister_create cc conn sRegId cls
  = do
         -- Lookup owner info
         let Just uname = classOwnerUserName cls
@@ -126,30 +126,37 @@ cgiRegister_create conn cls
 
         -- First decide if the class is actually on today.
         zonedTime    <- liftIO $ Time.getZonedTime
+        let (edate, _etime)
+                = splitEventLocalTime
+                $ Time.zonedTimeToLocalTime zonedTime
+
         let localTime = Time.zonedTimeToLocalTime zonedTime
         let (_, nDay) = Time.sundayStartWeek $ Time.localDay localTime
         let sDay      = ssDays !! nDay
 
         if classDay cls == Just (ClassDay sDay)
-         then cgiRegister_create_new cls uOwner pOwner
+         then cgiRegister_create_new cc conn sRegId cls uOwner edate
          else cgiRegister_create_notToday cls sDay uOwner pOwner
 
  where  ssDays :: [String]
          = [ "Sunday", "Monday", "Tuesday"
            , "Wednesday", "Thursday", "Friday", "Saturday" ]
 
-cgiRegister_create_new cls uOwner pOwner
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Event Registration"
-        pageBody
-         $ H.div ! A.class_ "event"
-         $ do   H.h2 "Event Registration"
+cgiRegister_create_new cc conn sRegId cls uOwner edate
+ = do
+        let event = zeroEvent
+                  { eventType           = classType cls
+                  , eventLocation       = classLocation cls
+                  , eventDate           = Just edate
+                  , eventTime           = classTimeStart cls
+                  , eventCreatedBy      = Just $ userId uOwner }
 
-                H.table
-                 $ trClassSummary cls uOwner pOwner
+        event' <- liftIO $ insertEvent conn event
+        let Just eid = eventId event'
 
-                H.string $ "need to make a new event" ++ show cls
+        cgiRegister_existing_form
+                cc conn sRegId event' eid
+                []
 
 
 cgiRegister_create_notToday cls sDay uOwner pOwner
@@ -181,7 +188,7 @@ cgiRegister_existing
 
  | otherwise
  = cgiRegister_existing_form
-        cc conn sRegId cls event eid edate
+        cc conn sRegId event eid
         fsEvent
 
 
@@ -206,7 +213,7 @@ cgiRegister_existing_update
 
 
 cgiRegister_existing_form
-        cc conn sRegId _cls event eid _edate
+        cc conn sRegId event eid
         fsEvent
  = do
         psAttend <- liftIO $ getAttendance conn eid

@@ -32,6 +32,8 @@ data Event
         , eventTime             :: Maybe EventTime
 
           -- | The user that created this event.
+          --   TODO: change created by to 'owner', as the event
+          --   may be created by the system due to hit on the reg. page.
         , eventCreatedBy        :: Maybe UserId }
         deriving Show
 

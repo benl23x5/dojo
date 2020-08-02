@@ -57,6 +57,7 @@ cgiClassView_page ss classs events uOwner pOwner
 
                 divClassDetails ss classs uOwner pOwner events
 
+
 -- TODO: export this separately to the register node.
 trClassSummary :: Class -> User -> Person -> Html
 trClassSummary classs uOwner pOwner
