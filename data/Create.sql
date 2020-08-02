@@ -1,4 +1,11 @@
 
+/* Long names of days, starting with 0 = Sunday
+ * as per the Sqlite strftime function. */
+CREATE TABLE v1_DimDay
+        ( DayId                 INTEGER   PRIMARY KEY
+        , DayName               TEXT      NOT NULL
+        , UNIQUE(DayName));
+
 CREATE TABLE v1_User
         ( UserId                INTEGER   PRIMARY KEY
         , UserName              TEXT      NOT NULL

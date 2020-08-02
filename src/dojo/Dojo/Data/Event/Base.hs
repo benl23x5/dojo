@@ -33,6 +33,7 @@ data Event
 
           -- | The user that created this event.
         , eventCreatedBy        :: Maybe UserId }
+        deriving Show
 
 
 -- | Create a zero event.

@@ -19,7 +19,7 @@ cgiPersonView
 
 cgiPersonView ss inputs
  | Just strPersonId <- lookup "pid" inputs
- , Right pid        <- parse strPersonId
+ , Right pid    <- parse strPersonId
  = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         person  <- liftIO $ getPerson conn pid
         events  <- liftIO $ getAttendanceOfPersonId conn pid

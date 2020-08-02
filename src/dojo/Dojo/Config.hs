@@ -8,6 +8,9 @@ data Config
         { -- | "Your Organization Name"
           configSiteName        :: String
 
+          -- | Site url "http://... " with no trailing '/'.
+        , configSiteUrl         :: String
+
           -- | Base name of script, eg "dojo.cgi"
         , configCgiName         :: String
 
@@ -28,6 +31,7 @@ configDefault :: Config
 configDefault
         = Config
         { configSiteName        = "Aiki Dojo"
+        , configSiteUrl         = "http://dojo.ouroborus.net"
         , configCgiName         = "dojo.cgi"
         , configDatabasePath    = "dojo.db"
         , configQrSaltActive    = "salt-active"
@@ -43,6 +47,11 @@ loadConfig aa cc
  | "-site-name" : sSiteName : rest  <- aa
  = loadConfig rest
  $ cc { configSiteName = sSiteName }
+
+ -- TODO: strip any trailing '/'
+ | "-site-url" : sSiteUrl : rest  <- aa
+ = loadConfig rest
+ $ cc { configSiteUrl = sSiteUrl }
 
  | "-cgi-name" : sCgiName : rest <- aa
  = loadConfig rest
@@ -69,6 +78,7 @@ usage :: String
 usage = unlines
  [ "dojo ARGS.."
  , " -site-name       STRING    Display name of site."
+ , " -site-url        STRING    Base URL of server"
  , " -cgi-name        STRING    Base name of script, eg dojo.cgi."
  , " -db-path         PATH      Full path to sqlite3 database."
  , " -qr-salt-active  STRING    Salt to generate active QR codes."

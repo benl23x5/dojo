@@ -69,7 +69,7 @@ cgiTop cc
    = do inputs  <- CGI.getInputs
         if -- Access via a class registration key.
            | Just sRegId <- lookup "r" inputs
-           -> cgiRegister inputs sRegId
+           -> cgiRegister cc inputs sRegId
 
            -- Access via an existing session key.
            | Just sHash <- lookup "s" inputs

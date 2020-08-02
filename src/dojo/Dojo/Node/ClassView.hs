@@ -1,8 +1,9 @@
 
 module Dojo.Node.ClassView (cgiClassView) where
+import Dojo.Node.EventList
+import Dojo.Data.Event
 import Dojo.Data.Session
 import Dojo.Data.Class
-import Dojo.Framework
 import Dojo.Config
 import Dojo.Chrome
 import Dojo.Paths
@@ -31,28 +32,29 @@ cgiClassView ss inputs
  , Right cid        <- parse strClassId
  = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         classs  <- liftIO $ getClass conn cid
+        events  <- liftIO $ getEventsOfClassId conn cid
         liftIO $ disconnect conn
 
-        cgiClassView_page ss classs
+        cgiClassView_page ss classs events
 
  | otherwise
  = throw $ FailNodeArgs "class view" inputs
 
 
-cgiClassView_page ss classs
+cgiClassView_page ss classs events
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ classDisplayName classs
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                divClassDetails ss classs
+                divClassDetails ss classs events
 
 
 -------------------------------------------------------------------------------
 -- | Class Details
-divClassDetails :: Session -> Class -> Html
-divClassDetails ss classs
+divClassDetails :: Session -> Class -> [(Event, Int)] -> Html
+divClassDetails ss classs eventList
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
@@ -92,16 +94,20 @@ divClassDetails ss classs
 
         -- First / final date tracking only matters when searching
         -- for events, so only relevant to admins.
-        when (sessionIsAdmin ss)
-         $ H.table
-         $ do   col ! A.class_ "Col2bA"
-                col ! A.class_ "Col2bB"
-                tr $ do th "first event date"; th "final event date"
-                tr $ do td' $ classDateFirst classs
-                        td' $ classDateFinal classs
+--      when (sessionIsAdmin ss)
+--       $ H.table
+--       $ do   col ! A.class_ "Col2bA"
+--              col ! A.class_ "Col2bB"
+--              tr $ do th "first event date"; th "final event date"
+--              tr $ do td' $ classDateFirst classs
+--                      td' $ classDateFinal classs
+
+        -- Show events of this class.
+        divEventList ss eventList
+
 
  where
-  td' val = td $ H.toMarkup $ maybe "" pretty $ val
+-- td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
   pathNew
     = Path "Create New Event of Class"
