@@ -30,3 +30,4 @@ trAttendance (Attendance person flags)
          = td   $ H.input
                         ! A.type_ "checkbox"
                         ! A.name  "check1"
+
