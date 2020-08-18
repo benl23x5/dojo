@@ -118,20 +118,28 @@ divEventEditDetails eform
         --  TODO:  reinstate focus on location when eid == 0
         --  let EventId eid = eventId event
         let sDojo = maybe "" pretty $ eventLocation event
+        let sType = maybe "" pretty $ eventType event
         H.table
-         $ do   col ! A.class_ "Location"
-                tr $ th $ "location"
-                tr $ td $ (H.select ! A.name "Location")
-                        $ do    H.option ! A.value "" $ "(unspecified)"
+         $ do   col ! A.class_ "Col2A"
+                col ! A.class_ "Col2B"
+                tr $ do th "location"; th "type"
+                tr $ do
+                        td $ (H.select ! A.name "Location")
+                         $ do   H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty dojos) (optSelected sDojo)
 
-        let sType = maybe "" pretty $ eventType event
+                        td $ (H.select ! A.name "Type")
+                         $ do   H.option ! A.value "" $ "(unspecified)"
+                                forM_ (map pretty eventTypes) (optSelected sType)
+
+{-
         H.table
          $ do   col ! A.class_ "Type"
                 tr $ th $ "type"
                 tr $ td $ (H.select ! A.name "Type")
                         $ do    H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty eventTypes) (optSelected sType)
+-}
 
  where  optSelected sSel sVal
          = (H.option
