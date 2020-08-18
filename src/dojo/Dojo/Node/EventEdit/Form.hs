@@ -132,15 +132,6 @@ divEventEditDetails eform
                          $ do   H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty eventTypes) (optSelected sType)
 
-{-
-        H.table
-         $ do   col ! A.class_ "Type"
-                tr $ th $ "type"
-                tr $ td $ (H.select ! A.name "Type")
-                        $ do    H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty eventTypes) (optSelected sType)
--}
-
  where  optSelected sSel sVal
          = (H.option
                 !  A.value (fromString sVal)
