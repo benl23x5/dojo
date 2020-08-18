@@ -41,8 +41,13 @@ cgiPersonView_page ss person events
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                when (sessionIsAdmin ss)
-                 $ tablePaths [pathPersonEdit ss $ personId person]
+                let Just pid = personId person
+                let bCanEdit = sessionIsAdmin ss
+                let bCanDel  = sessionIsAdmin ss && null events
+                when (bCanEdit || bCanDel)
+                 $  tablePaths
+                 $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
+                 ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
 
                 H.div ! A.id "person-view"
                  $ do   divPersonDetails ss person

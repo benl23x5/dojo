@@ -103,7 +103,7 @@ loginCheck cc user password
 loginFail :: Config -> CGI CGIResult
 loginFail cc
  = CGI.redirect $ flatten
- $ pathDebug cc "login failed"
+ $ pathDebug cc "Login failed."
 
 
 -- | Activate user session and go to main page.

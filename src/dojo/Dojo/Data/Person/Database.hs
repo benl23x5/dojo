@@ -57,6 +57,17 @@ updatePerson conn person
          ++ [toSql $ personId person]
 
 
+-- | Delete a person.
+deletePerson :: IConnection conn => conn -> Person -> IO Integer
+deletePerson conn person
+ = do   stmt    <- prepare conn $ unlines
+                [ "DELETE FROM v1_Person"
+                , "WHERE PersonId=?" ]
+
+        execute stmt
+                [ toSql (personId person) ]
+
+
 ------------------------------------------------------------------------------
 getMembershipLevels
         :: IConnection conn => conn -> IO [PersonMembershipLevel]

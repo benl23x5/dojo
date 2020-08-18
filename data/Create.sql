@@ -13,7 +13,8 @@ CREATE TABLE v1_User
         , PasswordHash          TEXT      NOT NULL
         , PasswordSalt          TEXT      NOT NULL
         , RoleNative            TEXT      NOT NULL
-        , UNIQUE(UserName));
+        , UNIQUE(UserName)
+        , FOREIGN KEY(UserPersonId) REFERENCES v1_Person(PersonId));
 
 CREATE TABLE v1_Session
         ( SessionId             INTEGER   PRIMARY KEY

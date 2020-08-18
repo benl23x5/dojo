@@ -7,7 +7,7 @@ import Dojo.Paths
 import Dojo.Fail
 
 
--- | Delete and existing event.
+-- | Delete an existing event.
 cgiEventDel :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventDel ss inputs
  = goParseEid

@@ -72,6 +72,15 @@ pathPersonAdd ss
         , ("n", "pe")]
 
 
+pathPersonDel :: Session -> PersonId -> Path
+pathPersonDel ss (PersonId pid)
+ = Path "Delete Person"
+        (sessionCgiName ss)
+        [ ("s", show $ sessionHash ss)
+        , ("n", "pd")
+        , ("pid", show pid) ]
+
+
 pathPersonEdit :: Session -> Maybe PersonId -> Path
 pathPersonEdit ss (Just (PersonId pid))
  = Path "Edit Person"
