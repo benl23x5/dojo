@@ -115,21 +115,6 @@ divClassDetails ss classs uOwner pOwner eventList regularsList
                 tr $ td $ (H.a ! A.href (H.toValue pathNew))
                         $ H.toMarkup $ pathName pathNew
 
-        -- Try to generate the registration code.
-        --  We need to have the type, location day,
-        --  start and end times set.
-
-        -- TODO: get website name from global site config.
-        let mReg = registrationLinkOfClass
-                        "http://dojo.ouroborus.net"
-                        (configQrSaltActive $ sessionConfig ss)
-                        classs
-
-        (case mReg of
-         Nothing -> return ()
-         Just (sRegLink, sRegId)
-          -> goCode sRegLink sRegId)
-
         -- First / final date tracking only matters when searching
         -- for events, so only relevant to admins.
 --      when (sessionIsAdmin ss)
@@ -148,6 +133,21 @@ divClassDetails ss classs uOwner pOwner eventList regularsList
         -- Show regular attendees
         -- TODO: push limit into query.
         divRegularsList ss $ take 20 regularsList
+
+        -- Try to generate the registration code.
+        --  We need to have the type, location day,
+        --  start and end times set.
+
+        -- TODO: get website name from global site config.
+        let mReg = registrationLinkOfClass
+                        "http://dojo.ouroborus.net"
+                        (configQrSaltActive $ sessionConfig ss)
+                        classs
+
+        (case mReg of
+         Nothing -> return ()
+         Just (sRegLink, sRegId)
+          -> goCode sRegLink sRegId)
 
  where
 -- td' val = td $ H.toMarkup $ maybe "" pretty $ val
