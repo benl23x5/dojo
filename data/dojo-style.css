@@ -186,6 +186,8 @@ select
 #person-attendance .Date        { width: 6em;  }
 #person-attendance .Time        { width: 4em;  }
 
+#person-summary    .Type        { width: 10em;  }
+
 
 /* Event List *********************************************/
 .event-list .Date               { width: 6em;   }

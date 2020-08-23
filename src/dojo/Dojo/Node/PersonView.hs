@@ -8,6 +8,7 @@ import Dojo.Paths
 import Dojo.Fail
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
+import qualified Data.Map.Strict                as Map
 
 
 -------------------------------------------------------------------------------
@@ -51,7 +52,8 @@ cgiPersonView_page ss person events
 
                 H.div ! A.id "person-view"
                  $ do   divPersonDetails ss person
-                        divEventList ss events
+                        divEventSummary  ss events
+                        divEventList     ss events
 
 
 -------------------------------------------------------------------------------
@@ -135,7 +137,24 @@ divPersonDetails ss person
 
 
 -------------------------------------------------------------------------------
--- | Events that a person has attended.
+-- | Summary of how many events of each type a person has attended.
+divEventSummary :: Session -> [Event] -> Html
+divEventSummary _ss events
+ = H.div ! A.class_ "list" ! A.id "person-summary"
+ $ H.table
+ $ do   let mp  = summarizeEventTypes events
+
+        col ! A.class_ "Type"
+        col ! A.class_ "Count"
+        tr $ do th "event type"; th "attended"
+
+        forM_ (Map.toList mp) $ \((EventType name, nCount)) -> tr $ do
+         td (H.string name)
+         td (H.string $ show nCount)
+
+
+-------------------------------------------------------------------------------
+-- | List of events that a person has attended.
 divEventList :: Session -> [Event] -> Html
 divEventList ss events
  = H.div ! A.class_ "list" ! A.id "person-attendance"
