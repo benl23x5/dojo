@@ -6,6 +6,7 @@ import Dojo.Node.Login
 import Dojo.Node.Logout
 import Dojo.Node.ClassList
 import Dojo.Node.ClassView
+import Dojo.Node.ClassEvents
 import Dojo.Node.EventList
 import Dojo.Node.EventView
 import Dojo.Node.EventEdit
@@ -105,18 +106,19 @@ cgiTop cc
    -- Regular node for logged-in user.
    | Just sNode <- lookup "n" inputs
    = case sNode of
-        "logout"-> cgiLogout     ss
-        "main"  -> cgiMain       ss inputs
-        "pl"    -> cgiPersonList ss inputs
-        "pv"    -> cgiPersonView ss inputs
-        "pe"    -> cgiPersonEdit ss inputs
-        "pd"    -> cgiPersonDel  ss inputs
-        "el"    -> cgiEventList  ss inputs
-        "ev"    -> cgiEventView  ss inputs
-        "ee"    -> cgiEventEdit  ss inputs
-        "ed"    -> cgiEventDel   ss inputs
-        "cl"    -> cgiClassList  ss inputs
-        "cv"    -> cgiClassView  ss inputs
+        "logout"-> cgiLogout      ss
+        "main"  -> cgiMain        ss inputs
+        "pl"    -> cgiPersonList  ss inputs
+        "pv"    -> cgiPersonView  ss inputs
+        "pe"    -> cgiPersonEdit  ss inputs
+        "pd"    -> cgiPersonDel   ss inputs
+        "el"    -> cgiEventList   ss inputs
+        "ev"    -> cgiEventView   ss inputs
+        "ee"    -> cgiEventEdit   ss inputs
+        "ed"    -> cgiEventDel    ss inputs
+        "cl"    -> cgiClassList   ss inputs
+        "cv"    -> cgiClassView   ss inputs
+        "ce"    -> cgiClassEvents ss inputs
         -- Unrecognized node name.
         _ -> CGI.redirect $ flatten $ pathLogout ss
 

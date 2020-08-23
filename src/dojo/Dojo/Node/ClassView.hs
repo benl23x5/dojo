@@ -58,19 +58,19 @@ cgiClassView ss inputs
 
         liftIO $ disconnect conn
 
-        cgiClassView_page ss classs events uOwner pOwner regulars
+        cgiClassView_page ss cid classs events uOwner pOwner regulars
 
  | otherwise
  = throw $ FailNodeArgs "class view" inputs
 
 
-cgiClassView_page ss classs events uOwner pOwner regulars
+cgiClassView_page ss cid classs events uOwner pOwner regulars
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ classDisplayName classs
         pageBody
          $ do   tablePaths $ pathsJump ss
-                divClassDetails ss classs uOwner pOwner events regulars
+                divClassDetails ss cid classs uOwner pOwner events regulars
 
 
 -- TODO: export this separately to the register node.
@@ -100,12 +100,15 @@ trClassSummary classs uOwner pOwner
 -- | Class Details
 divClassDetails
         :: Session
+        -> ClassId
         -> Class -> User -> Person
         -> [(Event, Int)]                       -- ^ Events in class.
         -> [(Person, Integer, EventDate)]       -- ^ Regular attendees.
         -> Html
 
-divClassDetails ss classs uOwner pOwner eventList regularsList
+divClassDetails
+        ss cid classs uOwner pOwner
+        eventList regularsList
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
@@ -129,6 +132,7 @@ divClassDetails ss classs uOwner pOwner eventList regularsList
         -- Show events of this class.
         -- TODO: push limit into query.
         divEventList ss    $ take 20 eventList
+        tablePaths [ pathClassEvents ss cid ]
 
         -- Show regular attendees
         -- TODO: push limit into query.

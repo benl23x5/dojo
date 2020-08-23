@@ -99,6 +99,7 @@ Executable dojo
 
         Dojo.Node.ClassList
         Dojo.Node.ClassView
+        Dojo.Node.ClassEvents
 
         Dojo.Node.Register
 
