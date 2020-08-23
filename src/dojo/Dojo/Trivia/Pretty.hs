@@ -20,8 +20,7 @@ instance Pretty PersonName where
  pretty (PersonName name)       = name
 
 instance Pretty PersonDate where
- pretty (PersonDate (Just day)) = pretty day
- pretty (PersonDate Nothing)    = ""
+ pretty (PersonDate day)        = pretty day
 
 instance Pretty PersonPhone where
  pretty (PersonPhone phone)     = phone
@@ -34,6 +33,9 @@ instance Pretty PersonDojo where
 
 instance Pretty PersonMembershipLevel where
  pretty (PersonMembershipLevel level) = level
+
+instance Pretty PersonFeeStatus where
+ pretty (PersonFeeStatus status) = status
 
 
 -- Event ----------------------------------------------------------------------

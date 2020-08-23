@@ -12,8 +12,8 @@ getDojos conn
                 , "ORDER BY Name ASC"]) []
 
         let parseDojo [v]
-             = let Just dojo = fromSql v
-               in  dojo
+             | Just dojo <- fromSql v = dojo
+            parseDojo _  = error "parseDojo: no match"
 
         return $ map parseDojo vss
 

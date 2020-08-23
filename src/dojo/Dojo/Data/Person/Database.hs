@@ -77,7 +77,8 @@ getMembershipLevels conn
                 , "ORDER BY SortOrder ASC" ]) []
 
         let parseLevel [v]
-             = let Just level = fromSql v
-               in  level
+             | Just level <- fromSql v
+             = level
+            parseLevel _ = error "parseLevel: no match"
 
         return $ map parseLevel vss

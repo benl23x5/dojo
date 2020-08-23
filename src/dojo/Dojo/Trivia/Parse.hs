@@ -23,9 +23,7 @@ instance Parse PersonName where
  parse str      = Right (PersonName str)
 
 instance Parse PersonDate where
- parse str
-  | str == ""   = Right (PersonDate Nothing)
-  | otherwise   = liftM (PersonDate . Just) $ parse str
+ parse str      = liftM PersonDate $ parse str
 
 instance Parse PersonPhone where
  parse str      = Right (PersonPhone str)
@@ -38,6 +36,9 @@ instance Parse PersonDojo where
 
 instance Parse PersonMembershipLevel where
  parse str      = Right (PersonMembershipLevel str)
+
+instance Parse PersonFeeStatus where
+ parse str      = Right (PersonFeeStatus str)
 
 
 -- Event ----------------------------------------------------------------------

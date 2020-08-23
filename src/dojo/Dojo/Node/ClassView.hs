@@ -204,11 +204,13 @@ divRegularsList ss regulars
  $ do
         col ! A.class_ "Date"
         col ! A.class_ "Name"
-        tr $ do th "last attended"; th "name"
+        col ! A.class_ "Fees"
+        tr $ do th "last attended"; th "name"; th "fees"
 
         forM_ regulars $ \(person, _nCount, dateLast) -> tr $ do
          td' person (Just dateLast)
          td' person (personDisplayName person)
+         td' person (Just $ personFeeStatus dateLast person)
 
 
  where  td' person val

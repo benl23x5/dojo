@@ -40,7 +40,7 @@ data PersonName
         deriving (Show, Eq, Ord)
 
 data PersonDate
-        = PersonDate (Maybe Time.Day)
+        = PersonDate Time.Day
         deriving (Show, Eq, Ord)
 
 data PersonPhone
@@ -57,6 +57,10 @@ data PersonDojo
 
 data PersonMembershipLevel
         = PersonMembershipLevel String
+        deriving (Show, Eq, Ord)
+
+data PersonFeeStatus
+        = PersonFeeStatus String
         deriving (Show, Eq, Ord)
 
 
