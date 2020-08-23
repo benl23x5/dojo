@@ -182,10 +182,20 @@ pathClassView ss (ClassId cid)
         , ("n", "cv")
         , ("cid", show cid)]
 
+
 pathClassEvents :: Session -> ClassId -> Path
 pathClassEvents ss (ClassId cid)
  = Path "All Events of Class"
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "ce")
+        , ("cid", show cid)]
+
+
+pathClassRegulars :: Session -> ClassId -> Path
+pathClassRegulars ss (ClassId cid)
+ = Path "All Regulars of Class"
+        (sessionCgiName ss)
+        [ ("s", show $ sessionHash ss)
+        , ("n", "cr")
         , ("cid", show cid)]

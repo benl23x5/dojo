@@ -1,7 +1,9 @@
 
 module Dojo.Node.ClassView
         ( cgiClassView
-        , trClassSummary) where
+        , trClassSummary
+        , divRegularsList)
+where
 import Dojo.Node.EventList
 import Dojo.Data.Event
 import Dojo.Data.Session
@@ -132,11 +134,12 @@ divClassDetails
         -- Show events of this class.
         -- TODO: push limit into query.
         divEventList ss    $ take 20 eventList
-        tablePaths [ pathClassEvents ss cid ]
+        tablePaths [pathClassEvents ss cid ]
 
         -- Show regular attendees
         -- TODO: push limit into query.
         divRegularsList ss $ take 20 regularsList
+        tablePaths [pathClassRegulars ss cid]
 
         -- Try to generate the registration code.
         --  We need to have the type, location day,
