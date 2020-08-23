@@ -22,6 +22,7 @@ import qualified Codec.QRCode.JuicyPixels       as QRP
 import qualified Data.ByteString.Lazy           as BL
 import qualified Data.ByteString.Char8          as BC
 import qualified Data.ByteString.Base64         as B64
+import qualified Data.Time                      as Time
 
 
 -------------------------------------------------------------------------------
@@ -34,28 +35,42 @@ cgiClassView
 cgiClassView ss inputs
  | Just strClassId  <- lookup "cid" inputs
  , Right cid        <- parse strClassId
- = do   conn      <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
-        classs    <- liftIO $ getClass conn cid
-        events    <- liftIO $ getEventsOfClassId conn cid
+ = do
+        conn        <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
+
+        -- lookup class details and events of this class.
+        classs      <- liftIO $ getClass conn cid
+        events      <- liftIO $ getEventsOfClassId conn cid
+
+        -- lookup details of the class owner.
         let Just uname = classOwnerUserName classs
-        Just uOwner  <- liftIO $ getMaybeUser conn uname
-        pOwner    <- liftIO $ getPerson conn $ userPersonId uOwner
+        Just uOwner <- liftIO $ getMaybeUser conn uname
+        pOwner      <- liftIO $ getPerson conn $ userPersonId uOwner
+
+        -- lookup regular attendees to this class over the last 90 days.
+        zonedTime       <- liftIO $ Time.getZonedTime
+        let ltNow       =  Time.zonedTimeToLocalTime zonedTime
+        let ltStart
+                = ltNow { Time.localDay
+                        = Time.addDays (-90) (Time.localDay ltNow) }
+        let (edateFirst, _) = splitEventLocalTime ltStart
+        regulars        <- liftIO $ getRegularsOfClassId conn cid edateFirst
+
         liftIO $ disconnect conn
 
-        cgiClassView_page ss classs events uOwner pOwner
+        cgiClassView_page ss classs events uOwner pOwner regulars
 
  | otherwise
  = throw $ FailNodeArgs "class view" inputs
 
 
-cgiClassView_page ss classs events uOwner pOwner
+cgiClassView_page ss classs events uOwner pOwner regulars
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ classDisplayName classs
         pageBody
          $ do   tablePaths $ pathsJump ss
-
-                divClassDetails ss classs uOwner pOwner events
+                divClassDetails ss classs uOwner pOwner events regulars
 
 
 -- TODO: export this separately to the register node.
@@ -86,10 +101,11 @@ trClassSummary classs uOwner pOwner
 divClassDetails
         :: Session
         -> Class -> User -> Person
-        -> [(Event, Int)]
+        -> [(Event, Int)]                       -- ^ Events in class.
+        -> [(Person, Integer, EventDate)]       -- ^ Regular attendees.
         -> Html
 
-divClassDetails ss classs uOwner pOwner eventList
+divClassDetails ss classs uOwner pOwner eventList regularsList
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
@@ -124,9 +140,14 @@ divClassDetails ss classs uOwner pOwner eventList
 --              tr $ do td' $ classDateFirst classs
 --                      td' $ classDateFinal classs
 
-        -- Show events of this class.
-        divEventList ss eventList
 
+        -- Show events of this class.
+        -- TODO: push limit into query.
+        divEventList ss    $ take 20 eventList
+
+        -- Show regular attendees
+        -- TODO: push limit into query.
+        divRegularsList ss $ take 20 regularsList
 
  where
 -- td' val = td $ H.toMarkup $ maybe "" pretty $ val
@@ -162,3 +183,31 @@ divClassDetails ss classs uOwner pOwner eventList
          $ do   tr $ th "registration QR identifier"
                 tr $ td $ (H.div ! A.class_ "qrident") $ H.string sRegId
 
+
+-------------------------------------------------------------------------------
+-- | Build list of regular attendees to a class.
+divRegularsList
+        :: Session
+        -> [(Person, Integer, EventDate)]
+        -> Html
+
+divRegularsList ss regulars
+ = H.div ! A.class_ "list class-regulars"
+ $ H.table
+ $ do
+        col ! A.class_ "Date"
+        col ! A.class_ "Name"
+        tr $ do th "last attended"; th "name"
+
+        forM_ regulars $ \(person, _nCount, dateLast) -> tr $ do
+         td' person (Just dateLast)
+         td' person (personDisplayName person)
+
+
+ where  td' person val
+         | Just pid <- personId person
+         = td $ (a ! A.href (H.toValue $ pathPersonView ss pid))
+                (H.toMarkup $ maybe "" pretty $ val)
+
+         | otherwise
+         = td (H.toMarkup $ maybe "" pretty $ val)
