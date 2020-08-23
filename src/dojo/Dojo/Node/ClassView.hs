@@ -185,6 +185,8 @@ divClassDetails
          $ do   tr $ do th "registration QR code"
                 tr $ td $ (H.a ! A.href (H.toValue sRegLink))
                            (H.img ! A.class_ "qrcode" ! A.src (fromString ssPage))
+                tr $ td $ (H.a ! A.href (H.toValue sRegLink)) "Registration Page"
+
 
         H.table
          $ do   tr $ th "registration QR identifier"
