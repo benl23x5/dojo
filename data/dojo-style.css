@@ -207,9 +207,9 @@ select
 
 #event-attendance-cur .index    { width: 3em; }
 #event-attendance-cur .actions  { width: 1ex; }
+#event-attendance-cur .Fees     { width: 2em; }
 
 #event-attendance-new .index    { width: 3em; }
-
 
 /* Class **************************************************/
 .qrcode

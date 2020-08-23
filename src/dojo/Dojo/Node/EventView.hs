@@ -50,7 +50,7 @@ cgiEventView_page ss event userCreatedBy personCreatedBy attendance
                 H.div ! A.id "event-view"
                  $ do   divEventDetails ss event
                                 userCreatedBy personCreatedBy attendance
-                        divPersonList ss attendance
+                        divPersonList   ss event attendance
 
 
 -------------------------------------------------------------------------------
@@ -69,8 +69,8 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
 
         tr $ td $ H.string
            $  maybe "[somewhere]" pretty  (eventLocation event)
-           ++ maybe "[someday]"  (\v -> " on " ++ pretty v)  (eventDate event)
-           ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
+           ++ maybe "[someday]"  (\v -> " on " ++ pretty v) (eventDate event)
+           ++ maybe "[sometime]" (\v -> " at " ++ pretty v) (eventTime event)
            ++ "."
 
         -- Event can be edited by admin or the user that created it.
@@ -88,18 +88,27 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
          = H.a  ! A.href (H.toValue path)
                 $ H.toMarkup $ pathName path
 
+
 -------------------------------------------------------------------------------
 -- | People that attended an event.
-divPersonList :: Session -> [Person] -> Html
-divPersonList ss people
+divPersonList :: Session -> Event -> [Person] -> Html
+divPersonList ss event people
  = H.div ! A.class_ "list" ! A.id "event-attendance-cur"
  $ H.table
- $ do   col' "index"; col' "Name"
-        tr $ do th "#"; th "attendees"
+ $ do   col' "index"; col' "Name"; col' "Fees"
+        tr $ do th "#"; th "attendees"; th "fees"
 
         forM_ (zip [(1 :: Int)..] people) $ \(ix, person) -> tr $ do
+
          td $ H.toMarkup $ show ix
-         td' person $ maybe "(person)" pretty $ personDisplayName person
+
+         td' person
+          $ maybe "(person)" pretty $ personDisplayName person
+
+         td' person
+          $ case eventDate event of
+                Nothing   -> "unknown"
+                Just date -> pretty $ personFeeStatus date person
 
  where  col' c  = col ! A.class_ c
 
