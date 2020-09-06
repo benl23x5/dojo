@@ -17,11 +17,16 @@ data Arg
         -- | Update a field
         = ArgUpdate     String String
 
-        -- | Add a person to the attendance record.
-        | ArgAddPerson  String
+        -- | Add a person to the addendance list,
+        --   base on the provided person id.
+        | ArgAddPerson  PersonId
 
-        -- | Delete a person from the attendance record.
+        -- | Delete a person from the attendance list,
+        --   based on the provided person id.
         | ArgDelPerson  PersonId
+
+        -- | Add a named person to the attendance record.
+        | ArgAddName    String
 
         -- | Event edit feedback
         | ArgFeedEvent  FeedEvent
@@ -34,18 +39,23 @@ data Arg
 -- | Parse a CGI key value pair to an argument.
 argOfKeyVal :: (String, String) -> Maybe Arg
 argOfKeyVal kv@(key, val)
-        -- Add Person
+        -- Add a person based on their pid.
         | "addPerson"   <- key
-        = if null val
-                then Just $ ArgEmpty
-                else Just $ ArgAddPerson val
+        , Right pid     <- parse val
+        = Just $ ArgAddPerson pid
 
-        -- Del person
+        -- Delete a person based on their pid.
         | "delPerson"   <- key
         , Right pid     <- parse val
         = Just $ ArgDelPerson pid
 
-        | Just fe       <- takeFeedEventOfKeyVal kv
+        -- Add a person based on their name.
+        | "addName"     <- key
+        = if null val
+                then Just $ ArgEmpty
+                else Just $ ArgAddName val
+
+        | Just fe <- takeFeedEventOfKeyVal kv
         = Just $ ArgFeedEvent fe
 
         | elem key $ tableFieldNamesOfEntity eventEntity

@@ -6,6 +6,7 @@ import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Arg
 import Dojo.Node.Logout
 import Dojo.Data.Event
+import Dojo.Data.Class
 import Dojo.Data.Person
 import Dojo.Data.Session
 import Dojo.Data.Dojo
@@ -22,12 +23,16 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --
 --    ?ee [&eid=INT] ...
 --
---    ?ee ... &addPerson=STRING ...
+--    ?ee ... &addPerson=PersonId ...
 --      (action) Add people as attendees to this event,
 --               then show the entry form.
 --
 --    ?ee ... &delPerson=PersonId ...
 --      (action) Delete people as attendees to this event,
+--               then show the entry form.
+--
+--    ?ee ... &addName=STRING ...
+--      (action) Add people as attendees to this event,
 --               then show the entry form.
 --
 --    ?ee ... &fu=FieldName ...
@@ -48,6 +53,18 @@ cgiEventEdit ss inputs
                         Just aa -> aa
                         Nothing -> throw $ FailNodeArgs "event edit" inputs
 
+        -- Event specification fields to update.
+        let updates  = [ (field, value) | ArgUpdate field value <- args ]
+
+        -- Person ids of people to add to the event.
+        let pidsAdd  = [ pid  | ArgAddPerson pid <- args ]
+
+        -- Person ids of people to delete from the event.
+        let pidsDel  = [ pid  | ArgDelPerson pid <- args ]
+
+        -- People to add to this event.
+        let newNames = [ name | ArgAddName name <- args ]
+
         -- Load form feedback from arguments.
         let fsForm = mapMaybe takeFeedFormOfArg args
 
@@ -60,15 +77,6 @@ cgiEventEdit ss inputs
                 $  mapM (expandMultiPersonId conn)
                 $  renumberSearchFeedback
                 $  [fe | ArgFeedEvent fe <- args]
-
-        -- Extract fields to update from the arguments.
-        let updates  = [ (field, value) | ArgUpdate field value <- args ]
-
-        -- People to delete from the event.
-        let pidsDel  = [ pid  | ArgDelPerson pid  <- args ]
-
-        -- People to add to this event.
-        let newNames = [ name | ArgAddPerson name <- args ]
 
         -- Get current dims lists.
         dojos      <- liftIO $ getDojos conn
@@ -85,27 +93,40 @@ cgiEventEdit ss inputs
 
         -- Lookup the current event and attendance if one was specified,
         --  otherwise create a new placeholder that we can update.
-        (event, psAttend)
-         <- case mEidIn of
-                Just eid
-                 -> do  -- TODO: handle concurrent event deletion
-                        Just event <- liftIO $ getEvent      conn eid
-                        psAttend   <- liftIO $ getAttendance conn eid
-                        return (event, psAttend)
+        (event, psAttend, psRegulars) <- if
+         | Just eid <- mEidIn
+         -> do  -- TODO: handle concurrent event deletion
+                Just event <- liftIO $ getEvent      conn eid
+                psAttend   <- liftIO $ getAttendance conn eid
 
-                Nothing
-                 -> do  -- Use the current time as a placeholder until the
-                        -- client provides the real event time.
-                        zonedTime <- liftIO $ Time.getZonedTime
-                        let (edate, etime)
-                                = splitEventLocalTime
-                                $ Time.zonedTimeToLocalTime zonedTime
+                -- Lookup a matching class id if there is one,
+                -- which will give us regular attendees to events
+                -- of this class.
+                mCid       <- liftIO $ getClassIdOfEventId conn eid
+                psRegularsCountLast
+                 <- case mCid of
+                        Nothing  -> return []
+                        Just cid -> liftIO $ getRecentRegularsOfClassId conn cid
 
-                        let event = zeroEvent
-                                  { eventDate      = Just edate
-                                  , eventTime      = Just etime
-                                  , eventCreatedBy = Just $ sessionUserId ss }
-                        return  (event, [])
+                let psRegulars
+                        = [ pReg | (pReg, _nCount, _dateLast)
+                                 <- psRegularsCountLast]
+
+                return (event, psAttend, psRegulars)
+
+         | otherwise
+         -> do  -- Use the current time as a placeholder until the
+                -- client provides the real event time.
+                zonedTime <- liftIO $ Time.getZonedTime
+                let (edate, etime)
+                        = splitEventLocalTime
+                        $ Time.zonedTimeToLocalTime zonedTime
+
+                let event = zeroEvent
+                          { eventDate      = Just edate
+                          , eventTime      = Just etime
+                          , eventCreatedBy = Just $ sessionUserId ss }
+                return  (event, [], [])
 
         -- If user is an admin or created the event themselves
         --  then they can edit it.
@@ -116,19 +137,22 @@ cgiEventEdit ss inputs
                   Just uid -> uid == sessionUserId ss)
 
         if
-         -- Apply deletions of attendees from the event.
+         -- Delete attendees from the event by person id.
          | not $ null pidsDel
          -> if bSessionOwnsEvent
                 then cgiEventEdit_del ss conn mEidIn pidsDel
                 else cgiLogout ss
 
-         -- Apply updates or add new people as attendees.
-         | (not $ null updates) || (not $ null newNames)
+         -- Apply updates or add new people based on their names.
+         |   (not $ null updates)
+          || (not $ null newNames)
+          || (not $ null pidsAdd)
          -> if bSessionOwnsEvent
                 then cgiEventEdit_update
                         ss conn fsForm fsEvent
-                        mEidIn event psAttend dojos eventTypes
-                        updates newNames
+                        mEidIn event psAttend psRegulars
+                        dojos eventTypes
+                        updates pidsAdd newNames
                 else cgiLogout ss
 
          -- Show form to update an existing event,
@@ -138,7 +162,9 @@ cgiEventEdit ss inputs
                 then do liftIO $ disconnect conn
                         outputFPS $ renderHtml
                          $ htmlEventEdit ss fsForm fsEvent
-                                mEidIn event psAttend dojos eventTypes
+                                mEidIn event
+                                psAttend psRegulars
+                                dojos eventTypes
                 else cgiLogout ss
 
          -- Show the form to create a new event,
@@ -147,7 +173,9 @@ cgiEventEdit ss inputs
          -> do  liftIO $ disconnect conn
                 outputFPS $ renderHtml
                  $ htmlEventEdit ss fsForm fsEvent
-                        mEidIn event psAttend dojos eventTypes
+                        mEidIn event
+                        psAttend psRegulars
+                        dojos eventTypes
 
 
 -------------------------------------------------------------------------------
@@ -191,9 +219,11 @@ cgiEventEdit_update
                                 --  then just its eventId.
         -> Event                -- Event data to edit, shown in form.
         -> [Person]             -- Current attendance
+        -> [Person]             -- Regular attendees
         -> [PersonDojo]         -- Current dojos list
         -> [EventType]          -- Current event types.
         -> [(String, String)]   -- Fields to update.
+        -> [PersonId]           -- pids of people to add as attendees
         -> [String]             -- Names of people to add as attendees.
         -> CGI CGIResult
 
@@ -201,18 +231,21 @@ cgiEventEdit_update
 -- then add now to create the event id.
 cgiEventEdit_update
         ss conn fsForm fsEvent
-        Nothing event psAttend dojos eventTypes updates newNames
+        Nothing event psAttend psRegulars
+        dojos eventTypes updates pidsAdd newNames
  = do   event' <- liftIO $ insertEvent conn event
         cgiEventEdit_update
                 ss conn fsForm fsEvent
                 (eventId event') event'
-                psAttend dojos eventTypes
-                updates newNames
+                psAttend psRegulars dojos eventTypes
+                updates
+                pidsAdd newNames
 
 -- Edit an event already in the database.
 cgiEventEdit_update
         ss conn fsForm fsEvent
-        (Just eid) eventOld psAttend dojos eventTypes updates newNames
+        (Just eid) eventOld psAttend psRegulars
+        dojos eventTypes updates pidsAdd newNames
  = case loadEvent updates eventOld of
         Left fieldErrors -> goError fieldErrors
         Right eventNew   -> goNewEvent eventNew
@@ -227,7 +260,8 @@ cgiEventEdit_update
          $ htmlEventEdit ss
                 fsForm' fsEvent
                 (Just eid) eventOld
-                psAttend dojos eventTypes
+                psAttend psRegulars
+                dojos eventTypes
 
   goNewEvent eventNew
    = do -- Get the fields that have been updated by the form.
@@ -240,17 +274,21 @@ cgiEventEdit_update
         let fsUpdated
              = map FeedEventFieldUpdated diffFields
 
-        -- Find and add attendees based on the supplied names.
-        fsSearch
+        fsAddById
          <- liftM concat $ liftIO
-          $ zipWithM (searchAddPerson conn eventNew psAttend)
-                [0..] newNames
+         $  mapM (addPersonByPersonId conn eventNew psAttend) pidsAdd
+
+        -- Find and add attendees based on the supplied names.
+        fsAddByName
+         <- liftM concat $ liftIO
+         $  zipWithM (addPersonByName conn eventNew psAttend) [0..] newNames
+
         liftIO $ commit conn
         liftIO $ disconnect conn
 
         -- Redirect to the same page with a clean path,
         --  that includes updated feedback.
-        let fsFeed = fsUpdated ++ fsSearch
+        let fsFeed = fsUpdated ++ fsAddById ++ fsAddByName
         redirect $ flatten
          $   pathEventEdit ss (Just eid)
          <&> mapMaybe takeKeyValOfFeedEvent fsFeed
@@ -261,12 +299,19 @@ cgiEventEdit_update
 htmlEventEdit
         :: Session
         -> [FeedForm] -> [FeedEvent]
-        -> Maybe EventId -> Event -> [Person] -> [PersonDojo] -> [EventType]
+        -> Maybe EventId -> Event
+        -> [Person] -> [Person]
+        -> [PersonDojo] -> [EventType]
         -> Html
 
-htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos eventTypes
+htmlEventEdit ss fsForm fsEvent
+        mEid event
+        psAttend psRegular
+        dojos eventTypes
  = H.docTypeHtml
- $ do   pageHeader "Editing Event"
+ $ do
+        pageHeader "Editing Event"
+
         pageBody
          $ do   tablePaths $ pathsJump ss
 
@@ -283,6 +328,7 @@ htmlEventEdit ss fsForm fsEvent mEid event psAttend dojos eventTypes
                  , eventFormEventValue          = event
                  , eventFormEventTypes          = eventTypes
                  , eventFormAttendance          = psAttend
+                 , eventFormRegulars            = psRegular
                  , eventFormDojosAvail          = dojos
                  , eventFormDetailsEditable     = True
                  , eventFormAttendanceDeletable = True

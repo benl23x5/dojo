@@ -49,7 +49,7 @@ cgiRegister cc inputs sRegId
                 $  [fe | ArgFeedEvent fe <- args]
 
         -- People to add to this event.
-        let newNames = [ name | ArgAddPerson name <- args ]
+        let newNames = [ name | ArgAddName name <- args ]
 
         let sUrl  = configSiteUrl cc
         let sSalt = configQrSaltActive cc
@@ -198,9 +198,9 @@ cgiRegister_existing_update
  = do
         psAttend <- liftIO $ getAttendance conn eid
 
-        fsSearch <- liftM concat $ liftIO
-                 $  zipWithM (searchAddPerson conn event psAttend)
-                        [0..] newNames
+        fsSearch
+         <- liftM concat $ liftIO
+          $  zipWithM (addPersonByName conn event psAttend) [0..] newNames
 
         liftIO $ commit conn
         liftIO $ disconnect conn
@@ -216,13 +216,27 @@ cgiRegister_existing_form
         cc conn sRegId event eid
         fsEvent
  = do
-        psAttend <- liftIO $ getAttendance conn eid
-
+        -- Lookup who created the event.
         (userCreatedBy, personCreatedBy)
          <- do  let Just uidCreatedBy = eventCreatedBy event
                 Just user <- liftIO $ getUserOfId conn uidCreatedBy
                 person    <- liftIO $ getPerson conn $ userPersonId user
                 return (user, person)
+
+        -- Get list of current attendees to the event.
+        psAttend <- liftIO $ getAttendance conn eid
+
+        -- Get list of regular attendees to events of this class,
+        -- if there is a matching class template.
+        mCid     <- liftIO $ getClassIdOfEventId conn eid
+        psRegularCountLast
+         <- case mCid of
+                Nothing  -> return []
+                Just cid -> liftIO $ getRecentRegularsOfClassId conn cid
+
+        let psRegulars
+                = [ pReg | (pReg, _nCount, _dateLast)
+                         <- psRegularCountLast]
 
         liftIO $ disconnect conn
 
@@ -239,6 +253,7 @@ cgiRegister_existing_form
                          , eventFormEventValue          = event
                          , eventFormEventTypes          = []
                          , eventFormAttendance          = psAttend
+                         , eventFormRegulars            = psRegulars
                          , eventFormDojosAvail          = []
                          , eventFormDetailsEditable     = False
                          , eventFormAttendanceDeletable = False

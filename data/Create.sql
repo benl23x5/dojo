@@ -50,7 +50,7 @@ CREATE TABLE v1_PersonMembershipLevel
 
 CREATE TABLE v1_Event
         ( EventId               INTEGER PRIMARY KEY
-        , CreatedBy             UserId  NOT NULL
+        , CreatedBy             INTEGER NOT NULL
         , Type                  STRING
         , Location              STRING
         , Time                  DATETIME
@@ -67,7 +67,7 @@ CREATE TABLE v1_Attendance
         , FOREIGN KEY(PersonId) REFERENCES v1_Person(PersonId)
         , FOREIGN KEY(EventId)  REFERENCES v1_Event(EventId));
 
-/* A reoccuring weekly class, which can be used as a template
+/* A reocurring weekly class, which can be used as a template
  * to create a new event. */
 CREATE TABLE v1_Class
         ( ClassId               INTEGER PRIMARY KEY

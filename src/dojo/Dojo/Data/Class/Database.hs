@@ -4,6 +4,7 @@ import Dojo.Data.Class.Base
 import Dojo.Data.Person
 import Dojo.Data.Event
 import Dojo.Fail
+import qualified Data.Time      as Time
 
 
 ------------------------------------------------------------------------------
@@ -81,6 +82,27 @@ ORDER BY v1_Event.Time DESC
 -}
 
 
+------------------------------------------------------------------------------
+-- | Given a single event, see if there is a matching class to create
+--   events at the same location and time.
+getClassIdOfEventId :: IConnection conn => conn -> EventId -> IO (Maybe ClassId)
+getClassIdOfEventId conn eid
+ = do   valuess <- quickQuery' conn (unlines
+                [ "SELECT v1_Class.ClassId"
+                , "FROM   v1_Class, v1_Event, v1_DimDay"
+                , "WHERE  v1_Event.EventId   = ?"
+                , " AND   v1_Class.Type      = v1_Event.Type"
+                , " AND   v1_Class.Location  = v1_Event.Location"
+                , " AND   v1_Class.TimeStart = time(v1_Event.Time)"
+                , " AND   v1_DimDay.DayId    = strftime('%w', v1_Event.Time)"
+                , " AND   v1_DimDay.DayName  = v1_Class.Day"])
+                [toSql eid]
+
+        case valuess of
+         [[v]]  -> return $ Just (fromSql v)
+         _      -> return Nothing
+
+
 -------------------------------------------------------------------------------
 -- | Get the regular attendees of a class.
 --   We collect the people that have attended events that match
@@ -128,7 +150,6 @@ getRegularsOfClassId conn cid dateAfter
         return $ map elemOfResult valuess
 
 
-
 {- Raw query for getRegularsOfClassId
 SELECT  ClassId,
         COUNT(v1_Event.EventId) as nCount,
@@ -156,3 +177,24 @@ GROUP BY v1_Attendance.PersonId
 ORDER BY nCount DESC, date(v1_Event.Time) DESC
 LIMIT   50;
 -}
+
+
+-------------------------------------------------------------------------------
+-- | Like `getRegularsOfClassId` but use a start date from 90 days ago
+--   when determining who is a regular.
+getRecentRegularsOfClassId
+        :: IConnection conn
+        => conn -> ClassId
+        -> IO [(Person, Integer, EventDate)]
+
+getRecentRegularsOfClassId conn cid
+ = do   zonedTime       <- liftIO $ Time.getZonedTime
+        let ltNow       =  Time.zonedTimeToLocalTime zonedTime
+        let ltStart
+                = ltNow { Time.localDay
+                        = Time.addDays (-90) (Time.localDay ltNow) }
+        let (edateFirst, _) = splitEventLocalTime ltStart
+        getRegularsOfClassId conn cid edateFirst
+
+
+

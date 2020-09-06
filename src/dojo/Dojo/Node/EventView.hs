@@ -22,10 +22,12 @@ cgiEventView ss inputs
  | Just strEventId  <- lookup "eid" inputs
  , Right eid       <- parse strEventId
  = do
-        conn       <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         -- TODO: handle concurrent event deletion.
+        conn       <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         Just event <- liftIO $ getEvent conn eid
-        attend     <- liftIO $ getAttendance conn eid
+
+        -- Get list of people that attended the event.
+        psAttend   <- liftIO $ getAttendance conn eid
 
         (userCreatedBy, personCreatedBy)
          <- do  let Just uidCreatedBy = eventCreatedBy event
@@ -34,13 +36,16 @@ cgiEventView ss inputs
                 return (user, person)
 
         liftIO $ disconnect conn
-        cgiEventView_page ss event userCreatedBy personCreatedBy attend
+        cgiEventView_page ss event userCreatedBy personCreatedBy
+                psAttend
 
  | otherwise
  = throw $ FailNodeArgs "event view" inputs
 
 
-cgiEventView_page ss event userCreatedBy personCreatedBy attendance
+cgiEventView_page
+        ss event userCreatedBy personCreatedBy
+        psAttend
  = outputFPS $ renderHtml
  $ H.docTypeHtml
  $ do   pageHeader $ pretty $ eventDisplayName event
@@ -49,8 +54,9 @@ cgiEventView_page ss event userCreatedBy personCreatedBy attendance
 
                 H.div ! A.id "event-view"
                  $ do   divEventDetails ss event
-                                userCreatedBy personCreatedBy attendance
-                        divPersonList   ss event attendance
+                                userCreatedBy personCreatedBy
+                                psAttend
+                        divPersonList   ss event psAttend
 
 
 -------------------------------------------------------------------------------

@@ -6,17 +6,36 @@ import Dojo.Data.User
 import Dojo.Data.Person
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
+import qualified Data.Set                       as Set
 import Data.String
 
+
 -------------------------------------------------------------------------------
+-- | Specification for the event entry form.
 data EventForm
         = EventForm
-        { eventFormPath                 :: Path
+        { -- | URL to the form itself.
+          eventFormPath                 :: Path
+
+          -- | UI feedback for the overall form.
         , eventFormFeedForm             :: [FeedForm]
+
+          -- | UI feedback for the event details.
         , eventFormFeedEvent            :: [FeedEvent]
+
+          -- | The original devent details to show in the form.
         , eventFormEventValue           :: Event
+
+          -- | List of available event types to show in dropdown selector.
         , eventFormEventTypes           :: [EventType]
+
+          -- | People currently listed as attending the event.
         , eventFormAttendance           :: [Person]
+
+          -- | Regular attendees for events of this class.
+        , eventFormRegulars             :: [Person]
+
+          -- | List of available dojos to show in dojo dropdown selector.
         , eventFormDojosAvail           :: [PersonDojo]
 
           -- | Whether to display edit control for date, time, loc, type etc.
@@ -26,13 +45,16 @@ data EventForm
           -- | Whether to show controls for deleting names from the list.
         , eventFormAttendanceDeletable  :: Bool
 
+          -- | User details of who created the form.
         , eventFormCreatedByUser        :: Maybe User
+
+          -- | Person details of who created the form.
         , eventFormCreatedByPerson      :: Maybe Person }
         deriving Show
 
 
 -------------------------------------------------------------------------------
--- | Form to change the details of a single event.
+-- | Produce a html form to edit tails of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
 formEvent :: EventForm -> Html
@@ -64,6 +86,7 @@ formEvent eform
         input   ! A.type_  "submit"
                 ! A.class_ "buttonFull"
                 ! A.value  "Save"
+
 
 -------------------------------------------------------------------------------
 divEventShowDetails :: EventForm -> Html
@@ -147,14 +170,20 @@ divEventAttendance eform
         let fsEvent     = eventFormFeedEvent eform
         let psAttend    = eventFormAttendance eform
 
+        -- List of people currently attending the event.
         divAttendanceCur eform
 
+        -- Entry boxes to accept names of new attandees.
         let curStudents = fromIntegral $ length psAttend
         divAttendanceNew fsForm fsEvent event curStudents
+
+        -- List of regular attendees to events of this class.
+        divRegulars eform
 
 
 -------------------------------------------------------------------------------
 -- | Table of people currently listed as attending the event.
+divAttendanceCur :: EventForm -> Html
 divAttendanceCur eform
  = H.div ! A.id     "event-attendance-cur"
          ! A.class_ "list"
@@ -171,7 +200,7 @@ divAttendanceCur eform
          $ col ! A.class_ "actions"
 
         tr $ do th "#"
-                th "attendees"
+                th "current attendees"
                 when bCanDel $ th "del"
 
         -- Highlight the people that were just added.
@@ -184,8 +213,11 @@ divAttendanceCur eform
 trCurAttendance :: Bool -> [PersonId] -> Path -> Int -> Person -> Html
 trCurAttendance bCanDel pidsAdded path ix person
  = tr $ do
+        -- Index of person in the list.
         td $ H.toMarkup (show ix)
 
+        -- If the person was just added to the list then
+        -- highlight their name as feedback.
         let bJustAdded
              = case personId person of
                 Nothing  -> False
@@ -195,13 +227,15 @@ trCurAttendance bCanDel pidsAdded path ix person
            $ H.toMarkup
            $ maybe "(person)" pretty $ personDisplayName person
 
-        -- TODO: fix case of no pid
-        when bCanDel
-         $ do   let Just pid = personId person
-                td $ H.a ! A.class_ "link"
-                         ! (A.href $ H.toValue
-                                   $ path <&> [("delPerson", pretty pid)])
-                         $ "X"
+        -- Show 'X' to delete the person from the event.
+        if  | Just pid <- personId person
+            , bCanDel
+            -> td $ H.a ! A.class_ "link"
+                        ! (A.href $ H.toValue
+                                  $ path <&> [("delPerson", pretty pid)])
+                        $ "X"
+            | otherwise
+            -> td $ return ()
 
 
 -------------------------------------------------------------------------------
@@ -214,7 +248,7 @@ divAttendanceNew
         -> Html
 
 divAttendanceNew fsForm fsEvent event curStudents
- = H.div ! A.id     "event-attendance-new"
+ = H.div ! A.id     "event-attendees"
          ! A.class_ "list"
  $ H.table
  $ do   col ! A.class_ "index"
@@ -230,12 +264,12 @@ divAttendanceNew fsForm fsEvent event curStudents
         let hasInvalidFields
                 = not $ null [x | FeedFormInvalid x _ _ <- fsForm]
 
-        forM_ [0 .. 4] $ \ix ->
-                trNewAttendance fsEvent bTakeFocus
-                        hasInvalidFields curStudents ix
+        -- Show entry boxes for new names.
+        forM_ [0 .. 1] $ \ix ->
+         trNewAttendance fsEvent bTakeFocus
+                hasInvalidFields curStudents ix
 
 
--------------------------------------------------------------------------------
 trNewAttendance fsEvent takeFocus disable curStudents ix
  -- Search feedback, where no match was found.
  | [names] <- [names | FeedEventSearchFoundNone ix' names <- fsEvent
@@ -262,13 +296,58 @@ trNewAttendance fsEvent takeFocus disable curStudents ix
  | otherwise
  = tr
  $ do   td $ H.toMarkup (show $ curStudents + ix + 1)
-        tdEmpty    disable (takeFocus && ix == 0)
+        tdEmpty disable (takeFocus && ix == 0)
+
+
+-------------------------------------------------------------------------------
+divRegulars :: EventForm -> Html
+divRegulars eform
+ = H.div ! A.id     "event-attendees"
+         ! A.class_ "list"
+ $ H.table
+ $ do   col ! A.class_ "index"
+        col ! A.class_ "name"
+        col ! A.class_ "actions"
+
+        tr $ do th ""
+                th "regular attendees"
+                th "add"
+
+        -- Add a link to add a regular attendee that is not already listed.
+        let psAttend
+                = Set.fromList $ map personId
+                $ eventFormAttendance eform
+
+        let psRegular
+                = take 10
+                $ [ pRegular | pRegular <- eventFormRegulars eform
+                             , not $ Set.member (personId pRegular) psAttend]
+
+        forM_ psRegular (trNewRegular eform)
+
+trNewRegular eform person
+ = tr $ do
+        let path = eventFormPath eform
+
+        td $ return ()
+        td $ H.toMarkup
+                $ maybe "(person)" pretty
+                $ personDisplayName person
+
+        -- Show 'X' to delete the person from the event.
+        if  | Just pid <- personId person
+            -> td $ H.a ! A.class_ "link"
+                        ! (A.href $ H.toValue
+                                  $ path <&> [("addPerson", pretty pid)])
+                        $ "^"
+            | otherwise
+            -> td $ return ()
 
 
 -------------------------------------------------------------------------------
 tdEmpty disable focus
  = td $ input   ! A.type_        "text"
-                ! A.name         "addPerson"
+                ! A.name         "addName"
                 ! A.autocomplete "off"
                 !? (focus,   A.autofocus, "on")
                 !? (disable, A.disabled,  "on")
@@ -278,7 +357,7 @@ tdFeedback :: Bool -> Bool -> String -> [String] -> Html
 tdFeedback disable focus names ssMsg
  = td $ do
         input   ! A.type_        "text"
-                ! A.name         "addPerson"
+                ! A.name         "addName"
                 ! A.autocomplete "off"
                 ! A.value        (H.toValue names)
                 !? (focus,   A.autofocus, "on")

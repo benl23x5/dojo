@@ -6,7 +6,6 @@ import Dojo.Base
 import qualified Data.Time      as Time
 
 
-
 -------------------------------------------------------------------------------
 -- | Build an event from a list of Sql values.
 eventOfSqlValues :: [SqlValue] -> Event
