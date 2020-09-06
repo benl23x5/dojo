@@ -26,14 +26,11 @@ cgiEventView ss inputs
         conn       <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         Just event <- liftIO $ getEvent conn eid
 
+        (userCreatedBy, personCreatedBy)
+         <- liftIO $ getEventCreatedBy conn event
+
         -- Get list of people that attended the event.
         psAttend   <- liftIO $ getAttendance conn eid
-
-        (userCreatedBy, personCreatedBy)
-         <- do  let Just uidCreatedBy = eventCreatedBy event
-                Just user <- liftIO $ getUserOfId conn uidCreatedBy
-                person    <- liftIO $ getPerson conn $ userPersonId user
-                return (user, person)
 
         liftIO $ disconnect conn
         cgiEventView_page ss event userCreatedBy personCreatedBy

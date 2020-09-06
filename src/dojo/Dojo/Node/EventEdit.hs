@@ -7,7 +7,6 @@ import Dojo.Node.EventEdit.Arg
 import Dojo.Node.Logout
 import Dojo.Data.Event
 import Dojo.Data.Class
-import Dojo.Data.Person
 import Dojo.Data.Session
 import Dojo.Data.Dojo
 import Dojo.Paths
@@ -53,6 +52,15 @@ cgiEventEdit ss inputs
                         Just aa -> aa
                         Nothing -> throw $ FailNodeArgs "event edit" inputs
 
+        -- Parse an existing event id if we were given one.
+        mEidIn
+         <- case lookup "eid" inputs of
+                Just strEid
+                 -> case parse strEid of
+                     Left err  -> throw $ FailParse "event id" strEid err
+                     Right eid -> return $ Just eid
+                Nothing -> return Nothing
+
         -- Split out fields.
         let updates  = [ (field, value) | ArgUpdate field value <- args ]
         let pidsAdd  = [ pid  | ArgAddPerson pid <- args ]
@@ -76,14 +84,6 @@ cgiEventEdit ss inputs
         dojos      <- liftIO $ getDojos conn
         eventTypes <- liftIO $ getEventTypes conn
 
-        -- Parse an existing event id if we were given one.
-        mEidIn
-         <- case lookup "eid" inputs of
-                Just strEid
-                 -> case parse strEid of
-                     Left err  -> throw $ FailParse "event id" strEid err
-                     Right eid -> return $ Just eid
-                Nothing -> return Nothing
 
         -- Lookup the current event and attendance if one was specified,
         --  otherwise create a new placeholder that we can update.
@@ -122,6 +122,9 @@ cgiEventEdit ss inputs
                           , eventCreatedBy = Just $ sessionUserId ss }
                 return  (event, [], [])
 
+        (userCreatedBy, personCreatedBy)
+         <- liftIO $ getEventCreatedBy conn event
+
         -- If user is an admin or created the event themselves
         --  then they can edit it.
         let bSessionOwnsEvent
@@ -142,8 +145,8 @@ cgiEventEdit ss inputs
                 , eventFormDojosAvail          = dojos
                 , eventFormDetailsEditable     = True
                 , eventFormAttendanceDeletable = True
-                , eventFormCreatedByUser       = Nothing
-                , eventFormCreatedByPerson     = Nothing }
+                , eventFormCreatedByUser       = Just $ userCreatedBy
+                , eventFormCreatedByPerson     = Just $ personCreatedBy }
 
         if
          -- Delete attendees from the event by person id.

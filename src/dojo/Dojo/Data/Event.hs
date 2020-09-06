@@ -4,13 +4,15 @@ module Dojo.Data.Event
         , module Dojo.Data.Event.Database
         , module Dojo.Data.Event.Presentation
         , module Dojo.Framework
-        , summarizeEventTypes)
+        , summarizeEventTypes
+        , getEventCreatedBy)
 where
 import Dojo.Data.Event.Base
 import Dojo.Data.Event.Database
 import Dojo.Data.Event.Presentation
+import Dojo.Data.Person
+import Dojo.Data.User
 import Dojo.Framework
-import Dojo.Trivia
 
 import qualified Data.Map.Strict        as Map
 import Data.Map.Strict                  (Map)
@@ -26,3 +28,11 @@ summarizeEventTypes events
         Just et -> Just $ Map.singleton et 1
    | event <- events ]
 
+
+-- | Get the user and person that created a event.
+getEventCreatedBy :: IConnection conn => conn -> Event -> IO (User, Person)
+getEventCreatedBy conn event
+ = do   let Just uidCreatedBy = eventCreatedBy event
+        Just user <- liftIO $ getUserOfId conn uidCreatedBy
+        person    <- liftIO $ getPerson   conn $ userPersonId user
+        return (user, person)
