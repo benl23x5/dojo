@@ -10,9 +10,11 @@ pageHeader name
  = H.head
  $ do   H.title $ H.toMarkup name
         H.preEscapedToHtml $ unlines
-                [ "<style type=\"text/css\">"
-                , "<!-- @import url(\"dojo-style.css\"); -->"
-                , "</style>" ]
+            [ "<style type=\"text/css\">"
+            , "<!-- @import url(\"dojo-style.css\"); -->"
+            , "</style>"
+            , "<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\""
+            , "      rel=\"stylesheet\">" ]
 
 pageBody :: Html -> Html
 pageBody content

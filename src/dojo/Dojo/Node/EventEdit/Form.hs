@@ -200,8 +200,8 @@ divAttendanceCur eform
          $ col ! A.class_ "actions"
 
         tr $ do th "#"
-                th "current attendees"
-                when bCanDel $ th "del"
+                th "attendees"
+                when bCanDel $ th "del" ! A.style  "text-align: center"
 
         -- Highlight the people that were just added.
         let pidsAdded = [pid | FeedEventPersonAdded pid <- fsEvent ]
@@ -230,10 +230,12 @@ trCurAttendance bCanDel pidsAdded path ix person
         -- Show 'X' to delete the person from the event.
         if  | Just pid <- personId person
             , bCanDel
-            -> td $ H.a ! A.class_ "link"
-                        ! (A.href $ H.toValue
-                                  $ path <&> [("delPerson", pretty pid)])
-                        $ "X"
+            -> (td  ! A.style  "text-align: center")
+             $ (H.a ! A.class_ "link"
+                    ! (A.href $ H.toValue $ path <&> [("delPerson", pretty pid)]))
+             $ (H.i ! A.class_ "material-icons md-36 red")
+                        "remove_circle_outline"
+
             | otherwise
             -> td $ return ()
 
@@ -311,7 +313,7 @@ divRegulars eform
 
         tr $ do th ""
                 th "regular attendees"
-                th "add"
+                th ! A.style "text-align: center" $ "add"
 
         -- Add a link to add a regular attendee that is not already listed.
         let psAttend
@@ -334,12 +336,13 @@ trNewRegular eform person
                 $ maybe "(person)" pretty
                 $ personDisplayName person
 
-        -- Show 'X' to delete the person from the event.
+        -- Show '+' to add the person to the event.
         if  | Just pid <- personId person
-            -> td $ H.a ! A.class_ "link"
-                        ! (A.href $ H.toValue
-                                  $ path <&> [("addPerson", pretty pid)])
-                        $ "^"
+            -> (td  ! A.style "text-align:center")
+             $ (H.a ! A.class_ "link"
+                    ! (A.href $ H.toValue $ path <&> [("addPerson", pretty pid)]))
+             $ (H.i ! A.class_ "material-icons md-36 green")
+                        "add_circle_outline"
             | otherwise
             -> td $ return ()
 
