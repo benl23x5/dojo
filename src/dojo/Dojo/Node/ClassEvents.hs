@@ -3,13 +3,13 @@ module Dojo.Node.ClassEvents where
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Data.User
-import Dojo.Data.Event
 import Dojo.Data.Class
 import Dojo.Node.EventList
 import Dojo.Node.ClassView
 import Dojo.Fail
 import Dojo.Paths
 import Dojo.Chrome
+import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 

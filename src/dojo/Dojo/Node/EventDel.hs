@@ -5,6 +5,7 @@ import Dojo.Data.Event
 import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Fail
+import Dojo.Framework
 
 
 -- | Delete an existing event.

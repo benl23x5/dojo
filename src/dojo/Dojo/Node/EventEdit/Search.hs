@@ -3,7 +3,7 @@ module Dojo.Node.EventEdit.Search where
 import Dojo.Node.EventEdit.Feed
 import Dojo.Data.Event
 import Dojo.Data.Person
-
+import Dojo.Framework
 
 -- | Add a new person by their known person id.
 addPersonByPersonId

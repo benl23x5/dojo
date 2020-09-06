@@ -3,7 +3,6 @@ module Dojo.Data.Event
         ( module Dojo.Data.Event.Base
         , module Dojo.Data.Event.Database
         , module Dojo.Data.Event.Presentation
-        , module Dojo.Framework
         , summarizeEventTypes
         , getEventCreatedBy)
 where

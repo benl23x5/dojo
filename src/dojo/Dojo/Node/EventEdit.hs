@@ -12,6 +12,8 @@ import Dojo.Data.Dojo
 import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
+import Dojo.Framework
+
 import qualified Data.Time                      as Time
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A

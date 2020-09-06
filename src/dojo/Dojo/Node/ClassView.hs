@@ -15,6 +15,7 @@ import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Fail
 import Data.String
+import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 

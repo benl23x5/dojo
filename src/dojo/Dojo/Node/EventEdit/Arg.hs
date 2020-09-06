@@ -10,6 +10,8 @@ where
 import Dojo.Node.EventEdit.Feed
 import Dojo.Data.Person
 import Dojo.Data.Event
+import Dojo.Framework.Form
+import Dojo.Framework
 
 
 -- | A CGI argument passed to the EventEdit node.

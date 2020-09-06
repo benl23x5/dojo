@@ -6,6 +6,7 @@ import Dojo.Data.Person
 import Dojo.Data.Session
 import Dojo.Paths
 import Dojo.Fail
+import Dojo.Framework
 
 
 -- | Delete an existing person.

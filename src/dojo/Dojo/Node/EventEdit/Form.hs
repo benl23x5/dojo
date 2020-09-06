@@ -1,56 +1,16 @@
 
 module Dojo.Node.EventEdit.Form (formEvent, EventForm(..)) where
 import Dojo.Node.EventEdit.Arg
+import Dojo.Node.EventEdit.Base
+import Dojo.Node.EventEdit.Details
 import Dojo.Data.Event
-import Dojo.Data.User
 import Dojo.Data.Person
+import Dojo.Framework.Form
+import Dojo.Framework
+
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Data.Set                       as Set
-import Data.String
-
-
--------------------------------------------------------------------------------
--- | Specification for the event entry form.
-data EventForm
-        = EventForm
-        { -- | URL to the form itself.
-          eventFormPath                 :: Path
-
-          -- | UI feedback for the overall form.
-        , eventFormFeedForm             :: [FeedForm]
-
-          -- | UI feedback for the event details.
-        , eventFormFeedEvent            :: [FeedEvent]
-
-          -- | The original devent details to show in the form.
-        , eventFormEventValue           :: Event
-
-          -- | List of available event types to show in dropdown selector.
-        , eventFormEventTypes           :: [EventType]
-
-          -- | People currently listed as attending the event.
-        , eventFormAttendance           :: [Person]
-
-          -- | Regular attendees for events of this class.
-        , eventFormRegulars             :: [Person]
-
-          -- | List of available dojos to show in dojo dropdown selector.
-        , eventFormDojosAvail           :: [PersonDojo]
-
-          -- | Whether to display edit control for date, time, loc, type etc.
-          --   or just the natural language summary.
-        , eventFormDetailsEditable      :: Bool
-
-          -- | Whether to show controls for deleting names from the list.
-        , eventFormAttendanceDeletable  :: Bool
-
-          -- | User details of who created the form.
-        , eventFormCreatedByUser        :: Maybe User
-
-          -- | Person details of who created the form.
-        , eventFormCreatedByPerson      :: Maybe Person }
-        deriving Show
 
 
 -------------------------------------------------------------------------------
@@ -74,10 +34,18 @@ formEvent eform
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsForm niceNameOfEventField
 
+        let details
+                = EventDetails
+                { eventDetailsEvent             = eventFormEventValue eform
+                , eventDetailsCreatedByUser     = eventFormCreatedByUser eform
+                , eventDetailsCreatedByPerson   = eventFormCreatedByPerson eform
+                , eventDetailsEventTypes        = eventFormEventTypes eform
+                , eventDetailsDojosAvail        = eventFormDojosAvail eform }
+
         -- Event details.
         (if eventFormDetailsEditable eform
-          then divEventEditDetails eform
-          else divEventShowDetails eform)
+          then divEventEditDetails details fsForm
+          else divEventShowDetails details)
 
         divEventAttendance  eform
         H.br
@@ -87,79 +55,6 @@ formEvent eform
                 ! A.class_ "buttonFull"
                 ! A.value  "Save"
 
-
--------------------------------------------------------------------------------
-divEventShowDetails :: EventForm -> Html
-divEventShowDetails eform
- = H.div ! A.id "event-details-edit" ! A.class_ "details"
- $ do
-        let event       = eventFormEventValue eform
-        let mpCreated   = eventFormCreatedByPerson eform
-        let muCreated   = eventFormCreatedByUser eform
-
-        H.table $ do
-         tr $ td $ H.string
-            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
-            ++ " by "
-            ++ (fromMaybe "[someperson]"
-                (join $ fmap personDisplayName mpCreated))
-            ++ " ("
-            ++ (maybe "[someuser]"   (pretty . userName) muCreated)
-            ++ ")."
-
-         tr $ td $ H.string
-            $  maybe "[somewhere]" pretty  (eventLocation event)
-            ++ maybe "[someday]"  (\v -> " on " ++ pretty v)  (eventDate event)
-            ++ maybe "[sometime]" (\v -> " at " ++ pretty v)  (eventTime event)
-            ++ "."
-
-
--------------------------------------------------------------------------------
-divEventEditDetails :: EventForm  -> Html
-divEventEditDetails eform
- = H.div ! A.id "event-details-edit" ! A.class_ "details"
- $ do
-        let fsForm      = eventFormFeedForm eform
-        let event       = eventFormEventValue eform
-        let eventTypes  = eventFormEventTypes eform
-        let dojos       = eventFormDojosAvail eform
-
-        tableFields fsForm
-         [ ( "Date", "date (dd-mm-yyyy)"
-           , maybe "" pretty $ eventDate event
-           , Just "(required)"
-           , False)
-
-         , ( "Time", "time (hh:mm 24hr)"
-           , maybe "" pretty $ eventTime event
-           , Just "(required)"
-           , False)
-         ]
-
-        -- When this is a new event put focus on the location input field,
-        -- otherwise allow focus to be taken by the last person entry field.
-        --  TODO:  reinstate focus on location when eid == 0
-        --  let EventId eid = eventId event
-        let sDojo = maybe "" pretty $ eventLocation event
-        let sType = maybe "" pretty $ eventType event
-        H.table
-         $ do   col ! A.class_ "Col2A"
-                col ! A.class_ "Col2B"
-                tr $ do th "location"; th "type"
-                tr $ do
-                        td $ (H.select ! A.name "Location")
-                         $ do   H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty dojos) (optSelected sDojo)
-
-                        td $ (H.select ! A.name "Type")
-                         $ do   H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty eventTypes) (optSelected sType)
-
- where  optSelected sSel sVal
-         = (H.option
-                !  A.value (fromString sVal)
-                !? (sSel == sVal, A.selected, "true"))
-                (H.toHtml sVal)
 
 -------------------------------------------------------------------------------
 divEventAttendance :: EventForm -> Html

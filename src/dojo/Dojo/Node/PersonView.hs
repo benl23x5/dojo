@@ -6,6 +6,7 @@ import Dojo.Data.Event
 import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Fail
+import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Data.Map.Strict                as Map

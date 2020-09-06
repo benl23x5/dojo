@@ -4,6 +4,7 @@ import Dojo.Data.Class.Base
 import Dojo.Data.Person
 import Dojo.Data.Event
 import Dojo.Fail
+import Dojo.Framework
 import qualified Data.Time      as Time
 
 
