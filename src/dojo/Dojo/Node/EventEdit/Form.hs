@@ -75,9 +75,11 @@ formEvent eform
         htmlFeedForm fsForm niceNameOfEventField
 
         -- Event details.
-        (if eventFormDetailsEditable eform
-          then divEventEditDetails eform
-          else divEventShowDetails eform)
+--        (if eventFormDetailsEditable eform
+--          then divEventEditDetails eform
+--          else divEventShowDetails eform)
+
+        divEventShowDetails eform
 
         divEventAttendance  eform
         H.br

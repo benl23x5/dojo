@@ -53,16 +53,10 @@ cgiEventEdit ss inputs
                         Just aa -> aa
                         Nothing -> throw $ FailNodeArgs "event edit" inputs
 
-        -- Event specification fields to update.
+        -- Split out fields.
         let updates  = [ (field, value) | ArgUpdate field value <- args ]
-
-        -- Person ids of people to add to the event.
         let pidsAdd  = [ pid  | ArgAddPerson pid <- args ]
-
-        -- Person ids of people to delete from the event.
         let pidsDel  = [ pid  | ArgDelPerson pid <- args ]
-
-        -- People to add to this event.
         let newNames = [ name | ArgAddName name <- args ]
 
         -- Load form feedback from arguments.
@@ -136,6 +130,21 @@ cgiEventEdit ss inputs
                   Nothing  -> False
                   Just uid -> uid == sessionUserId ss)
 
+        let eform
+                = EventForm
+                { eventFormPath                = pathEventEdit ss mEidIn
+                , eventFormFeedForm            = fsForm
+                , eventFormFeedEvent           = fsEvent
+                , eventFormEventValue          = event
+                , eventFormEventTypes          = eventTypes
+                , eventFormAttendance          = psAttend
+                , eventFormRegulars            = psRegulars
+                , eventFormDojosAvail          = dojos
+                , eventFormDetailsEditable     = True
+                , eventFormAttendanceDeletable = True
+                , eventFormCreatedByUser       = Nothing
+                , eventFormCreatedByPerson     = Nothing }
+
         if
          -- Delete attendees from the event by person id.
          | not $ null pidsDel
@@ -149,10 +158,7 @@ cgiEventEdit ss inputs
           || (not $ null pidsAdd)
          -> if bSessionOwnsEvent
                 then cgiEventEdit_update
-                        ss conn fsForm fsEvent
-                        mEidIn event psAttend psRegulars
-                        dojos eventTypes
-                        updates pidsAdd newNames
+                        ss conn mEidIn eform updates pidsAdd newNames
                 else cgiLogout ss
 
          -- Show form to update an existing event,
@@ -160,22 +166,15 @@ cgiEventEdit ss inputs
          | isJust mEidIn
          -> if bSessionOwnsEvent
                 then do liftIO $ disconnect conn
-                        outputFPS $ renderHtml
-                         $ htmlEventEdit ss fsForm fsEvent
-                                mEidIn event
-                                psAttend psRegulars
-                                dojos eventTypes
+                        outputFPS $ renderHtml $ htmlEventEdit ss eform
                 else cgiLogout ss
 
          -- Show the form to create a new event,
          --  which is possible for everyone.
+         --  TODO: suppress editability if not owner.
          | otherwise
          -> do  liftIO $ disconnect conn
-                outputFPS $ renderHtml
-                 $ htmlEventEdit ss fsForm fsEvent
-                        mEidIn event
-                        psAttend psRegulars
-                        dojos eventTypes
+                outputFPS $ renderHtml $ htmlEventEdit ss eform
 
 
 -------------------------------------------------------------------------------
@@ -213,15 +212,9 @@ cgiEventEdit_update
         :: IConnection conn
         => Session
         -> conn
-        -> [FeedForm]
-        -> [FeedEvent]
         -> Maybe EventId        -- If we're editing a pre-existing event
                                 --  then just its eventId.
-        -> Event                -- Event data to edit, shown in form.
-        -> [Person]             -- Current attendance
-        -> [Person]             -- Regular attendees
-        -> [PersonDojo]         -- Current dojos list
-        -> [EventType]          -- Current event types.
+        -> EventForm             -- Event data to edit, shown in form.
         -> [(String, String)]   -- Fields to update.
         -> [PersonId]           -- pids of people to add as attendees
         -> [String]             -- Names of people to add as attendees.
@@ -230,50 +223,49 @@ cgiEventEdit_update
 -- If the event we want to edit doesn't exist in the database yet,
 -- then add now to create the event id.
 cgiEventEdit_update
-        ss conn fsForm fsEvent
-        Nothing event psAttend psRegulars
-        dojos eventTypes updates pidsAdd newNames
- = do   event' <- liftIO $ insertEvent conn event
+        ss conn Nothing
+        eform updates pidsAdd newNames
+ = do   event' <- liftIO $ insertEvent conn $ eventFormEventValue eform
         cgiEventEdit_update
-                ss conn fsForm fsEvent
-                (eventId event') event'
-                psAttend psRegulars dojos eventTypes
-                updates
-                pidsAdd newNames
+                ss conn (eventId event')
+                eform { eventFormEventValue = event'}
+                updates pidsAdd newNames
 
 -- Edit an event already in the database.
 cgiEventEdit_update
-        ss conn fsForm fsEvent
-        (Just eid) eventOld psAttend psRegulars
-        dojos eventTypes updates pidsAdd newNames
- = case loadEvent updates eventOld of
+        ss conn (Just eid)
+        eform updates pidsAdd newNames
+ = case loadEvent updates (eventFormEventValue eform) of
         Left fieldErrors -> goError fieldErrors
         Right eventNew   -> goNewEvent eventNew
  where
   goError fieldErrors
-   = do let fsForm'
-                =  nub $ fsForm
+   = do
+        let fsForm'
+                =  nub $ (eventFormFeedForm eform)
                 ++ [ FeedFormInvalid sField sValue sError
                    | (sField, sValue, ParseError sError) <- fieldErrors ]
 
+        let eform'
+                = eform
+                { eventFormFeedForm            = fsForm' }
+
         outputFPS $ renderHtml
-         $ htmlEventEdit ss
-                fsForm' fsEvent
-                (Just eid) eventOld
-                psAttend psRegulars
-                dojos eventTypes
+         $ htmlEventEdit ss eform'
 
   goNewEvent eventNew
    = do -- Get the fields that have been updated by the form.
-        let diffFields = diffEvent eventOld eventNew
+        let diffFields = diffEvent (eventFormEventValue eform) eventNew
 
         -- Write the event details changes to the database.
         liftIO $ updateEvent conn eventNew
 
         -- Feedback for updated fields.
-        let fsUpdated
-             = map FeedEventFieldUpdated diffFields
+        let fsUpdated   = map FeedEventFieldUpdated diffFields
 
+        let psAttend    = eventFormAttendance eform
+
+        -- Add attendees based on provided person ids.
         fsAddById
          <- liftM concat $ liftIO
          $  mapM (addPersonByPersonId conn eventNew psAttend) pidsAdd
@@ -296,18 +288,8 @@ cgiEventEdit_update
 
 -------------------------------------------------------------------------------
 -- | Html for event edit page.
-htmlEventEdit
-        :: Session
-        -> [FeedForm] -> [FeedEvent]
-        -> Maybe EventId -> Event
-        -> [Person] -> [Person]
-        -> [PersonDojo] -> [EventType]
-        -> Html
-
-htmlEventEdit ss fsForm fsEvent
-        mEid event
-        psAttend psRegular
-        dojos eventTypes
+htmlEventEdit :: Session -> EventForm -> Html
+htmlEventEdit ss eform
  = H.docTypeHtml
  $ do
         pageHeader "Editing Event"
@@ -316,21 +298,9 @@ htmlEventEdit ss fsForm fsEvent
          $ do   tablePaths $ pathsJump ss
 
                 tablePaths
-                 $ case eventId event of
+                 $ case eventId (eventFormEventValue eform) of
                     Nothing     -> []
                     Just eid    -> [pathEventView ss eid]
 
-                H.div ! A.class_ "event"
-                 $ formEvent $ EventForm
-                 { eventFormPath                = pathEventEdit ss mEid
-                 , eventFormFeedForm            = fsForm
-                 , eventFormFeedEvent           = fsEvent
-                 , eventFormEventValue          = event
-                 , eventFormEventTypes          = eventTypes
-                 , eventFormAttendance          = psAttend
-                 , eventFormRegulars            = psRegular
-                 , eventFormDojosAvail          = dojos
-                 , eventFormDetailsEditable     = True
-                 , eventFormAttendanceDeletable = True
-                 , eventFormCreatedByUser       = Nothing
-                 , eventFormCreatedByPerson     = Nothing }
+                H.div ! A.class_ "event" $ formEvent eform
+
