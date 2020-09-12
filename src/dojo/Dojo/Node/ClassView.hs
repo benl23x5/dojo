@@ -40,17 +40,15 @@ cgiClassView ss inputs
  , Right cid        <- parse strClassId
  = do
         conn        <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
-
-        -- lookup class details and events of this class.
         classs      <- liftIO $ getClass conn cid
         events      <- liftIO $ getEventsOfClassId conn cid
 
-        -- lookup details of the class owner.
+        -- Lookup details of the class owner.
         let Just uname = classOwnerUserName classs
         Just uOwner <- liftIO $ getMaybeUser conn uname
         pOwner      <- liftIO $ getPerson conn $ userPersonId uOwner
 
-        -- lookup regular attendees to this class over the last 90 days.
+        -- Lookup regular attendees to this class over the last 90 days.
         zonedTime       <- liftIO $ Time.getZonedTime
         let ltNow       =  Time.zonedTimeToLocalTime zonedTime
         let ltStart
@@ -61,42 +59,11 @@ cgiClassView ss inputs
 
         liftIO $ disconnect conn
 
-        cgiClassView_page ss cid classs events uOwner pOwner regulars
+        cgiPageNavi (classDisplayName classs) (pathsJump ss)
+         $ divClassDetails ss cid classs uOwner pOwner events regulars
 
- | otherwise
+cgiClassView _ inputs
  = throw $ FailNodeArgs "class view" inputs
-
-
-cgiClassView_page ss cid classs events uOwner pOwner regulars
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader $ classDisplayName classs
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-                divClassDetails ss cid classs uOwner pOwner events regulars
-
-
--- TODO: export this separately to the register node.
-trClassSummary :: Class -> User -> Person -> Html
-trClassSummary classs uOwner pOwner
- = do
-        tr $ td $ H.string
-           $  maybe "" (\v -> pretty v) (classType classs)
-           ++ " class"
-           ++ " by "
-           ++ maybe "" pretty (personDisplayName pOwner)
-           ++ " (" ++ pretty (userName uOwner) ++ ")"
-           ++ "."
-
-
-        tr $ td $ H.string
-           $  maybe "[somewhere]" pretty (classLocation classs)
-           ++ " on "
-           ++ maybe "[someday]"   pretty (classDay classs)
-           ++ " at "
-           ++ maybe "[sometime]"  pretty (classTimeStart classs)
-           ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
-           ++ "."
 
 
 -------------------------------------------------------------------------------
@@ -195,6 +162,30 @@ divClassDetails
 
 
 -------------------------------------------------------------------------------
+-- | Connected summary of class details.
+trClassSummary :: Class -> User -> Person -> Html
+trClassSummary classs uOwner pOwner
+ = do
+        tr $ td $ H.string
+           $  maybe "" (\v -> pretty v) (classType classs)
+           ++ " class"
+           ++ " by "
+           ++ maybe "" pretty (personDisplayName pOwner)
+           ++ " (" ++ pretty (userName uOwner) ++ ")"
+           ++ "."
+
+
+        tr $ td $ H.string
+           $  maybe "[somewhere]" pretty (classLocation classs)
+           ++ " on "
+           ++ maybe "[someday]"   pretty (classDay classs)
+           ++ " at "
+           ++ maybe "[sometime]"  pretty (classTimeStart classs)
+           ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
+           ++ "."
+
+
+-------------------------------------------------------------------------------
 -- | Build list of regular attendees to a class.
 divRegularsList
         :: Session
@@ -223,3 +214,4 @@ divRegularsList ss regulars
 
          | otherwise
          = td (H.toMarkup $ maybe "" pretty $ val)
+

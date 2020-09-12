@@ -30,25 +30,14 @@ cgiClassEvents ss inputs
         events  <- liftIO $ getEventsOfClassId conn cid
 
         -- lookup details of the class owner.
-        let Just uname = classOwnerUserName classs
-        Just uOwner <- liftIO $ getMaybeUser conn uname
-        pOwner  <- liftIO $ getPerson conn $ userPersonId uOwner
-
+        let Just uname  = classOwnerUserName classs
+        Just uOwner     <- liftIO $ getMaybeUser conn uname
+        pOwner          <- liftIO $ getPerson conn $ userPersonId uOwner
         liftIO $ disconnect conn
 
-        cgiClassEvents_page ss cid classs uOwner pOwner events
-
- | otherwise
- = throw $ FailNodeArgs "class events" inputs
-
-cgiClassEvents_page ss cid classs uOwner pOwner events
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader $ classDisplayName classs
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                let pathClass = pathClassView ss cid
+        let pathClass = pathClassView ss cid
+        cgiPageNavi (classDisplayName classs) (pathsJump ss)
+         $ do
                 H.table
                  $ do   tr $ th "class"
                         trClassSummary classs uOwner pOwner
@@ -57,4 +46,6 @@ cgiClassEvents_page ss cid classs uOwner pOwner events
 
                 divEventList ss events
 
+cgiClassEvents _ inputs
+ = throw $ FailNodeArgs "class events" inputs
 

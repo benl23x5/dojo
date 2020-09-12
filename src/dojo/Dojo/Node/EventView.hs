@@ -15,10 +15,7 @@ import qualified Text.Blaze.Html5.Attributes    as A
 -------------------------------------------------------------------------------
 -- | Show details for a single event.
 --      &eid=NAT  View the event with this id.
-cgiEventView
-        :: Session -> [(String, String)]
-        -> CGI CGIResult
-
+cgiEventView :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventView ss inputs
  | Just strEventId  <- lookup "eid" inputs
  , Right eid       <- parse strEventId
@@ -32,29 +29,18 @@ cgiEventView ss inputs
 
         -- Get list of people that attended the event.
         psAttend   <- liftIO $ getAttendance conn eid
-
         liftIO $ disconnect conn
-        cgiEventView_page ss event userCreatedBy personCreatedBy
-                psAttend
 
- | otherwise
+        cgiPageNavi (eventDisplayName event) (pathsJump ss)
+         $ H.div ! A.id "event-view"
+         $ do   divEventDetails ss event
+                        userCreatedBy personCreatedBy
+                        psAttend
+
+                divAttendeesList ss event psAttend
+
+cgiEventView _ inputs
  = throw $ FailNodeArgs "event view" inputs
-
-
-cgiEventView_page
-        ss event userCreatedBy personCreatedBy
-        psAttend
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader $ pretty $ eventDisplayName event
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                H.div ! A.id "event-view"
-                 $ do   divEventDetails ss event
-                                userCreatedBy personCreatedBy
-                                psAttend
-                        divPersonList   ss event psAttend
 
 
 -------------------------------------------------------------------------------
@@ -95,8 +81,8 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
 
 -------------------------------------------------------------------------------
 -- | People that attended an event.
-divPersonList :: Session -> Event -> [Person] -> Html
-divPersonList ss event people
+divAttendeesList :: Session -> Event -> [Person] -> Html
+divAttendeesList ss event people
  = H.div ! A.class_ "list" ! A.id "event-attendance-cur"
  $ H.table
  $ do   col' "index"; col' "Name"; col' "Fees"

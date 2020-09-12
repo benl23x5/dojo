@@ -15,8 +15,7 @@ cgiPage :: Html -> CGI.CGI CGI.CGIResult
 cgiPage htmlContent
  = CGI.outputFPS
  $ R.renderHtml
- $ H.docTypeHtml
- $ H.html htmlContent
+ $ H.docTypeHtml htmlContent
 
 
 -- | Output a Navi page via CGI.

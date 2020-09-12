@@ -12,23 +12,12 @@ import qualified Text.Blaze.Html5.Attributes    as A
 -- | A table of classes.
 cgiClassList :: Session -> [(String, String)] -> CGI CGIResult
 cgiClassList ss _inputs
- = do   -- Connect to the database.
-        conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
-
-        -- Read current data for all people
+ = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         classes <- liftIO $ getClasses conn
         liftIO $ disconnect conn
 
-        cgiClassList_list ss classes
-
-
-cgiClassList_list ss classes
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Classes"
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-                divClassList ss classes
+        cgiPageNavi "Classes" (pathsJump ss)
+         $ divClassList ss classes
 
 
 -- | Build the class table.

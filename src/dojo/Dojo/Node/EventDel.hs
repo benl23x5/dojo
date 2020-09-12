@@ -8,7 +8,7 @@ import Dojo.Fail
 import Dojo.Framework
 
 
--- | Delete an existing event.
+-- | Delete an existing event then redirect to the event list.
 cgiEventDel :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventDel ss inputs
  = goParseEid

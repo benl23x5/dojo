@@ -9,7 +9,6 @@ import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
 import Dojo.Framework
-import qualified Text.Blaze.Html5               as H
 
 
 -------------------------------------------------------------------------------
@@ -23,12 +22,12 @@ import qualified Text.Blaze.Html5               as H
 --
 cgiPersonEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiPersonEdit ss inputs
- = if sessionIsAdmin ss
-    then goPersonEdit
-    else cgiLogout ss
- where
-  goPersonEdit
-   = do conn            <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
+ -- Only admins can edit people
+ | not $ sessionIsAdmin ss
+ = cgiLogout ss
+
+ | otherwise
+ = do   conn            <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         dojos           <- liftIO $ getDojos conn
         memberLevels    <- liftIO $ getMembershipLevels conn
 
@@ -64,7 +63,7 @@ cgiPersonEdit ss inputs
          --  so show the form and wait for entry.
          | otherwise
          -> do  liftIO $ disconnect conn
-                cgiPersonEdit_entry ss person dojos memberLevels
+                cgiPersonEdit_entry ss person dojos memberLevels []
 
 
 -------------------------------------------------------------------------------
@@ -72,14 +71,22 @@ cgiPersonEdit ss inputs
 --    so show the entry form.
 cgiPersonEdit_entry
         :: Session
-        -> Person                   -- Person to edit.
-        -> [PersonDojo]             -- Available dojos.
-        -> [PersonMembershipLevel]  -- Available membership levels.
+        -> Person                       -- Person to edit.
+        -> [PersonDojo]                 -- Available dojos.
+        -> [PersonMembershipLevel]      -- Available membership levels.
+        -> [FeedForm]                   -- Form feedback
         -> CGI CGIResult
 
-cgiPersonEdit_entry ss person dojos memberLevels
- = outputFPS $ renderHtml
- $ htmlPersonEdit ss person dojos memberLevels []
+cgiPersonEdit_entry ss person dojos memberLevels fsFeed
+ = cgiPageNavi "Editing Person" (pathsJump ss)
+ $ do   tablePaths
+         $ case personId person of
+            Nothing     -> []
+            Just pid    -> [pathPersonView ss pid]
+
+        formPerson fsFeed
+                (pathPersonEdit ss (personId person))
+                person dojos memberLevels
 
 
 -------------------------------------------------------------------------------
@@ -118,8 +125,7 @@ cgiPersonEdit_update ss conn
                 [ FeedFormInvalid sField sValue sError
                 | (sField, sValue, ParseError sError) <- fieldErrors ]
 
-           outputFPS $ renderHtml
-             $ htmlPersonEdit ss personOld dojos memberLevels fsFeed
+           cgiPersonEdit_entry ss personOld dojos memberLevels fsFeed
 
     -- All the fields parsed.
     Right personNew
@@ -131,28 +137,5 @@ cgiPersonEdit_update ss conn
                  [ FeedFormUpdated sField
                  | sField <- diffPerson personOld personNew ]
 
-            outputFPS $ renderHtml
-             $ htmlPersonEdit ss personNew dojos memberLevels fsFeed
+            cgiPersonEdit_entry ss personNew dojos memberLevels fsFeed
 
-
--------------------------------------------------------------------------------
--- | Html for person edit page.
-htmlPersonEdit
-        :: Session
-        -> Person -> [PersonDojo] -> [PersonMembershipLevel]
-        -> [FeedForm] -> Html
-
-htmlPersonEdit ss person dojos memberLevels fsFeed
- = H.docTypeHtml
- $ do   pageHeader "Editing Person"
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                tablePaths
-                 $ case personId person of
-                    Nothing     -> []
-                    Just pid    -> [pathPersonView ss pid]
-
-                formPerson fsFeed
-                        (pathPersonEdit ss (personId person))
-                        person dojos memberLevels

@@ -16,25 +16,20 @@ import qualified Text.Blaze.Html5.Attributes    as A
 
 
 -- | Regular attendees at a given class.
-cgiClassRegulars
-        :: Session -> [(String, String)]
-        -> CGI CGIResult
-
+cgiClassRegulars :: Session -> [(String, String)] -> CGI CGIResult
 cgiClassRegulars ss inputs
  | Just strClassId  <- lookup "cid" inputs
  , Right cid        <- parse strClassId
  = do
         conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
-
-        -- lookup class details and events of this class.
         classs  <- liftIO $ getClass conn cid
 
-        -- lookup details of the class owner.
+        -- Lookup details of the class owner.
         let Just uname = classOwnerUserName classs
-        Just uOwner <- liftIO $ getMaybeUser conn uname
-        pOwner  <- liftIO $ getPerson conn $ userPersonId uOwner
+        Just uOwner     <- liftIO $ getMaybeUser conn uname
+        pOwner          <- liftIO $ getPerson conn $ userPersonId uOwner
 
-        -- lookup regular attendees to this class over the last 90 days.
+        -- Lookup regular attendees to this class over the last 90 days.
         zonedTime       <- liftIO $ Time.getZonedTime
         let ltNow       =  Time.zonedTimeToLocalTime zonedTime
         let ltStart
@@ -45,20 +40,9 @@ cgiClassRegulars ss inputs
 
         liftIO $ disconnect conn
 
-        cgiClassRegulars_page ss cid classs uOwner pOwner regulars
-
- | otherwise
- = throw $ FailNodeArgs "class regulars" inputs
-
-cgiClassRegulars_page ss cid classs uOwner pOwner regulars
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader $ classDisplayName classs
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                let pathClass = pathClassView ss cid
-                H.table
+        let pathClass = pathClassView ss cid
+        cgiPageNavi (classDisplayName classs) (pathsJump ss)
+         $ do   H.table
                  $ do   tr $ th "class"
                         trClassSummary classs uOwner pOwner
                         tr $ td $ (H.a ! A.href (H.toValue pathClass))
@@ -66,4 +50,5 @@ cgiClassRegulars_page ss cid classs uOwner pOwner regulars
 
                 divRegularsList ss regulars
 
-
+cgiClassRegulars _ inputs
+ = throw $ FailNodeArgs "class regulars" inputs

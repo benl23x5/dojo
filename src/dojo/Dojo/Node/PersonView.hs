@@ -27,25 +27,11 @@ cgiPersonView ss inputs
         events  <- liftIO $ getAttendanceOfPersonId conn pid
         liftIO $ disconnect conn
 
-        cgiPersonView_page ss person events
-
- | otherwise
- = throw $ FailNodeArgs "person view" inputs
-
-
-cgiPersonView_page ss person events
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader
-         $ fromMaybe "(person)"
-         $ personDisplayName person
-
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                let Just pid = personId person
-                let bCanEdit = sessionIsAdmin ss
+        let sName = fromMaybe "person" $ personDisplayName person
+        cgiPageNavi sName (pathsJump ss)
+         $ do   let bCanEdit = sessionIsAdmin ss
                 let bCanDel  = sessionIsAdmin ss && null events
+
                 when (bCanEdit || bCanDel)
                  $  tablePaths
                  $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
@@ -55,6 +41,9 @@ cgiPersonView_page ss person events
                  $ do   divPersonDetails ss person
                         divEventSummary  ss events
                         divEventList     ss events
+
+cgiPersonView _ inputs
+ = throw $ FailNodeArgs "person view" inputs
 
 
 -------------------------------------------------------------------------------
