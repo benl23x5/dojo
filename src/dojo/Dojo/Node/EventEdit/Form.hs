@@ -50,10 +50,14 @@ formEvent eform
         divEventAttendance  eform
         H.br
 
-        -- Save button.
-        input   ! A.type_  "submit"
-                ! A.class_ "buttonFull"
-                ! A.value  "Save"
+        if (eventFormDetailsEditable eform)
+         then input ! A.type_  "submit"
+                    ! A.class_ "button-full"
+                    ! A.value  "Save"
+
+         else input ! A.type_  "submit"
+                    ! A.class_ "input-hidden"
+                    ! A.value  "Save"
 
 
 -------------------------------------------------------------------------------

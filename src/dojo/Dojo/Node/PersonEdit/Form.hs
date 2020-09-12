@@ -36,7 +36,7 @@ formPerson fsFeed path person dojos memberLevels
         -- Save button.
         H.br
         input   ! A.type_  "submit"
-                ! A.class_ "buttonFull"
+                ! A.class_ "button-full"
                 ! A.value  "Save"
 
         -- Person details.
@@ -45,7 +45,7 @@ formPerson fsFeed path person dojos memberLevels
 
         -- Save button.
         input   ! A.type_  "submit"
-                ! A.class_ "buttonFull"
+                ! A.class_ "button-full"
                 ! A.value  "Save"
 
 

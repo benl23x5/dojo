@@ -24,7 +24,36 @@ cgiPageNavi sName paths htmlContent
  = cgiPage $ pageNavi sName paths htmlContent
 
 
--- | Construct page header including
+-- | Output a plain page via CGI
+cgiPagePlain :: String -> Html -> CGI.CGI CGI.CGIResult
+cgiPagePlain sName htmlContent
+ = cgiPage $ pagePlain sName htmlContent
+
+
+-------------------------------------------------------------------------------
+-- | A complete page with navigation bar on the top.
+pageNavi :: String        -- ^ Page name
+         -> [Path]        -- ^ Navigation paths
+         -> Html -> Html
+
+pageNavi sName paths htmlContents
+ = do   pageHeader sName
+        pageBody
+         $ do   tablePaths paths
+                htmlContents
+
+
+-- | A complete page with no navigation bar.
+pagePlain :: String     -- ^ Page Name
+          -> Html -> Html
+
+pagePlain sName htmlContents
+ = do   pageHeader sName
+        pageBody htmlContents
+
+
+-------------------------------------------------------------------------------
+-- | Construct page header including style definition
 pageHeader :: String -> Html
 pageHeader name
  = H.head
@@ -38,7 +67,7 @@ pageHeader name
    , "<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" rel=\"stylesheet\">" ]
 
 
--------------------------------------------------------------------------------
+
 -- | Main body of the page.
 pageBody :: Html -> Html
 pageBody content
@@ -48,19 +77,7 @@ pageBody content
         $ content
 
 
--- | Construct a complete page with navigation bar on the top.
-pageNavi
-        :: String       -- ^ Page name
-        -> [Path]       -- ^ Navigation paths
-        -> Html -> Html
-
-pageNavi sName paths htmlContents
- = do   pageHeader sName
-        pageBody
-         $ do   tablePaths paths
-                htmlContents
-
-
+-------------------------------------------------------------------------------
 -- | Table with navigation paths
 tablePaths :: [Path] -> Html
 tablePaths paths

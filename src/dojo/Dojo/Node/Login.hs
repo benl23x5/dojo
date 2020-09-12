@@ -70,7 +70,7 @@ formLogin path
 
         H.br
         input   ! A.type_  "submit"
-                ! A.class_ "buttonFull"
+                ! A.class_ "button-full"
                 ! A.value  "Login"
 
 

@@ -50,7 +50,8 @@ cgiRegister cc inputs sRegId
                 $  [fe | ArgFeedEvent fe <- args]
 
         -- People to add to this event.
-        let newNames = [ name | ArgAddName name <- args ]
+        let newNames = [ name | ArgAddName   name <- args ]
+        let pidsAdd  = [ pid  | ArgAddPerson pid  <- args]
 
         let sUrl  = configSiteUrl cc
         let sSalt = configQrSaltActive cc
@@ -62,19 +63,17 @@ cgiRegister cc inputs sRegId
                   Nothing           -> Nothing
 
         case lookup sRegId lsActive of
-         Just cls -> cgiRegister_class cc conn sRegId cls fsEvent newNames
+         Just cls -> cgiRegister_class cc conn sRegId cls fsEvent newNames pidsAdd
          Nothing  -> cgiRegister_unknown sRegId
 
 
 cgiRegister_unknown sRegId
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Register"
-        H.string $ "registration link unknown " ++ sRegId
+ = cgiPagePlain "Event Registration"
+ $ H.string $ "registration link unknown " ++ sRegId
 
 
 -------------------------------------------------------------------------------
-cgiRegister_class cc conn sRegId cls fsEvent newNames
+cgiRegister_class cc conn sRegId cls fsEvent newNames pidsAdd
  = do
         -- Get all the events for the specified class.
         let Just cid = classId cls
@@ -97,21 +96,14 @@ cgiRegister_class cc conn sRegId cls fsEvent newNames
           -> do let Just eid = eventId event
                 cgiRegister_existing
                         cc conn sRegId cls event eid edate
-                        fsEvent newNames
+                        fsEvent newNames pidsAdd
 
+         -- There are already multiple events belonging to the same class,
+         --   which should only happen if an admin has messed something up.
+         --   We don't currently have a constraint in the db to prevent this.
          events
-            -> cgiRegister_multi conn sRegId cls events
-
-
--------------------------------------------------------------------------------
--- There are already multiple events belonging to the same class,
---   which should only happen if an admin has messed something up.
---   We don't currently have a constraint in the db to prevent this.
-cgiRegister_multi _conn sRegId cls events
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Register"
-        H.string $ "multiple events exist for the class"
+          -> cgiPagePlain "Event Registration"
+           $ H.string $ "multiple events exist for the class"
                 ++ sRegId ++ " " ++ show cls ++ " " ++ show events
 
 
@@ -143,6 +135,9 @@ cgiRegister_create cc conn sRegId cls
          = [ "Sunday", "Monday", "Tuesday"
            , "Wednesday", "Thursday", "Friday", "Saturday" ]
 
+
+-- | Create a new event record for this class,
+--   as this is the first time someone has tried to register for it.
 cgiRegister_create_new cc conn sRegId cls uOwner edate
  = do
         let event = zeroEvent
@@ -160,32 +155,32 @@ cgiRegister_create_new cc conn sRegId cls uOwner edate
                 []
 
 
+-- | This class is not on today.
 cgiRegister_create_notToday cls sDay uOwner pOwner
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Event Registration"
-        pageBody
-         $ H.div ! A.class_ "event"
-         $ do   H.h2 "Event Registration"
+ = cgiPagePlain "Event Registration"
+ $ H.div ! A.class_ "event"
+ $ do   H.h2 "Event Registration"
 
-                H.table
-                 $ trClassSummary cls uOwner pOwner
+        H.table
+         $ trClassSummary cls uOwner pOwner
 
-                H.br
-                H.string $ "Today is " ++ sDay
-                H.br
-                H.string "This class is not on today."
+        H.br
+        H.string $ "Today is " ++ sDay
+        H.br; H.br
+        H.string "This class is not on today."
 
 
 -------------------------------------------------------------------------------
 -- There is a single existing event record today for this class.
 cgiRegister_existing
         cc conn sRegId cls event eid edate
-        fsEvent newNames
- | not $ null newNames
+        fsEvent newNames pidsAdd
+ |   (not $ null newNames)
+  || (not $ null pidsAdd)
+
  = cgiRegister_existing_update
         cc conn sRegId cls event eid edate
-        newNames
+        newNames pidsAdd
 
  | otherwise
  = cgiRegister_existing_form
@@ -195,22 +190,28 @@ cgiRegister_existing
 
 cgiRegister_existing_update
         cc conn sRegId _cls event eid _edate
-        newNames
+        newNames pidsAdd
  = do
         psAttend <- liftIO $ getAttendance conn eid
 
+        fsAddById
+         <- liftM concat $ liftIO
+         $  mapM (addPersonByPersonId conn event psAttend) pidsAdd
+
         fsSearch
          <- liftM concat $ liftIO
-          $  zipWithM (addPersonByName conn event psAttend) [0..] newNames
+          $ zipWithM (addPersonByName conn event psAttend) [0..] newNames
 
         liftIO $ commit conn
         liftIO $ disconnect conn
+
+        let fsFeed = fsAddById ++ fsSearch
 
         -- Redirect to the same page with a clean path,
         --  that includes updated feedback.
         redirect $ flatten
          $   pathRegister cc sRegId
-         <&> mapMaybe takeKeyValOfFeedEvent fsSearch
+         <&> mapMaybe takeKeyValOfFeedEvent fsFeed
 
 
 cgiRegister_existing_form
@@ -241,23 +242,20 @@ cgiRegister_existing_form
 
         liftIO $ disconnect conn
 
-        outputFPS $ renderHtml
-         $ H.docTypeHtml
-         $ do   pageHeader "Event Registration"
-                pageBody
-                 $ H.div ! A.class_ "event"
-                 $ do   H.h2 "Event Registration"
-                        formEvent $ EventForm
-                         { eventFormPath                = pathRegister cc sRegId
-                         , eventFormFeedForm            = []
-                         , eventFormFeedEvent           = fsEvent
-                         , eventFormEventValue          = event
-                         , eventFormEventTypes          = []
-                         , eventFormAttendance          = psAttend
-                         , eventFormRegulars            = psRegulars
-                         , eventFormDojosAvail          = []
-                         , eventFormDetailsEditable     = False
-                         , eventFormAttendanceDeletable = False
-                         , eventFormCreatedByUser       = Just userCreatedBy
-                         , eventFormCreatedByPerson     = Just personCreatedBy }
+        cgiPagePlain "Event Registration"
+         $ H.div ! A.class_ "event"
+         $ do   H.h2 "Event Registration"
+                formEvent $ EventForm
+                 { eventFormPath                = pathRegister cc sRegId
+                 , eventFormFeedForm            = []
+                 , eventFormFeedEvent           = fsEvent
+                 , eventFormEventValue          = event
+                 , eventFormEventTypes          = []
+                 , eventFormAttendance          = psAttend
+                 , eventFormRegulars            = psRegulars
+                 , eventFormDojosAvail          = []
+                 , eventFormDetailsEditable     = False
+                 , eventFormAttendanceDeletable = False
+                 , eventFormCreatedByUser       = Just userCreatedBy
+                 , eventFormCreatedByPerson     = Just personCreatedBy }
 
