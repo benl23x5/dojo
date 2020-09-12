@@ -206,9 +206,4 @@ htmlEventEdit ss eform
         pageBody
          $ do   tablePaths $ pathsJump ss
 
-                tablePaths
-                 $ case eventId (eventFormEventValue eform) of
-                    Nothing     -> []
-                    Just eid    -> [pathEventView ss eid]
-
-                H.div ! A.class_ "event" $ formEventDetails eform
+                H.div ! A.class_ "event" $ formEventDetails ss eform

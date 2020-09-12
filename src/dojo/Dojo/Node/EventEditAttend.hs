@@ -135,7 +135,7 @@ cgiEventEditAttend ss inputs
 
         let eform
                 = EventForm
-                { eventFormPath                = pathEventEdit ss mEidIn
+                { eventFormPath                = pathEventEditAttend ss mEidIn
                 , eventFormFeedForm            = fsForm
                 , eventFormFeedEvent           = fsEvent
                 , eventFormEventValue          = event
@@ -197,7 +197,7 @@ cgiEventEdit_del ss conn meid pids
         -- can just return without doing anything.
         Nothing
          -> do  liftIO   $ disconnect conn
-                redirect $ flatten $ pathEventEdit ss Nothing
+                redirect $ flatten $ pathEventEditAttend ss Nothing
 
         -- We have an event record in the database, so need to actually delete
         -- attendance from it.
@@ -205,7 +205,7 @@ cgiEventEdit_del ss conn meid pids
          -> do  liftIO   $ mapM_ (deleteAttendance conn eid) pids
                 liftIO   $ commit conn
                 liftIO   $ disconnect conn
-                redirect $ flatten $ pathEventEdit ss (Just eid)
+                redirect $ flatten $ pathEventEditAttend ss (Just eid)
 
 
 -------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ cgiEventEdit_update
         --  that includes updated feedback.
         let fsFeed = fsUpdated ++ fsAddById ++ fsAddByName
         redirect $ flatten
-         $   pathEventEdit ss (Just eid)
+         $   pathEventEditAttend ss (Just eid)
          <&> mapMaybe takeKeyValOfFeedEvent fsFeed
 
 
@@ -299,10 +299,4 @@ htmlEventEdit ss eform
 
         pageBody
          $ do   tablePaths $ pathsJump ss
-
-                tablePaths
-                 $ case eventId (eventFormEventValue eform) of
-                    Nothing     -> []
-                    Just eid    -> [pathEventView ss eid]
-
-                H.div ! A.class_ "event" $ formEventAttend eform
+                H.div ! A.class_ "event" $ formEventAttend ss eform

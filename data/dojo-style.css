@@ -58,20 +58,20 @@ th
 
 td
 {       text-align:     left;
-        padding:        0.3ex;
+        padding:        0.2ex;
 }
 
 input
 {       font-size:      1em;
         width:          100%;
-        padding:        0.3ex;
+        padding:        0.2ex;
         box-sizing:     border-box;
 }
 
 select
 {       font-size:      1em;
         width:          100%;
-        padding:        0.3ex;
+        padding:        0.2ex;
         box-sizing:     border-box;
 }
 

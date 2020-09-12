@@ -85,11 +85,14 @@ tablePaths paths
  $ H.table
  $ H.tr $ mapM_ tdPath paths
 
- where  tdPath path
-         = H.td
-         $ H.a  ! A.href (H.toValue path)
-                $ H.toMarkup $ pathName path
+tdPath path
+ = H.td
+ $ H.a  ! A.href (H.toValue path)
+         $ H.toMarkup $ pathName path
 
+htmlPathLink path
+ = H.a  ! A.href (H.toValue path)
+        $ H.toMarkup $ pathName path
 
 
 

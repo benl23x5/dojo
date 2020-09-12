@@ -45,7 +45,7 @@ formEvent eform
         -- Event details.
         (if eventFormDetailsEditable eform
           then divEventEditDetails details fsForm
-          else divEventShowDetails details)
+          else divEventShowDetails details [])
 
         divEventAttendance  eform
         H.br
@@ -166,7 +166,7 @@ divAttendanceNew fsForm fsEvent event curStudents
                 = not $ null [x | FeedFormInvalid x _ _ <- fsForm]
 
         -- Show entry boxes for new names.
-        forM_ [0 .. 1] $ \ix ->
+        forM_ [0 .. 2] $ \ix ->
          trNewAttendance fsEvent bTakeFocus
                 hasInvalidFields curStudents ix
 

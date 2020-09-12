@@ -24,9 +24,9 @@ data EventDetails
 
 -------------------------------------------------------------------------------
 -- | Show the event details summary, which is not editable.
-divEventShowDetails :: EventDetails -> H.Html
-divEventShowDetails details
- = H.div ! A.id "event-details-edit" ! A.class_ "details"
+divEventShowDetails :: EventDetails -> [Html] -> H.Html
+divEventShowDetails details trExtra
+ = H.div ! A.id "event-details" ! A.class_ "details"
  $ do
         let event       = eventDetailsEvent details
         let mpCreated   = eventDetailsCreatedByPerson details
@@ -48,6 +48,7 @@ divEventShowDetails details
             ++ maybe "[sometime]" (\v -> " at " ++ pretty v) (eventTime event)
             ++ "."
 
+         sequence_ trExtra
 
 -------------------------------------------------------------------------------
 -- | Show the form to edit event details.

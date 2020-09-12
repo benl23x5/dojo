@@ -39,6 +39,9 @@ cgiEventView ss inputs
 
                 divAttendeesList ss event psAttend
 
+                when (sessionOwnsEvent ss event)
+                 $ tablePaths [pathEventEditAttend ss $ eventId event]
+
 cgiEventView _ inputs
  = throw $ FailNodeArgs "event view" inputs
 
@@ -67,9 +70,6 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
                 pathLink (pathEventEditDetails ss $ eventId event)
                 preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
 
-                pathLink (pathEventEditAttend ss $ eventId event)
-                preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
-
                 (case eventId event of
                   Just eid | null attendance
                     -> pathLink $ pathEventDel ss eid
@@ -88,7 +88,9 @@ divAttendeesList ss event people
  = H.div ! A.class_ "list" ! A.id "event-attendance-cur"
  $ H.table
  $ do   col' "index"; col' "Name"; col' "Fees"
-        tr $ do th "#"; th "attendees"; th "fees"
+        tr $ do th "#"
+                th "attendees"
+                th "fees" ! A.style "text-align: center"
 
         forM_ (zip [(1 :: Int)..] people) $ \(ix, person) -> tr $ do
 
@@ -97,10 +99,12 @@ divAttendeesList ss event people
          td' person
           $ maybe "(person)" pretty $ personDisplayName person
 
-         td' person
+         let Just pid = personId person
+         (H.td ! A.style "text-align: center")
+          $ (H.a ! A.href (H.toValue $ pathPersonView ss pid))
           $ case eventDate event of
-                Nothing   -> "unknown"
-                Just date -> pretty $ personFeeStatus date person
+                Nothing   -> H.string "unknown"
+                Just date -> H.string $ pretty $ personFeeStatus date person
 
  where  col' c  = col ! A.class_ c
 
@@ -111,4 +115,5 @@ divAttendeesList ss event people
 
          | otherwise
          = td   (H.toMarkup val)
+
 

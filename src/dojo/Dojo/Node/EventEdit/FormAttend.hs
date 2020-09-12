@@ -3,10 +3,13 @@ module Dojo.Node.EventEdit.FormAttend (formEventAttend) where
 import Dojo.Node.EventEdit.Arg
 import Dojo.Node.EventEdit.Base
 import Dojo.Node.EventEdit.Details
+import Dojo.Data.Session
 import Dojo.Data.Event
 import Dojo.Data.Person
 import Dojo.Framework.Form
 import Dojo.Framework
+import Dojo.Paths
+import Dojo.Chrome
 
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
@@ -17,8 +20,8 @@ import qualified Data.Set                       as Set
 -- | Produce a html form to edit tails of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
-formEventAttend :: EventForm -> Html
-formEventAttend eform
+formEventAttend :: Session -> EventForm -> Html
+formEventAttend ss eform
  = form ! A.action (H.toValue $ eventFormPath eform)
  $ do
         let path        = eventFormPath eform
@@ -42,7 +45,11 @@ formEventAttend eform
                 , eventDetailsEventTypes        = eventFormEventTypes eform
                 , eventDetailsDojosAvail        = eventFormDojosAvail eform }
 
+        let event = eventFormEventValue eform
         divEventShowDetails details
+         $ case eventId event of
+            Nothing     -> []
+            Just eid    -> [tdPath $ pathEventView ss eid]
 
         divEventAttendance  eform
         H.br
@@ -96,7 +103,7 @@ divAttendanceCur eform
          $ col ! A.class_ "actions"
 
         tr $ do th "#"
-                th "current attendees"
+                th "attendees"
                 when bCanDel $ th "del" ! A.style  "text-align: center"
 
         -- Highlight the people that were just added.
@@ -163,7 +170,7 @@ divAttendanceNew fsForm fsEvent event curStudents
                 = not $ null [x | FeedFormInvalid x _ _ <- fsForm]
 
         -- Show entry boxes for new names.
-        forM_ [0 .. 1] $ \ix ->
+        forM_ [0 .. 2] $ \ix ->
          trNewAttendance fsEvent bTakeFocus
                 hasInvalidFields curStudents ix
 
@@ -208,7 +215,7 @@ divRegulars eform
         col ! A.class_ "actions"
 
         tr $ do th ""
-                th "regular attendees"
+                th "regulars"
                 th ! A.style "text-align: center" $ "add"
 
         -- Add a link to add a regular attendee that is not already listed.
