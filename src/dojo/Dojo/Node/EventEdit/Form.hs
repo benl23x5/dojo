@@ -95,7 +95,7 @@ divAttendanceCur eform
          $ col ! A.class_ "actions"
 
         tr $ do th "#"
-                th "attendees"
+                th "current attendees"
                 when bCanDel $ th "del" ! A.style  "text-align: center"
 
         -- Highlight the people that were just added.

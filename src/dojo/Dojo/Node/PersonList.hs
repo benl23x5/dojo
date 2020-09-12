@@ -11,26 +11,14 @@ import qualified Text.Blaze.Html5.Attributes    as A
 
 -------------------------------------------------------------------------------
 -- | Table of all people with links to the per-person pages.
---      no args.
-cgiPersonList
-        :: Session -> [(String, String)]
-        -> CGI CGIResult
-
+cgiPersonList :: Session -> [(String, String)] -> CGI CGIResult
 cgiPersonList ss _inputs
  = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         people  <- liftIO $ getPeople conn
         liftIO $ disconnect conn
-        cgiPersonList_list ss people
 
-
-cgiPersonList_list ss people
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "People"
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                when (sessionIsAdmin ss)
+        cgiPageNavi "People" (pathsJump ss)
+         $ do   when (sessionIsAdmin ss)
                  $ tablePaths $ [pathPersonAdd ss]
 
                 divPersonList ss people

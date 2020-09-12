@@ -11,26 +11,14 @@ import qualified Text.Blaze.Html5.Attributes    as A
 
 -------------------------------------------------------------------------------
 -- | A table of people with links to the per-person pages.
---      no args.
-cgiEventList
-        :: Session -> [(String, String)]
-        -> CGI CGIResult
-
+cgiEventList :: Session -> [(String, String)] -> CGI CGIResult
 cgiEventList ss _inputs
  = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         events  <- liftIO $ getEventList conn
         liftIO $ disconnect conn
-        cgiEventList_list ss events
 
-
-cgiEventList_list ss events
- = outputFPS $ renderHtml
- $ H.docTypeHtml
- $ do   pageHeader "Events"
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                when (sessionIsAdmin ss)
+        cgiPageNavi "Events" (pathsJump ss)
+         $ do   when (sessionIsAdmin ss)
                  $ tablePaths [pathEventAdd ss]
 
                 divEventList ss events

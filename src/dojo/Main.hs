@@ -29,6 +29,7 @@ import qualified System.Environment                     as S
 import qualified Network.CGI                            as CGI
 import qualified Text.Blaze.Html5                       as H
 import qualified Text.Blaze.Html5.Attributes            as A
+
 import qualified Text.Blaze.Html.Renderer.String        as S
 import qualified Control.Exception                      as Control
 import Control.Monad.Catch                              as C

@@ -1,29 +1,68 @@
 
 module Dojo.Chrome where
 import Dojo.Framework
+
+import qualified Network.CGI                    as CGI
+
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
+import qualified Text.Blaze.Html.Renderer.Utf8  as R
 
 
+-------------------------------------------------------------------------------
+-- | Output a page via CGI.
+cgiPage :: Html -> CGI.CGI CGI.CGIResult
+cgiPage htmlContent
+ = CGI.outputFPS
+ $ R.renderHtml
+ $ H.docTypeHtml
+ $ H.html htmlContent
+
+
+-- | Output a Navi page via CGI.
+cgiPageNavi :: String -> [Path] -> Html -> CGI.CGI CGI.CGIResult
+cgiPageNavi sName paths htmlContent
+ = cgiPage $ pageNavi sName paths htmlContent
+
+
+-- | Construct page header including
 pageHeader :: String -> Html
 pageHeader name
  = H.head
  $ do   H.title $ H.toMarkup name
-        H.preEscapedToHtml $ unlines
-            [ "<style type=\"text/css\">"
-            , "<!-- @import url(\"dojo-style.css\"); -->"
-            , "</style>"
-            , "<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\""
-            , "      rel=\"stylesheet\">" ]
+        H.preEscapedToHtml $ unlines ssHeader
+ where
+  ssHeader =
+   [ "<style type=\"text/css\">"
+   , "<!-- @import url(\"dojo-style.css\"); -->"
+   , "</style>"
+   , "<link href=\"https://fonts.googleapis.com/icon?family=Material+Icons\" rel=\"stylesheet\">" ]
 
+
+-------------------------------------------------------------------------------
+-- | Main body of the page.
 pageBody :: Html -> Html
 pageBody content
-        = H.body
+ = H.body
         $ H.div ! A.id "container"
         $ H.div ! A.id "content"
         $ content
 
 
+-- | Construct a complete page with navigation bar on the top.
+pageNavi
+        :: String       -- ^ Page name
+        -> [Path]       -- ^ Navigation paths
+        -> Html -> Html
+
+pageNavi sName paths htmlContents
+ = do   pageHeader sName
+        pageBody
+         $ do   tablePaths paths
+                htmlContents
+
+
+-- | Table with navigation paths
 tablePaths :: [Path] -> Html
 tablePaths paths
  = H.div ! A.class_ "paths"
@@ -34,3 +73,7 @@ tablePaths paths
          = H.td
          $ H.a  ! A.href (H.toValue path)
                 $ H.toMarkup $ pathName path
+
+
+
+
