@@ -33,6 +33,8 @@ divEventShowDetails details
         let muCreated   = eventDetailsCreatedByUser details
 
         H.table $ do
+         tr $ do th "event"
+
          tr $ td $ H.string
             $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
             ++ " by "
@@ -59,6 +61,22 @@ divEventEditDetails details fsForm
         let eventTypes  = eventDetailsEventTypes details
         let dojos       = eventDetailsDojosAvail details
 
+        let sType = maybe "" pretty $ eventType event
+        H.table
+         $ do   tr $ do thInputFeedback fsForm "Type" "type"
+                tr $ do td $ (H.select ! A.name "Type")
+                         $ do   H.option ! A.value "" $ "(unspecified)"
+                                forM_ (map pretty eventTypes) (optSelected sType)
+
+        -- When this is a new event put focus on the location input field,
+        -- otherwise allow focus to be taken by the last person entry field.
+        let sDojo = maybe "" pretty $ eventLocation event
+        H.table
+         $ do   tr $ do thInputFeedback fsForm "Location" "location"
+                tr $ do td $ (H.select ! A.name "Location")
+                         $ do   H.option ! A.value "" $ "(unspecified)"
+                                forM_ (map pretty dojos) (optSelected sDojo)
+
         tableFields fsForm
          [ ( "Date", "date (dd-mm-yyyy)"
            , maybe "" pretty $ eventDate event
@@ -71,22 +89,6 @@ divEventEditDetails details fsForm
            , Just "(required)"
            , False)
          ]
-
-        -- When this is a new event put focus on the location input field,
-        -- otherwise allow focus to be taken by the last person entry field.
-        let sDojo = maybe "" pretty $ eventLocation event
-        H.table
-         $ do   tr $ do th "location"
-                tr $ do td $ (H.select ! A.name "Location")
-                         $ do   H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty dojos) (optSelected sDojo)
-
-        let sType = maybe "" pretty $ eventType event
-        H.table
-         $ do   tr $ do th "type"
-                tr $ do td $ (H.select ! A.name "Type")
-                         $ do   H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty eventTypes) (optSelected sType)
 
  where  optSelected sSel sVal
          = (H.option
