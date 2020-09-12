@@ -89,6 +89,7 @@ Executable dojo
 
         Dojo.Node.EventEdit.Arg
         Dojo.Node.EventEdit.Form
+        Dojo.Node.EventEdit.FormDetails
         Dojo.Node.EventEdit.Feed
         Dojo.Node.EventEdit.Search
         Dojo.Node.EventEdit.Base
@@ -97,6 +98,7 @@ Executable dojo
         Dojo.Node.EventList
         Dojo.Node.EventView
         Dojo.Node.EventEdit
+        Dojo.Node.EventEditDetails
         Dojo.Node.EventDel
 
         Dojo.Node.ClassList

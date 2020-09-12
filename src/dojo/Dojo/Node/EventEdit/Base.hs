@@ -4,10 +4,6 @@ import Dojo.Node.EventEdit.Arg
 import Dojo.Data.Event
 import Dojo.Data.User
 import Dojo.Data.Person
-import qualified Text.Blaze.Html5               as H
-import qualified Text.Blaze.Html5.Attributes    as A
-import qualified Data.Set                       as Set
-import Data.String
 import Dojo.Framework
 
 

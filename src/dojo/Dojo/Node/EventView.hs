@@ -68,6 +68,9 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
          $ tr $ td $ do
                 pathLink (pathEventEdit ss $ eventId event)
                 preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
+                pathLink (pathEventEditDetails ss $ eventId event)
+
+                preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
                 (case eventId event of
                   Just eid | null attendance
                     -> pathLink $ pathEventDel ss eid

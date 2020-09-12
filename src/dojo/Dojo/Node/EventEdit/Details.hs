@@ -63,9 +63,10 @@ divEventEditDetails details fsForm
          [ ( "Date", "date (dd-mm-yyyy)"
            , maybe "" pretty $ eventDate event
            , Just "(required)"
-           , False)
+           , False) ]
 
-         , ( "Time", "time (hh:mm 24hr)"
+        tableFields fsForm
+         [ ( "Time", "time (hh:mm 24hr)"
            , maybe "" pretty $ eventTime event
            , Just "(required)"
            , False)
@@ -73,20 +74,17 @@ divEventEditDetails details fsForm
 
         -- When this is a new event put focus on the location input field,
         -- otherwise allow focus to be taken by the last person entry field.
-        --  TODO:  reinstate focus on location when eid == 0
-        --  let EventId eid = eventId event
         let sDojo = maybe "" pretty $ eventLocation event
-        let sType = maybe "" pretty $ eventType event
         H.table
-         $ do   col ! A.class_ "Col2A"
-                col ! A.class_ "Col2B"
-                tr $ do th "location"; th "type"
-                tr $ do
-                        td $ (H.select ! A.name "Location")
+         $ do   tr $ do th "location"
+                tr $ do td $ (H.select ! A.name "Location")
                          $ do   H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty dojos) (optSelected sDojo)
 
-                        td $ (H.select ! A.name "Type")
+        let sType = maybe "" pretty $ eventType event
+        H.table
+         $ do   tr $ do th "type"
+                tr $ do td $ (H.select ! A.name "Type")
                          $ do   H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty eventTypes) (optSelected sType)
 

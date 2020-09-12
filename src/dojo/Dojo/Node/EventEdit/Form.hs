@@ -1,5 +1,5 @@
 
-module Dojo.Node.EventEdit.Form (formEvent, EventForm(..)) where
+module Dojo.Node.EventEdit.Form (formEvent) where
 import Dojo.Node.EventEdit.Arg
 import Dojo.Node.EventEdit.Base
 import Dojo.Node.EventEdit.Details

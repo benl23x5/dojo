@@ -33,7 +33,7 @@ import Text.Blaze
         hiding ((!?))
 
 import Text.Blaze.Html5
-        hiding (map, span, (!?), main)
+        hiding (map, span, (!?), main, details)
 
 import Text.Blaze.Html.Renderer.Utf8
         (renderHtml)

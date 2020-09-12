@@ -1,9 +1,8 @@
 
-module Dojo.Node.EventEdit (cgiEventEdit) where
+module Dojo.Node.EventEditDetails (cgiEventEditDetails) where
 import Dojo.Node.EventEdit.Base
-import Dojo.Node.EventEdit.Search
 import Dojo.Node.EventEdit.Feed
-import Dojo.Node.EventEdit.Form
+import Dojo.Node.EventEdit.FormDetails
 import Dojo.Node.EventEdit.Arg
 import Dojo.Node.Logout
 import Dojo.Data.Event
@@ -25,18 +24,6 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --
 --    ?ee [&eid=INT] ...
 --
---    ?ee ... &addPerson=PersonId ...
---      (action) Add people as attendees to this event,
---               then show the entry form.
---
---    ?ee ... &delPerson=PersonId ...
---      (action) Delete people as attendees to this event,
---               then show the entry form.
---
---    ?ee ... &addName=STRING ...
---      (action) Add people as attendees to this event,
---               then show the entry form.
---
 --    ?ee ... &fu=FieldName ...
 --      (feedback) Feedback field updated.
 --
@@ -44,8 +31,8 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --      (feedback) Feedback person added.
 --
 --
-cgiEventEdit :: Session -> [(String, String)] -> CGI CGIResult
-cgiEventEdit ss inputs
+cgiEventEditDetails :: Session -> [(String, String)] -> CGI CGIResult
+cgiEventEditDetails ss inputs
  = do   -- Connect to the database.
         conn <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
 
@@ -66,50 +53,20 @@ cgiEventEdit ss inputs
 
         -- Split out fields.
         let updates  = [ (field, value) | ArgUpdate field value <- args ]
-        let pidsAdd  = [ pid  | ArgAddPerson pid <- args ]
-        let pidsDel  = [ pid  | ArgDelPerson pid <- args ]
-        let newNames = [ name | ArgAddName name <- args ]
 
         -- Load form feedback from arguments.
         let fsForm = mapMaybe takeFeedFormOfArg args
-
-        -- If there is feedback saying that a person search found multiple
-        --  matching person ids then lookup the full details so we can display
-        --  the multiple names in feedback. Also renumber the feedback so any
-        --  search terms that are still unresolved are packed to the front
-        --  of the input list.
-        fsEvent <- liftIO $ fmap concat
-                $  mapM (expandMultiPersonId conn)
-                $  renumberSearchFeedback
-                $  [fe | ArgFeedEvent fe <- args]
 
         -- Get current dims lists.
         dojos      <- liftIO $ getDojos conn
         eventTypes <- liftIO $ getEventTypes conn
 
-
         -- Lookup the current event and attendance if one was specified,
         --  otherwise create a new placeholder that we can update.
-        (event, psAttend, psRegulars) <- if
+        event <- if
          | Just eid <- mEidIn
-         -> do  -- TODO: handle concurrent event deletion
-                Just event <- liftIO $ getEvent      conn eid
-                psAttend   <- liftIO $ getAttendance conn eid
-
-                -- Lookup a matching class id if there is one,
-                -- which will give us regular attendees to events
-                -- of this class.
-                mCid       <- liftIO $ getClassIdOfEventId conn eid
-                psRegularsCountLast
-                 <- case mCid of
-                        Nothing  -> return []
-                        Just cid -> liftIO $ getRecentRegularsOfClassId conn cid
-
-                let psRegulars
-                        = [ pReg | (pReg, _nCount, _dateLast)
-                                 <- psRegularsCountLast]
-
-                return (event, psAttend, psRegulars)
+         -> do  Just event <- liftIO $ getEvent      conn eid
+                return event
 
          | otherwise
          -> do  -- Use the current time as a placeholder until the
@@ -123,7 +80,7 @@ cgiEventEdit ss inputs
                           { eventDate      = Just edate
                           , eventTime      = Just etime
                           , eventCreatedBy = Just $ sessionUserId ss }
-                return  (event, [], [])
+                return event
 
         (userCreatedBy, personCreatedBy)
          <- liftIO $ getEventCreatedBy conn event
@@ -138,13 +95,13 @@ cgiEventEdit ss inputs
 
         let eform
                 = EventForm
-                { eventFormPath                = pathEventEdit ss mEidIn
+                { eventFormPath                = pathEventEditDetails ss mEidIn
                 , eventFormFeedForm            = fsForm
-                , eventFormFeedEvent           = fsEvent
+                , eventFormFeedEvent           = []
                 , eventFormEventValue          = event
                 , eventFormEventTypes          = eventTypes
-                , eventFormAttendance          = psAttend
-                , eventFormRegulars            = psRegulars
+                , eventFormAttendance          = []
+                , eventFormRegulars            = []
                 , eventFormDojosAvail          = dojos
                 , eventFormDetailsEditable     = True
                 , eventFormAttendanceDeletable = True
@@ -152,19 +109,10 @@ cgiEventEdit ss inputs
                 , eventFormCreatedByPerson     = Just $ personCreatedBy }
 
         if
-         -- Delete attendees from the event by person id.
-         | not $ null pidsDel
-         -> if bSessionOwnsEvent
-                then cgiEventEdit_del ss conn mEidIn pidsDel
-                else cgiLogout ss
-
-         -- Apply updates or add new people based on their names.
+         -- Apply updates
          |   (not $ null updates)
-          || (not $ null newNames)
-          || (not $ null pidsAdd)
          -> if bSessionOwnsEvent
-                then cgiEventEdit_update
-                        ss conn mEidIn eform updates pidsAdd newNames
+                then cgiEventEdit_update ss conn mEidIn eform updates
                 else cgiLogout ss
 
          -- Show form to update an existing event,
@@ -184,34 +132,6 @@ cgiEventEdit ss inputs
 
 
 -------------------------------------------------------------------------------
--- Delete some people from the event.
-cgiEventEdit_del
-        :: IConnection conn
-        => Session
-        -> conn
-        -> Maybe EventId
-        -> [PersonId]
-        -> CGI CGIResult
-
-cgiEventEdit_del ss conn meid pids
- = case meid of
-        -- If we have no eid then the initial event record hasn't been added
-        -- to the database yet. It doesn't have any attendance on it, so we
-        -- can just return without doing anything.
-        Nothing
-         -> do  liftIO   $ disconnect conn
-                redirect $ flatten $ pathEventEdit ss Nothing
-
-        -- We have an event record in the database, so need to actually delete
-        -- attendance from it.
-        Just eid
-         -> do  liftIO   $ mapM_ (deleteAttendance conn eid) pids
-                liftIO   $ commit conn
-                liftIO   $ disconnect conn
-                redirect $ flatten $ pathEventEdit ss (Just eid)
-
-
--------------------------------------------------------------------------------
 -- We got some updates.
 --  Update the database and show the updated form.
 cgiEventEdit_update
@@ -222,25 +142,23 @@ cgiEventEdit_update
                                 --  then just its eventId.
         -> EventForm             -- Event data to edit, shown in form.
         -> [(String, String)]   -- Fields to update.
-        -> [PersonId]           -- pids of people to add as attendees
-        -> [String]             -- Names of people to add as attendees.
         -> CGI CGIResult
 
 -- If the event we want to edit doesn't exist in the database yet,
 -- then add now to create the event id.
 cgiEventEdit_update
         ss conn Nothing
-        eform updates pidsAdd newNames
+        eform updates
  = do   event' <- liftIO $ insertEvent conn $ eventFormEventValue eform
         cgiEventEdit_update
                 ss conn (eventId event')
                 eform { eventFormEventValue = event'}
-                updates pidsAdd newNames
+                updates
 
 -- Edit an event already in the database.
 cgiEventEdit_update
         ss conn (Just eid)
-        eform updates pidsAdd newNames
+        eform updates
  = case loadEvent updates (eventFormEventValue eform) of
         Left fieldErrors -> goError fieldErrors
         Right eventNew   -> goNewEvent eventNew
@@ -269,27 +187,12 @@ cgiEventEdit_update
         -- Feedback for updated fields.
         let fsUpdated   = map FeedEventFieldUpdated diffFields
 
-        let psAttend    = eventFormAttendance eform
-
-        -- Add attendees based on provided person ids.
-        fsAddById
-         <- liftM concat $ liftIO
-         $  mapM (addPersonByPersonId conn eventNew psAttend) pidsAdd
-
-        -- Find and add attendees based on the supplied names.
-        fsAddByName
-         <- liftM concat $ liftIO
-         $  zipWithM (addPersonByName conn eventNew psAttend) [0..] newNames
-
         liftIO $ commit conn
         liftIO $ disconnect conn
 
-        -- Redirect to the same page with a clean path,
-        --  that includes updated feedback.
-        let fsFeed = fsUpdated ++ fsAddById ++ fsAddByName
         redirect $ flatten
-         $   pathEventEdit ss (Just eid)
-         <&> mapMaybe takeKeyValOfFeedEvent fsFeed
+         $   pathEventEditDetails ss (Just eid)
+         <&> mapMaybe takeKeyValOfFeedEvent fsUpdated
 
 
 -------------------------------------------------------------------------------
@@ -308,5 +211,4 @@ htmlEventEdit ss eform
                     Nothing     -> []
                     Just eid    -> [pathEventView ss eid]
 
-                H.div ! A.class_ "event" $ formEvent eform
-
+                H.div ! A.class_ "event" $ formEventDetails eform

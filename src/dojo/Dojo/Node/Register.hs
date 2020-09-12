@@ -1,6 +1,7 @@
 
 module Dojo.Node.Register (cgiRegister) where
 import Dojo.Node.ClassView
+import Dojo.Node.EventEdit.Base
 import Dojo.Node.EventEdit.Search
 import Dojo.Node.EventEdit.Form
 import Dojo.Node.EventEdit.Feed
