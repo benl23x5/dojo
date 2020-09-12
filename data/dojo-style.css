@@ -194,6 +194,8 @@ select
 
 #person-summary    .Type        { width: 10em;  }
 
+/* Class View **********************************************/
+#class-regulars .Fees           { width: 2em;   }
 
 /* Event List *********************************************/
 .event-list .Date               { width: 6em;   }

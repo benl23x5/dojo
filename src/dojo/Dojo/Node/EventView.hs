@@ -97,7 +97,7 @@ divAttendeesList ss event people
          td $ H.toMarkup $ show ix
 
          td' person
-          $ maybe "(person)" pretty $ personDisplayName person
+          $ personDisplayName person
 
          let Just pid = personId person
          (H.td ! A.style "text-align: center")
@@ -109,11 +109,9 @@ divAttendeesList ss event people
  where  col' c  = col ! A.class_ c
 
         td' person val
+         = td $ linkView person (H.toMarkup $ maybe "" pretty val)
+
+        linkView person hh
          | Just pid <- personId person
-         = td $ (H.a ! A.href (H.toValue $ pathPersonView ss pid))
-                (H.toMarkup val)
-
-         | otherwise
-         = td   (H.toMarkup val)
-
-
+         = (a ! A.href (H.toValue $ pathPersonView ss pid)) hh
+         | otherwise = hh

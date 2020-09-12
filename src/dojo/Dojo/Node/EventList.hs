@@ -31,21 +31,27 @@ divEventList ss eventList
  = H.div ! A.class_ "list event-list"
  $ H.table
  $ do   col' "Date"; col' "Time"; col' "Location"; col' "Pax"
-        tr $ do th "date"; th "time"; th "location"; th "pax"
+
+        tr $ do th "date"
+                th "time"
+                th "location"
+                (th ! A.style "text-align: center") "pax"
 
         forM_ eventList $ \(event, pax) -> tr $ do
          td' event (eventDate event)
          td' event (eventTime event)
          td' event (eventLocation event)
-         td' event (Just $ show pax)
+
+         (td ! A.style "text-align: center")
+          $ linkView event (H.string $ show pax)
+
 
  where  col' c  = col ! A.class_ c
 
         td' event val
+         = td $ linkView event (H.toMarkup $ maybe "" pretty val)
+
+        linkView event hh
          | Just eid <- eventId event
-         = td $ (a ! A.href (H.toValue $ pathEventView ss eid))
-                (H.toMarkup $ maybe "" pretty val)
-
-         | otherwise
-         = td $ (H.toMarkup $ maybe "" pretty val)
-
+         = (a ! A.href (H.toValue $ pathEventView ss eid)) hh
+         | otherwise = hh

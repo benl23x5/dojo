@@ -128,10 +128,10 @@ divClassDetails
 -- td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
   pathNew
-    = Path "Create New Event of Class"
+    = Path "New Event of Class"
         (sessionCgiName ss)
         [ ("s",         show $ sessionHash ss)
-        , ("n",         "ee")
+        , ("n",         "eed")
         , ("Location",  maybe "" pretty $ classLocation classs)
         , ("Type",      maybe "" pretty $ classType classs)
         , ("Time",      maybe "" pretty $ classTimeStart classs) ]
@@ -193,25 +193,31 @@ divRegularsList
         -> Html
 
 divRegularsList ss regulars
- = H.div ! A.class_ "list class-regulars"
+ = H.div ! A.class_ "list" ! A.id "class-regulars"
  $ H.table
  $ do
         col ! A.class_ "Date"
         col ! A.class_ "Name"
         col ! A.class_ "Fees"
-        tr $ do th "last attended"; th "regular attendee"; th "fees"
+        tr $ do th "last attended"
+                th "regular attendee"
+                th "fees" ! A.style "text-align: center"
 
         forM_ regulars $ \(person, _nCount, dateLast) -> tr $ do
          td' person (Just dateLast)
          td' person (personDisplayName person)
-         td' person (Just $ personFeeStatus dateLast person)
 
+         let Just pid = personId person
+         (H.td ! A.style "text-align: center")
+          $ (H.a ! A.href (H.toValue $ pathPersonView ss pid))
+          $ H.string $ pretty $ personFeeStatus dateLast person
 
- where  td' person val
+ where
+        td' person val
+         = td $ linkView person (H.toMarkup $ maybe "" pretty val)
+
+        linkView person hh
          | Just pid <- personId person
-         = td $ (a ! A.href (H.toValue $ pathPersonView ss pid))
-                (H.toMarkup $ maybe "" pretty $ val)
-
-         | otherwise
-         = td (H.toMarkup $ maybe "" pretty $ val)
+         = (a ! A.href (H.toValue $ pathPersonView ss pid)) hh
+         | otherwise = hh
 
