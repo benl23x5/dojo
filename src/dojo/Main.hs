@@ -12,6 +12,7 @@ import Dojo.Node.EventList
 import Dojo.Node.EventView
 import Dojo.Node.EventEdit
 import Dojo.Node.EventEditDetails
+import Dojo.Node.EventEditAttend
 import Dojo.Node.EventDel
 import Dojo.Node.PersonList
 import Dojo.Node.PersonView
@@ -119,6 +120,7 @@ cgiTop cc
         "ev"    -> cgiEventView         ss inputs
         "ee"    -> cgiEventEdit         ss inputs
         "eed"   -> cgiEventEditDetails  ss inputs
+        "eea"   -> cgiEventEditAttend   ss inputs
         "ed"    -> cgiEventDel          ss inputs
         "cl"    -> cgiClassList         ss inputs
         "cv"    -> cgiClassView         ss inputs

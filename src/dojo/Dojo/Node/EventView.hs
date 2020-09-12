@@ -49,9 +49,7 @@ divEventDetails :: Session -> Event -> User -> Person -> [Person] -> Html
 divEventDetails ss event userCreatedBy personCreatedBy attendance
  = H.div ! A.class_ "details" ! A.id "event-details-view"
  $ H.table
- $ do   tr $ do th "event"
-
-        tr $ td $ H.string
+ $ do   tr $ td $ H.string
            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
            ++ " by "
            ++ maybe "" pretty (personDisplayName personCreatedBy)
@@ -66,11 +64,12 @@ divEventDetails ss event userCreatedBy personCreatedBy attendance
         -- Event can be edited by admin or the user that created it.
         when (sessionOwnsEvent ss event)
          $ tr $ td $ do
-                pathLink (pathEventEdit ss $ eventId event)
-                preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
                 pathLink (pathEventEditDetails ss $ eventId event)
-
                 preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
+
+                pathLink (pathEventEditAttend ss $ eventId event)
+                preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
+
                 (case eventId event of
                   Just eid | null attendance
                     -> pathLink $ pathEventDel ss eid

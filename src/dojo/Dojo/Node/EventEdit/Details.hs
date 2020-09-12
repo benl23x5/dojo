@@ -33,8 +33,6 @@ divEventShowDetails details
         let muCreated   = eventDetailsCreatedByUser details
 
         H.table $ do
-         tr $ do th "event"
-
          tr $ td $ H.string
             $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
             ++ " by "
