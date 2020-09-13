@@ -55,3 +55,4 @@ divEventList ss eventList
          | Just eid <- eventId event
          = (a ! A.href (H.toValue $ pathEventView ss eid)) hh
          | otherwise = hh
+

@@ -137,7 +137,7 @@ pathEventAdd ss
  = Path "Add Event"
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
-        , ("n", "ee")]
+        , ("n", "eed")]
 
 
 pathEventDel :: Session -> EventId -> Path
