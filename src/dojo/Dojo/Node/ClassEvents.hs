@@ -35,16 +35,15 @@ cgiClassEvents ss inputs
         pOwner          <- liftIO $ getPerson conn $ userPersonId uOwner
         liftIO $ disconnect conn
 
-        let pathClass = pathClassView ss cid
         cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
+         $ H.div ! A.class_ "class-events"
          $ do
-                H.table
-                 $ do   tr $ th "class"
-                        trClassSummary classs uOwner pOwner
-                        tr $ td $ (H.a ! A.href (H.toValue pathClass))
-                                $ H.toMarkup $ pathName pathClass
+                H.table $ trClassSummary classs uOwner pOwner
 
-                divEventList ss events
+                tableActions [ pathClassView ss cid ]
+
+                H.div ! A.class_ "details"
+                 $ divEventList ss events
 
 cgiClassEvents _ inputs
  = throw $ FailNodeArgs "class events" inputs

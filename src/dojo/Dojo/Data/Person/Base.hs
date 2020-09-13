@@ -230,6 +230,23 @@ personDisplayName person
          $  personShortName person
 
 
+-- | Get the alias name 'First (Preferred) Family'
+--   which is displayed in the Person view.
+personAliasName :: Person -> Maybe String
+personAliasName person
+ | Just (PersonName sFirst)  <- personFirstName person
+ , Just (PersonName sFamily) <- personFamilyName person
+ = case personPreferredName person of
+        Just (PersonName sPreferred)
+         -> Just $ sFirst ++ " (" ++ sPreferred ++ ") " ++ sFamily
+
+        Nothing
+         -> Just $ sFirst ++ " " ++ sFamily
+
+ | otherwise
+ = personDisplayName person
+
+
 -- Comparisons  ---------------------------------------------------------------
 -- | Get the table field names of fields that differ in two person records.
 diffPerson :: Person -> Person -> [String]

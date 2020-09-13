@@ -12,15 +12,14 @@ import Dojo.Data.Event.Presentation
 import Dojo.Data.Person
 import Dojo.Data.User
 import Dojo.Framework
-
 import qualified Data.Map.Strict        as Map
-import Data.Map.Strict                  (Map)
 
 
 -- | Summarize how many events are in each type.
-summarizeEventTypes :: [Event] -> Map EventType Integer
+summarizeEventTypes :: [Event] -> [(EventType, Integer)]
 summarizeEventTypes events
- = foldl' (Map.unionWith (+)) Map.empty
+ = reverse $ sortOn snd $ Map.toList
+ $ foldl' (Map.unionWith (+)) Map.empty
  $ catMaybes
  $ [ case eventType event of
         Nothing -> Nothing

@@ -9,6 +9,8 @@ import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
 import Dojo.Framework
+import qualified Text.Blaze.Html5               as H
+import qualified Text.Blaze.Html5.Attributes    as A
 
 
 -------------------------------------------------------------------------------
@@ -80,6 +82,10 @@ cgiPersonEdit_entry
 cgiPersonEdit_entry ss person dojos memberLevels fsFeed
  = cgiPageNavi "People" "Editing Person" (pathsJump ss)
  $ do
+        let sName = fromMaybe "[person]" $ personAliasName person
+        H.div ! A.class_ "person-alias-name"
+         $ H.table $ tr $ td $ H.string sName
+
         tableActions
          $ case personId person of
             Nothing     -> []

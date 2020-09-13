@@ -23,9 +23,9 @@ data EventDetails
 
 
 -- | Event details.
-divEventDetails :: Event -> User -> Person -> Html
-divEventDetails event userCreatedBy personCreatedBy
- = H.div ! A.class_ "details event-description"
+divEventDescription :: Event -> User -> Person -> Html
+divEventDescription event userCreatedBy personCreatedBy
+ = H.div ! A.class_ "event-description"
  $ H.table
  $ do   tr $ td $ H.string
            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)

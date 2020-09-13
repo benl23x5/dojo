@@ -32,9 +32,9 @@ cgiEventView ss inputs
         liftIO $ disconnect conn
 
         cgiPageNavi "Events" (eventDisplayName event) (pathsJump ss)
-         $ H.div ! A.id "event-view"
+         $ H.div ! A.class_ "event-view"
          $ do
-                divEventDetails event userCreatedBy personCreatedBy
+                divEventDescription event userCreatedBy personCreatedBy
 
                 when (sessionOwnsEvent ss event)
                  $ tableActions

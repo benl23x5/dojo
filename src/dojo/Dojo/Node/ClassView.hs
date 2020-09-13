@@ -31,10 +31,7 @@ import qualified Data.Time                      as Time
 -------------------------------------------------------------------------------
 -- | View a single class, using a vertical form.
 --      &cid=NAT   View the class with this id.
-cgiClassView
-        :: Session -> [(String, String)]
-        -> CGI CGIResult
-
+cgiClassView :: Session -> [(String, String)] -> CGI CGIResult
 cgiClassView ss inputs
  | Just strClassId  <- lookup "cid" inputs
  , Right cid        <- parse strClassId
@@ -79,13 +76,15 @@ divClassDetails
 divClassDetails
         ss cid classs uOwner pOwner
         eventList regularsList
- = H.div ! A.class_ "details" ! A.id "class-details-view"
+ = H.div ! A.class_ "class-view"
  $ do
         H.table
          $ do   trClassSummary classs uOwner pOwner
 
-                tr $ td $ (H.a ! A.href (H.toValue pathNew))
-                        $ H.toMarkup $ pathName pathNew
+        tableActions
+         [ pathNew
+         , pathClassEvents ss cid
+         , pathClassRegulars ss cid ]
 
         -- First / final date tracking only matters when searching
         -- for events, so only relevant to admins.
@@ -97,37 +96,35 @@ divClassDetails
 --              tr $ do td' $ classDateFirst classs
 --                      td' $ classDateFinal classs
 
+        H.div ! A.class_ "details"
+         $ do
+                -- Show events of this class.
+                -- TODO: push limit into query.
+                divEventList ss    $ take 20 eventList
 
-        -- Show events of this class.
-        -- TODO: push limit into query.
-        divEventList ss    $ take 20 eventList
-        tablePaths [pathClassEvents ss cid ]
+                -- Show regular attendees
+                -- TODO: push limit into query.
+                divRegularsList ss $ take 20 regularsList
 
-        -- Show regular attendees
-        -- TODO: push limit into query.
-        divRegularsList ss $ take 20 regularsList
-        tablePaths [pathClassRegulars ss cid]
+                -- Try to generate the registration code.
+                --  We need to have the type, location day,
+                --  start and end times set.
 
-        -- Try to generate the registration code.
-        --  We need to have the type, location day,
-        --  start and end times set.
+                -- TODO: get website name from global site config.
+                let mReg = registrationLinkOfClass
+                                "http://dojo.ouroborus.net"
+                                (configQrSaltActive $ sessionConfig ss)
+                                classs
 
-        -- TODO: get website name from global site config.
-        let mReg = registrationLinkOfClass
-                        "http://dojo.ouroborus.net"
-                        (configQrSaltActive $ sessionConfig ss)
-                        classs
-
-        (case mReg of
-         Nothing -> return ()
-         Just (sRegLink, sRegId)
-          -> goCode sRegLink sRegId)
+                (case mReg of
+                 Nothing -> return ()
+                 Just (sRegLink, sRegId)
+                  -> goCode sRegLink sRegId)
 
  where
--- td' val = td $ H.toMarkup $ maybe "" pretty $ val
 
   pathNew
-    = Path "New Event of Class"
+    = Path "New Event"
         (sessionCgiName ss)
         [ ("s",         show $ sessionHash ss)
         , ("n",         "eed")
@@ -148,14 +145,15 @@ divClassDetails
         let ssPng64 = BC.unpack bsPng64
         let ssPage  = "data:image/png;base64, " ++ ssPng64
 
-        H.table
+        H.div ! A.class_ "registration-code"
+         $ H.table
          $ do   tr $ do th "registration QR code"
                 tr $ td $ (H.a ! A.href (H.toValue sRegLink))
                            (H.img ! A.class_ "qrcode" ! A.src (fromString ssPage))
                 tr $ td $ (H.a ! A.href (H.toValue sRegLink)) "Registration Page"
 
-
-        H.table
+        H.div ! A.class_ "registration-id"
+         $ H.table
          $ do   tr $ th "registration QR identifier"
                 tr $ td $ (H.div ! A.class_ "qrident") $ H.string sRegId
 
@@ -192,7 +190,7 @@ divRegularsList
         -> Html
 
 divRegularsList ss regulars
- = H.div ! A.class_ "list" ! A.id "class-regulars"
+ = H.div ! A.class_ "list class-regulars"
  $ H.table
  $ do
         col ! A.class_ "Date"

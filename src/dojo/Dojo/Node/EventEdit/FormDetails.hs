@@ -42,7 +42,7 @@ formEventDetails ss eform
         let event = eventFormEventValue eform
         let Just userCreatedBy   = eventFormCreatedByUser eform
         let Just personCreatedBy = eventFormCreatedByPerson eform
-        divEventDetails event userCreatedBy personCreatedBy
+        divEventDescription event userCreatedBy personCreatedBy
 
         (case eventId event of
           Nothing  -> return ()

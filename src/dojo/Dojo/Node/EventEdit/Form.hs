@@ -48,7 +48,7 @@ formEvent eform
         -- Event details.
         (if eventFormDetailsEditable eform
           then divEventEditDetails details fsForm
-          else divEventDetails
+          else divEventDescription
                 (eventFormEventValue eform)
                 userCreatedBy
                 personCreatedBy)

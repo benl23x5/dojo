@@ -215,7 +215,7 @@ pathClassView ss (ClassId cid)
 
 pathClassEvents :: Session -> ClassId -> Path
 pathClassEvents ss (ClassId cid)
- = Path "All Events of Class"
+ = Path "All Events"
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "ce")
@@ -224,7 +224,7 @@ pathClassEvents ss (ClassId cid)
 
 pathClassRegulars :: Session -> ClassId -> Path
 pathClassRegulars ss (ClassId cid)
- = Path "All Regulars of Class"
+ = Path "All Regulars"
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "cr")

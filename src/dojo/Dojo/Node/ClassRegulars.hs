@@ -40,15 +40,16 @@ cgiClassRegulars ss inputs
 
         liftIO $ disconnect conn
 
-        let pathClass = pathClassView ss cid
         cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
-         $ do   H.table
-                 $ do   tr $ th "class"
-                        trClassSummary classs uOwner pOwner
-                        tr $ td $ (H.a ! A.href (H.toValue pathClass))
-                                $ H.toMarkup $ pathName pathClass
+         $ H.div ! A.class_ "class-regulars"
+         $ do
+                H.table $ trClassSummary classs uOwner pOwner
 
-                divRegularsList ss regulars
+                tableActions [ pathClassView ss cid ]
+
+                H.div ! A.class_ "details"
+                 $ divRegularsList ss regulars
+
 
 cgiClassRegulars _ inputs
  = throw $ FailNodeArgs "class regulars" inputs

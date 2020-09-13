@@ -9,7 +9,6 @@ import Dojo.Fail
 import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
-import qualified Data.Map.Strict                as Map
 
 
 -------------------------------------------------------------------------------
@@ -27,17 +26,22 @@ cgiPersonView ss inputs
         events  <- liftIO $ getAttendanceOfPersonId conn pid
         liftIO $ disconnect conn
 
-        let sName = fromMaybe "person" $ personDisplayName person
+        let sName = fromMaybe "[person]" $ personAliasName person
         cgiPageNavi "People" sName (pathsJump ss)
-         $ do   let bCanEdit = sessionIsAdmin ss
+         $ H.div ! A.class_ "person-view"
+         $ do
+                H.div ! A.class_ "person-alias-name"
+                 $ H.table $ tr $ td $ H.string sName
+
+                let bCanEdit = sessionIsAdmin ss
                 let bCanDel  = sessionIsAdmin ss && null events
 
                 when (bCanEdit || bCanDel)
-                 $  tableActions
+                 $ tableActions
                  $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
                  ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
 
-                H.div ! A.class_ "details person-view"
+                H.div ! A.class_ "details"
                  $ do   divPersonDetails         ss person
                         divPersonEventSummary    ss events
                         divPersonEventAttendance ss events
@@ -131,15 +135,14 @@ divPersonEventSummary :: Session -> [Event] -> Html
 divPersonEventSummary _ss events
  = H.div ! A.class_ "list event-summary"
  $ H.table
- $ do   let mp  = summarizeEventTypes events
-
-        col ! A.class_ "Type"
+ $ do   col ! A.class_ "Type"
         col ! A.class_ "Count"
         tr $ do th "event type"; th "attended"
 
-        forM_ (Map.toList mp) $ \((EventType name, nCount)) -> tr $ do
-         td (H.string name)
-         td (H.string $ show nCount)
+        forM_ (summarizeEventTypes events)
+         $ \((EventType name, nCount)) -> tr $ do
+                td (H.string name)
+                td (H.string $ show nCount)
 
 
 -------------------------------------------------------------------------------
