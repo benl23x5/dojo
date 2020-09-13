@@ -37,31 +37,21 @@ formEventAttend ss eform
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsForm niceNameOfEventField
 
-        let details
-                = EventDetails
-                { eventDetailsEvent             = eventFormEventValue eform
-                , eventDetailsCreatedByUser     = eventFormCreatedByUser eform
-                , eventDetailsCreatedByPerson   = eventFormCreatedByPerson eform
-                , eventDetailsEventTypes        = eventFormEventTypes eform
-                , eventDetailsDojosAvail        = eventFormDojosAvail eform }
-
         let event = eventFormEventValue eform
-        divEventShowDetails details
-         $ case eventId event of
-            Nothing     -> []
-            Just eid    -> [tdPath $ pathEventView ss eid]
+        let Just userCreatedBy   = eventFormCreatedByUser eform
+        let Just personCreatedBy = eventFormCreatedByPerson eform
+        divEventDetails event userCreatedBy personCreatedBy
+
+        (case eventId event of
+          Nothing  -> return ()
+          Just eid -> tableActions [pathEventView ss eid])
 
         divEventAttendance  eform
         H.br
 
-        if (eventFormDetailsEditable eform)
-         then input ! A.type_  "submit"
-                    ! A.class_ "button-full"
-                    ! A.value  "Save"
-
-         else input ! A.type_  "submit"
-                    ! A.class_ "input-hidden"
-                    ! A.value  "Save"
+        input   ! A.type_  "submit"
+                ! A.class_ "input-hidden"
+                ! A.value  "Save"
 
 
 -------------------------------------------------------------------------------

@@ -151,14 +151,14 @@ pathEventDel ss (EventId eid)
 
 pathEventEditDetails :: Session -> Maybe EventId -> Path
 pathEventEditDetails ss (Just (EventId eid))
- = Path "Edit Details"
+ = Path "Edit Event"
         (sessionCgiName ss)
         [ ("s",   show $ sessionHash ss)
         , ("n",   "eed")
         , ("eid", show eid)]
 
 pathEventEditDetails ss Nothing
- = Path "Edit Details"
+ = Path "Edit Event"
         (sessionCgiName ss)
         [ ("s",   show $ sessionHash ss)
         , ("n",   "eed")]

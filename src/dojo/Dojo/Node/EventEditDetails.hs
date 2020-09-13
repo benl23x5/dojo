@@ -120,7 +120,7 @@ cgiEventEditDetails ss inputs
          | isJust mEidIn
          -> if bSessionOwnsEvent
                 then do liftIO $ disconnect conn
-                        outputFPS $ renderHtml $ htmlEventEdit ss eform
+                        cgiEventEditDetailsForm ss eform
                 else cgiLogout ss
 
          -- Show the form to create a new event,
@@ -128,7 +128,7 @@ cgiEventEditDetails ss inputs
          --  TODO: suppress editability if not owner.
          | otherwise
          -> do  liftIO $ disconnect conn
-                outputFPS $ renderHtml $ htmlEventEdit ss eform
+                cgiEventEditDetailsForm ss eform
 
 
 -------------------------------------------------------------------------------
@@ -174,8 +174,7 @@ cgiEventEdit_update
                 = eform
                 { eventFormFeedForm            = fsForm' }
 
-        outputFPS $ renderHtml
-         $ htmlEventEdit ss eform'
+        cgiEventEditDetailsForm ss eform'
 
   goNewEvent eventNew
    = do -- Get the fields that have been updated by the form.
@@ -197,13 +196,7 @@ cgiEventEdit_update
 
 -------------------------------------------------------------------------------
 -- | Html for event edit page.
-htmlEventEdit :: Session -> EventForm -> Html
-htmlEventEdit ss eform
- = H.docTypeHtml
- $ do
-        pageHeader "Editing Event"
-
-        pageBody
-         $ do   tablePaths $ pathsJump ss
-
-                H.div ! A.class_ "event" $ formEventDetails ss eform
+cgiEventEditDetailsForm :: Session -> EventForm -> CGI CGIResult
+cgiEventEditDetailsForm ss eform
+ = cgiPageNavi "Editing Event" (pathsJump ss)
+ $ H.div ! A.class_ "event" $ formEventDetails ss eform

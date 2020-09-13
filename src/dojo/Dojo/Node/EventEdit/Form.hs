@@ -42,10 +42,16 @@ formEvent eform
                 , eventDetailsEventTypes        = eventFormEventTypes eform
                 , eventDetailsDojosAvail        = eventFormDojosAvail eform }
 
+        let Just userCreatedBy   = eventFormCreatedByUser eform
+        let Just personCreatedBy = eventFormCreatedByPerson eform
+
         -- Event details.
         (if eventFormDetailsEditable eform
           then divEventEditDetails details fsForm
-          else divEventShowDetails details [])
+          else divEventDetails
+                (eventFormEventValue eform)
+                userCreatedBy
+                personCreatedBy)
 
         divEventAttendance  eform
         H.br

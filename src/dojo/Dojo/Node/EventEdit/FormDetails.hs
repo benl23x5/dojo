@@ -40,13 +40,15 @@ formEventDetails ss eform
                 , eventDetailsDojosAvail        = eventFormDojosAvail eform }
 
         let event = eventFormEventValue eform
-        divEventShowDetails details
-         $ case eventId event of
-            Nothing     -> []
-            Just eid    -> [tdPath $ pathEventView ss eid]
+        let Just userCreatedBy   = eventFormCreatedByUser eform
+        let Just personCreatedBy = eventFormCreatedByPerson eform
+        divEventDetails event userCreatedBy personCreatedBy
+
+        (case eventId event of
+          Nothing  -> return ()
+          Just eid -> tableActions [pathEventView ss eid])
 
         divEventEditDetails details fsForm
-        H.br
 
         if (eventFormDetailsEditable eform)
          then input ! A.type_  "submit"

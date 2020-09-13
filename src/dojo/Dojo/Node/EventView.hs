@@ -3,7 +3,7 @@ module Dojo.Node.EventView (cgiEventView) where
 import Dojo.Data.Session
 import Dojo.Data.Event
 import Dojo.Data.Person
-import Dojo.Data.User
+import Dojo.Node.EventEdit.Details
 import Dojo.Paths
 import Dojo.Fail
 import Dojo.Chrome
@@ -33,52 +33,21 @@ cgiEventView ss inputs
 
         cgiPageNavi (eventDisplayName event) (pathsJump ss)
          $ H.div ! A.id "event-view"
-         $ do   divEventDetails ss event
-                        userCreatedBy personCreatedBy
-                        psAttend
-
-                divAttendeesList ss event psAttend
+         $ do
+                divEventDetails event userCreatedBy personCreatedBy
 
                 when (sessionOwnsEvent ss event)
-                 $ tableActions [pathEventEditAttend ss $ eventId event]
+                 $ tableActions
+                 $  [ pathEventEditDetails ss (Just eid)
+                    , pathEventEditAttend  ss (Just eid) ]
+                 ++ (if | null psAttend -> [pathEventDel ss eid]
+                        | otherwise     -> [])
+
+                divAttendeesList ss event psAttend
 
 cgiEventView _ inputs
  = throw $ FailNodeArgs "event view" inputs
 
-
--------------------------------------------------------------------------------
--- | Event details.
-divEventDetails :: Session -> Event -> User -> Person -> [Person] -> Html
-divEventDetails ss event userCreatedBy personCreatedBy attendance
- = H.div ! A.class_ "details" ! A.id "event-details-view"
- $ H.table
- $ do   tr $ td $ H.string
-           $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
-           ++ " by "
-           ++ maybe "" pretty (personDisplayName personCreatedBy)
-           ++ " (" ++ pretty (userName userCreatedBy) ++ ")."
-
-        tr $ td $ H.string
-           $  maybe "[somewhere]" pretty  (eventLocation event)
-           ++ maybe "[someday]"  (\v -> " on " ++ pretty v) (eventDate event)
-           ++ maybe "[sometime]" (\v -> " at " ++ pretty v) (eventTime event)
-           ++ "."
-
-        -- Event can be edited by admin or the user that created it.
-        when (sessionOwnsEvent ss event)
-         $ tr $ td $ do
-                pathLink (pathEventEditDetails ss $ eventId event)
-                preEscapedToMarkup ("&nbsp;&nbsp;" :: String)
-
-                (case eventId event of
-                  Just eid | null attendance
-                    -> pathLink $ pathEventDel ss eid
-                  _ -> return ())
-
- where
-        pathLink path
-         = H.a  ! A.href (H.toValue path)
-                $ H.toMarkup $ pathName path
 
 
 -------------------------------------------------------------------------------
