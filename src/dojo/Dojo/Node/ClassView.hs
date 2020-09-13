@@ -109,7 +109,7 @@ divClassDetails
                 -- Try to generate the registration code.
                 --  We need to have the type, location day,
                 --  start and end times set.
-
+{-
                 -- TODO: get website name from global site config.
                 let mReg = registrationLinkOfClass
                                 "http://dojo.ouroborus.net"
@@ -120,6 +120,7 @@ divClassDetails
                  Nothing -> return ()
                  Just (sRegLink, sRegId)
                   -> goCode sRegLink sRegId)
+-}
 
  where
 
