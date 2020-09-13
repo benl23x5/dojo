@@ -40,7 +40,7 @@ cgiEventView ss inputs
                 divAttendeesList ss event psAttend
 
                 when (sessionOwnsEvent ss event)
-                 $ tablePaths [pathEventEditAttend ss $ eventId event]
+                 $ tableActions [pathEventEditAttend ss $ eventId event]
 
 cgiEventView _ inputs
  = throw $ FailNodeArgs "event view" inputs

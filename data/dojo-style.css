@@ -1,52 +1,15 @@
 
 /* Defaults and Layout ************************************/
 
-html {
-       font-size: 42px;
-}
-
-
-#container
-{
-        min-width:      320px;
-        max-width:      1400px;
-        margin-left:    auto;
-        margin-right:   auto;
-}
-
-#content
-{       padding:         0.5ex;
-        padding-left:    1em;
-        padding-right:   1em;
-}
-
-h1
-{       font-size:      1.2em;
-        line-height:    0.1em;
-        margin-bottom:  0.8em;
-}
-
-h2
-{       font-size:      1.0em;
-        line-height:    0.8em;
-}
-
 body
 {
         font-family:    "Helvetica", "Arial", Sans-Serif;
+        font-size: 42px;
+        margin-left:    0;
+        margin-right:   0;
+        margin-top:     0;
+        margin-bottom:  0;
 }
-
-/* Tables *******************************************/
-table {
-        margin-top:     0.5em;
-}
-
-/* show table borders, for debugging.
-table, td, td {
-        border: 1px solid black;
-        border-collapse: collapse;
-}
-*/
 
 th
 {       text-align:     left;
@@ -54,11 +17,6 @@ th
         font-size:      0.8em;
         height:         1.2em;
         min-width:      4em;
-}
-
-td
-{       text-align:     left;
-        padding:        0.2ex;
 }
 
 input
@@ -76,6 +34,145 @@ select
 }
 
 
+/* Page Setup *********************************************/
+#container
+{       min-width:      320px;
+        max-width:      1400px;
+        margin-left:    0;
+        margin-right:   0;
+}
+
+#content
+{       padding-left:   1em;
+        padding-right:  1em;
+        padding-top:    1ex;
+        padding-bottom: 1ex;
+}
+
+
+/* Navigation Bar *****************************************/
+#navbar
+{       width:                  100%;
+        color:                  #f0f0f0;
+        background-color:       #135d8b;
+        margin-left:            0;
+        margin-right:           0;
+        margin-top:             0;
+        padding-left:           0;
+        padding-right:          0;
+        min-height:             2em;
+}
+
+
+#navbar table
+{       width:                  100%;
+        padding-left:           1ex;
+        padding-right:          1ex;
+        padding-top:            1ex;
+        padding-bottom:         1ex;
+}
+
+#navbar #Logout
+{       text-align:             right;
+        padding-right:          0;
+
+}
+
+#navbar a
+{
+        color:                  #e0e0e0;
+        text-decoration:        none;
+}
+
+/* Actions ************************************************/
+#actions td
+{       padding-top:            0;
+        padding-bottom:         1ex;
+        padding-left:           0;
+        padding-right:          2ex;
+}
+
+#actions a
+{       text-decoration:        none;
+        color: #00a;
+}
+
+
+/* Details ************************************************/
+.details table
+{       margin-bottom:          1ex;
+}
+
+
+/* Lists **************************************************/
+.list table
+{       width:          100%;
+}
+
+.list tbody th
+{       border-bottom:  2px solid rgb(0,80,150);
+}
+
+.list td
+{       padding-bottom:  0.3ex;
+}
+
+.list tbody .link
+{       text-decoration: underline;
+}
+
+/* The whole list row is a link to the edit page,
+   so we don't need to underline it separately. */
+.list tbody tr:hover a
+{       color: #00f;
+        text-decoration: none;
+}
+
+.list tbody tr:hover .link
+{       color: #00f;
+}
+
+.list tbody a
+{       color: #00a;
+        text-decoration: none;
+}
+
+
+
+/* Field feedback *****************************************/
+.invalid
+{       color:          red;
+}
+
+.updated
+{       color:          #080
+}
+
+
+/* Entity Details  ****************************************/
+.details table
+{       width:          100%;
+}
+
+.details .list
+{       padding-top:    2ex;
+
+}
+
+/* Entity Lists *******************************************/
+
+
+.paths table
+{
+        border-collapse: collapse;
+}
+
+.paths td
+{       padding-right:  1ex;
+}
+
+
+/* Input **************************************************/
 .input-hidden
 {       visibility:     hidden;
 
@@ -97,6 +194,8 @@ select
 	text-shadow:    0px 1px 0px #ffffff;
         height:         2em;
         width:          100%;
+        margin-top:     1ex;
+        margin-bottom:  1ex;
 }
 
 .button-full:hover
@@ -106,63 +205,6 @@ select
 .button-full:active
 {       position:relative;
 	top:1px;
-}
-
-/* Field feedback *****************************************/
-.invalid
-{       color:          red;
-}
-
-.updated
-{       color:          #080
-}
-
-
-/* Entity Details  ****************************************/
-.details table
-{       width:          100%;
-}
-
-
-/* Entity Lists *******************************************/
-.list table
-{       width:          100%;
-}
-
-.list th
-{
-        border-bottom:  2px solid rgb(0,80,150);
-}
-
-
-.list tbody .link
-{       text-decoration: underline;
-}
-
-/* The whole list row is a link to the edit page,
-   so we don't need to underline it separately. */
-.list tbody tr:hover a
-{       color: #00f;
-        text-decoration: none;
-}
-
-.list tbody tr:hover .link
-{       color: #00f;
-}
-
-
-.list tbody a
-{       color: #00a;
-        text-decoration: none;
-}
-
-.paths table
-{
-        border-collapse: collapse;
-}
-
-.paths td
-{       padding-right:  1ex;
 }
 
 
@@ -182,17 +224,20 @@ select
 .Col3bC                         { width: 30% }
 
 
+
 /* Person List ********************************************/
 .person-list .ShortName         { width: 8em; }
 .person-list .FamilyName        { width: 10em; }
 
+
+
 /* Person View/Edit **************************************/
 
-/* View Mode */
-#person-attendance .Date        { width: 6em;  }
-#person-attendance .Time        { width: 4em;  }
+.person-view .event-summary .Type       { width: 10em;  }
 
-#person-summary    .Type        { width: 10em;  }
+.person-view .event-attendance .Date    { width: 6em;  }
+.person-view .event-attendance .Time    { width: 4em;  }
+
 
 /* Class View **********************************************/
 #class-regulars .Fees           { width: 2em;   }

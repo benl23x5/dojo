@@ -34,14 +34,12 @@ formPerson fsFeed path person dojos memberLevels
         htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
 
         -- Save button.
-        H.br
         input   ! A.type_  "submit"
                 ! A.class_ "button-full"
                 ! A.value  "Save"
 
         -- Person details.
         divPersonDetails fsFeed person dojos memberLevels
-        H.br
 
         -- Save button.
         input   ! A.type_  "submit"

@@ -79,7 +79,8 @@ cgiPersonEdit_entry
 
 cgiPersonEdit_entry ss person dojos memberLevels fsFeed
  = cgiPageNavi "Editing Person" (pathsJump ss)
- $ do   tablePaths
+ $ do
+        tableActions
          $ case personId person of
             Nothing     -> []
             Just pid    -> [pathPersonView ss pid]

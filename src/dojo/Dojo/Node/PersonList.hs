@@ -19,7 +19,7 @@ cgiPersonList ss _inputs
 
         cgiPageNavi "People" (pathsJump ss)
          $ do   when (sessionIsAdmin ss)
-                 $ tablePaths $ [pathPersonAdd ss]
+                 $ tableActions [pathPersonAdd ss]
 
                 divPersonList ss people
 

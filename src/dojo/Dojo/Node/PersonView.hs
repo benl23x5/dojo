@@ -33,14 +33,14 @@ cgiPersonView ss inputs
                 let bCanDel  = sessionIsAdmin ss && null events
 
                 when (bCanEdit || bCanDel)
-                 $  tablePaths
+                 $  tableActions
                  $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
                  ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
 
-                H.div ! A.id "person-view"
-                 $ do   divPersonDetails ss person
-                        divEventSummary  ss events
-                        divEventList     ss events
+                H.div ! A.class_ "details person-view"
+                 $ do   divPersonDetails         ss person
+                        divPersonEventSummary    ss events
+                        divPersonEventAttendance ss events
 
 cgiPersonView _ inputs
  = throw $ FailNodeArgs "person view" inputs
@@ -50,8 +50,7 @@ cgiPersonView _ inputs
 -- | Person Details
 divPersonDetails :: Session -> Person -> Html
 divPersonDetails ss person
- = H.div ! A.class_ "details" ! A.id "person-details-view"
- $ do
+ = do
         let isAdmin     = sessionIsAdmin ss
 
         H.table
@@ -128,9 +127,9 @@ divPersonDetails ss person
 
 -------------------------------------------------------------------------------
 -- | Summary of how many events of each type a person has attended.
-divEventSummary :: Session -> [Event] -> Html
-divEventSummary _ss events
- = H.div ! A.class_ "list" ! A.id "person-summary"
+divPersonEventSummary :: Session -> [Event] -> Html
+divPersonEventSummary _ss events
+ = H.div ! A.class_ "list event-summary"
  $ H.table
  $ do   let mp  = summarizeEventTypes events
 
@@ -145,9 +144,9 @@ divEventSummary _ss events
 
 -------------------------------------------------------------------------------
 -- | List of events that a person has attended.
-divEventList :: Session -> [Event] -> Html
-divEventList ss events
- = H.div ! A.class_ "list" ! A.id "person-attendance"
+divPersonEventAttendance :: Session -> [Event] -> Html
+divPersonEventAttendance ss events
+ = H.div ! A.class_ "list event-attendance"
  $ H.table
  $ do
         col ! A.class_ "Date"

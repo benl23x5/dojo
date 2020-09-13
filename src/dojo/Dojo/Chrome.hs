@@ -1,6 +1,7 @@
 
 module Dojo.Chrome where
 import Dojo.Framework
+import Data.String
 
 import qualified Network.CGI                    as CGI
 
@@ -38,10 +39,28 @@ pageNavi :: String        -- ^ Page name
 
 pageNavi sName paths htmlContents
  = do   pageHeader sName
+
+        H.body
+         $ do   H.div ! A.id "navbar"
+                 $ H.table
+                 $ H.tr $ mapM_ tdPathNav paths
+
+                H.div ! A.id "container"
+                 $ H.div ! A.id "content"
+                 $ do   htmlContents
+
+ where
+        tdPathNav path
+         = H.td ! A.id (fromString $ pathName path)
+         $ H.a  ! A.href (H.toValue path)
+         $ H.toMarkup $ pathName path
+
+
+{-
         pageBody
          $ do   tablePaths paths
                 htmlContents
-
+-}
 
 -- | A complete page with no navigation bar.
 pagePlain :: String     -- ^ Page Name
@@ -78,6 +97,15 @@ pageBody content
 
 
 -------------------------------------------------------------------------------
+-- | Table with links that perform actions on the data.
+tableActions :: [Path] -> Html
+tableActions paths
+ = H.div ! A.id "actions"
+ $ H.table
+ $ H.tr $ mapM_ tdPath paths
+
+
+-------------------------------------------------------------------------------
 -- | Table with navigation paths
 tablePaths :: [Path] -> Html
 tablePaths paths
@@ -93,6 +121,5 @@ tdPath path
 htmlPathLink path
  = H.a  ! A.href (H.toValue path)
         $ H.toMarkup $ pathName path
-
 
 

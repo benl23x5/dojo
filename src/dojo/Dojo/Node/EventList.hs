@@ -19,7 +19,7 @@ cgiEventList ss _inputs
 
         cgiPageNavi "Events" (pathsJump ss)
          $ do   when (sessionIsAdmin ss)
-                 $ tablePaths [pathEventAdd ss]
+                 $ tableActions [pathEventAdd ss]
 
                 divEventList ss events
 

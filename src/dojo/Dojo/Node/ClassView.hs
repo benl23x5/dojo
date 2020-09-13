@@ -82,8 +82,7 @@ divClassDetails
  = H.div ! A.class_ "details" ! A.id "class-details-view"
  $ do
         H.table
-         $ do   tr $ th "class"
-                trClassSummary classs uOwner pOwner
+         $ do   trClassSummary classs uOwner pOwner
 
                 tr $ td $ (H.a ! A.href (H.toValue pathNew))
                         $ H.toMarkup $ pathName pathNew
