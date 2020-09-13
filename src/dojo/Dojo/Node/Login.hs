@@ -47,7 +47,7 @@ cgiLogin cc inputs
                 -- TODO: get logo from config
                 H.img
                  ! (A.src $ fromString $ configSiteUrl cc ++ "/logo-aka.png")
-                 ! (A.style "width:62%;height:62%")
+                 ! (A.style "width:50%;height:50%")
                  ! (A.id    "login-logo")
 
                 H.div ! A.class_ "login-entry"
