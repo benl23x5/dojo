@@ -36,12 +36,13 @@ cgiEventView ss inputs
          $ do
                 divEventDescription event userCreatedBy personCreatedBy
 
-                when (sessionOwnsEvent ss event)
-                 $ tableActions
-                 $  [ pathEventEditDetails ss (Just eid)
-                    , pathEventEditAttend  ss (Just eid) ]
-                 ++ (if | null psAttend -> [pathEventDel ss eid]
-                        | otherwise     -> [])
+                if (sessionOwnsEvent ss event)
+                 then tableActions
+                        $  [ pathEventEditDetails ss (Just eid)
+                           , pathEventEditAttend  ss (Just eid) ]
+                        ++ (if | null psAttend -> [pathEventDel ss eid]
+                               | otherwise     -> [])
+                 else H.br
 
                 divAttendeesList ss event psAttend
 

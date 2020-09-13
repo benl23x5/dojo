@@ -9,6 +9,7 @@ import Dojo.Config
 import Dojo.Chrome
 import Dojo.Paths
 import Data.Word
+import Data.String
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified System.Random                  as R
@@ -41,37 +42,45 @@ cgiLogin cc inputs
  $ H.docTypeHtml
  $ do   pageHeader "Login"
         pageBody
-         $ do   H.h1 $ H.string $ configSiteName cc
-                formLogin (pathLogin cc)
+         $ H.div ! A.id "login-page"
+         $ do
+                -- TODO: get logo from config
+                H.img
+                 ! (A.src $ fromString $ configSiteUrl cc ++ "/logo-aka.png")
+                 ! (A.style "width:62%;height:62%")
+                 ! (A.id    "login-logo")
+
+                H.div ! A.class_ "login-entry"
+                 $ do   formLogin (pathLogin cc)
 
 
 -------------------------------------------------------------------------------
 formLogin :: Path -> Html
 formLogin path
- = H.div ! A.id "login"
- $ form  ! A.action (H.toValue path)
+ = H.form ! A.action (H.toValue path)
+ $ H.table
  $ do
-        mapM_   (\(fieldName, fieldData)
-                 -> input ! A.type_ "hidden"
-                          ! A.name  (H.toValue fieldName)
-                          ! A.value (H.toValue fieldData))
-                (pathFields path)
 
-        H.table
-         $ do   tr $ do td "Username:"
-                        td $ input ! A.name  "username"
-                                   ! A.type_ "text"
-                                   ! A.autocomplete "off"
-                                   ! A.autofocus    "on"
+        tr $ do (td ! A.class_ "login-icon")
+                 $ (H.i ! A.class_ "material-icons md-36")
+                 $ "face"
 
-                tr $ do td "Password:"
-                        td $ input ! A.name  "password"
-                                   ! A.type_ "password"
+                td $ input ! A.name  "username"
+                           ! A.type_ "text"
+                           ! A.autocomplete "off"
+                           ! A.autofocus    "on"
 
-        H.br
-        input   ! A.type_  "submit"
-                ! A.class_ "button-full"
-                ! A.value  "Login"
+        tr $ do (td ! A.class_ "login-icon")
+                 $ (H.i ! A.class_ "material-icons md-36")
+                 $ "vpn_key"
+
+                td $ input ! A.name  "password"
+                           ! A.type_ "password"
+
+        tr $ (td ! A.colspan "2")
+           $ input ! A.type_  "submit"
+                   ! A.class_ "button-login"
+                   ! A.value  "Login"
 
 
 -------------------------------------------------------------------------------
@@ -148,4 +157,4 @@ loginActivate cc user
         liftIO  $ disconnect conn
 
         -- Redirect to main page.
-        CGI.redirect $ flatten $ (pathEventList session)
+        CGI.redirect $ flatten $ (pathClassList session)

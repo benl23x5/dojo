@@ -31,7 +31,7 @@ configDefault :: Config
 configDefault
         = Config
         { configSiteName        = "Aiki Dojo"
-        , configSiteUrl         = "http://dojo.ouroborus.net"
+        , configSiteUrl         = "https://dojo.ouroborus.net"
         , configCgiName         = "dojo.cgi"
         , configDatabasePath    = "dojo.db"
         , configQrSaltActive    = "salt-active"

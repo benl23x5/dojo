@@ -36,10 +36,11 @@ cgiPersonView ss inputs
                 let bCanEdit = sessionIsAdmin ss
                 let bCanDel  = sessionIsAdmin ss && null events
 
-                when (bCanEdit || bCanDel)
-                 $ tableActions
-                 $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
-                 ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
+                if (bCanEdit || bCanDel)
+                 then  tableActions
+                        $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
+                        ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
+                 else H.br
 
                 H.div ! A.class_ "details"
                  $ do   divPersonDetails         ss person

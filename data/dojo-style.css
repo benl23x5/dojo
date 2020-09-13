@@ -33,7 +33,6 @@ select
         box-sizing:     border-box;
 }
 
-
 /* Page Setup *********************************************/
 #container
 {       min-width:      320px;
@@ -48,6 +47,36 @@ select
         padding-top:    1ex;
         padding-bottom: 1ex;
 }
+
+/* Login Logo *********************************************/
+#login-logo
+{       display:        block;
+        padding-top:    2ex;
+        margin-left:    auto;
+        margin-right:   auto;
+}
+
+.login-entry table
+{       padding-top:    1ex;
+        margin:         auto;
+}
+
+.login-icon
+{       padding-right:   1ex;
+}
+
+.button-login
+{
+        height:         2em;
+        width:          100%;
+        margin-top:     1ex;
+        margin-bottom:  1ex;
+        margin-left:    auto;
+        margin-right:   auto;
+	border-radius:  6px;
+	cursor:         pointer;
+}
+
 
 
 /* Navigation Bar *****************************************/
@@ -79,7 +108,7 @@ select
 
 #navbar a
 {
-        color:                  #a0a0a0;
+        color:                  #b0b0b0;
         text-decoration:        none;
 }
 
@@ -87,6 +116,7 @@ select
 #navbar .selected a
 {
         color:                  #f0f0f0;
+        text-decoration:        underline;
 }
 
 /* Actions ************************************************/
@@ -189,33 +219,16 @@ select
 }
 
 .button-full
-{       box-shadow:     inset 0px 1px 0px 0px #ffffff;
-	background:     linear-gradient(to bottom, #ffffff 5%, #f6f6f6 100%);
-	background-color:#ffffff;
-	border-radius:  6px;
-	border:         1px solid #dcdcdc;
-	display:        inline-block;
-	cursor:         pointer;
-	color:          #666666;
-	font-size:      1em;
-	font-weight:    bold;
-	padding:        6px 24px;
-	text-decoration:none;
-	text-shadow:    0px 1px 0px #ffffff;
+{
         height:         2em;
         width:          100%;
         margin-top:     1ex;
         margin-bottom:  1ex;
+	font-size:      1em;
+	cursor:         pointer;
+
 }
 
-.button-full:hover
-{       background:linear-gradient(to bottom, #f6f6f6 5%, #ffffff 100%);
-	background-color:#f6f6f6;
-}
-.button-full:active
-{       position:relative;
-	top:1px;
-}
 
 
 /* Common Column Layout ***********************************/
@@ -312,3 +325,4 @@ select
 
 .material-icons.green { color: #208020; }
 .material-icons.red   { color: #802020; }
+.material-icons.white { color: #f0f0f0; }
