@@ -35,7 +35,7 @@ divEventList ss eventList
         tr $ do th "date"
                 th "time"
                 th "location"
-                (th ! A.style "text-align: center") "pax"
+                (th ! A.style "text-align: center") "people"
 
         forM_ eventList $ \(event, pax) -> tr $ do
          td' event (eventDate event)
