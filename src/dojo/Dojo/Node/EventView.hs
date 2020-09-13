@@ -31,7 +31,7 @@ cgiEventView ss inputs
         psAttend   <- liftIO $ getAttendance conn eid
         liftIO $ disconnect conn
 
-        cgiPageNavi (eventDisplayName event) (pathsJump ss)
+        cgiPageNavi "Events" (eventDisplayName event) (pathsJump ss)
          $ H.div ! A.id "event-view"
          $ do
                 divEventDetails event userCreatedBy personCreatedBy

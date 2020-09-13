@@ -36,7 +36,7 @@ cgiClassEvents ss inputs
         liftIO $ disconnect conn
 
         let pathClass = pathClassView ss cid
-        cgiPageNavi (classDisplayName classs) (pathsJump ss)
+        cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
          $ do
                 H.table
                  $ do   tr $ th "class"

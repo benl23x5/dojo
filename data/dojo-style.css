@@ -53,7 +53,6 @@ select
 /* Navigation Bar *****************************************/
 #navbar
 {       width:                  100%;
-        color:                  #f0f0f0;
         background-color:       #135d8b;
         margin-left:            0;
         margin-right:           0;
@@ -80,8 +79,14 @@ select
 
 #navbar a
 {
-        color:                  #e0e0e0;
+        color:                  #a0a0a0;
         text-decoration:        none;
+}
+
+
+#navbar .selected a
+{
+        color:                  #f0f0f0;
 }
 
 /* Actions ************************************************/

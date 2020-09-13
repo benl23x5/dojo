@@ -17,7 +17,7 @@ cgiEventList ss _inputs
         events  <- liftIO $ getEventList conn
         liftIO $ disconnect conn
 
-        cgiPageNavi "Events" (pathsJump ss)
+        cgiPageNavi "Events" "Events" (pathsJump ss)
          $ do   when (sessionIsAdmin ss)
                  $ tableActions [pathEventAdd ss]
 

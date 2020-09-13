@@ -78,7 +78,7 @@ cgiPersonEdit_entry
         -> CGI CGIResult
 
 cgiPersonEdit_entry ss person dojos memberLevels fsFeed
- = cgiPageNavi "Editing Person" (pathsJump ss)
+ = cgiPageNavi "People" "Editing Person" (pathsJump ss)
  $ do
         tableActions
          $ case personId person of

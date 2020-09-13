@@ -16,7 +16,7 @@ cgiClassList ss _inputs
         classes <- liftIO $ getClasses conn
         liftIO $ disconnect conn
 
-        cgiPageNavi "Classes" (pathsJump ss)
+        cgiPageNavi "Classes" "Classes" (pathsJump ss)
          $ divClassList ss classes
 
 

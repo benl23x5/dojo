@@ -20,9 +20,9 @@ cgiPage htmlContent
 
 
 -- | Output a Navi page via CGI.
-cgiPageNavi :: String -> [Path] -> Html -> CGI.CGI CGI.CGIResult
-cgiPageNavi sName paths htmlContent
- = cgiPage $ pageNavi sName paths htmlContent
+cgiPageNavi :: String -> String -> [Path] -> Html -> CGI.CGI CGI.CGIResult
+cgiPageNavi sActive sName paths htmlContent
+ = cgiPage $ pageNavi sActive sName paths htmlContent
 
 
 -- | Output a plain page via CGI
@@ -33,11 +33,12 @@ cgiPagePlain sName htmlContent
 
 -------------------------------------------------------------------------------
 -- | A complete page with navigation bar on the top.
-pageNavi :: String        -- ^ Page name
-         -> [Path]        -- ^ Navigation paths
+pageNavi :: String      -- ^ Page name
+         -> String      -- ^ Name of path that is currently active.
+         -> [Path]      -- ^ Navigation paths
          -> Html -> Html
 
-pageNavi sName paths htmlContents
+pageNavi sActive sName paths htmlContents
  = do   pageHeader sName
 
         H.body
@@ -52,6 +53,7 @@ pageNavi sName paths htmlContents
  where
         tdPathNav path
          = H.td ! A.id (fromString $ pathName path)
+                !? (pathName path == sActive, A.class_, "selected")
          $ H.a  ! A.href (H.toValue path)
          $ H.toMarkup $ pathName path
 

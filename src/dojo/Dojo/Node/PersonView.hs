@@ -28,7 +28,7 @@ cgiPersonView ss inputs
         liftIO $ disconnect conn
 
         let sName = fromMaybe "person" $ personDisplayName person
-        cgiPageNavi sName (pathsJump ss)
+        cgiPageNavi "People" sName (pathsJump ss)
          $ do   let bCanEdit = sessionIsAdmin ss
                 let bCanDel  = sessionIsAdmin ss && null events
 
