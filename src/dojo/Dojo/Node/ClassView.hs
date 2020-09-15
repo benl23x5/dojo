@@ -128,7 +128,7 @@ divClassDetails
     = Path "New Event"
         (sessionCgiName ss)
         [ ("s",         show $ sessionHash ss)
-        , ("n",         "eed")
+        , ("n",         "eea")
         , ("Location",  maybe "" pretty $ classLocation classs)
         , ("Type",      maybe "" pretty $ classType classs)
         , ("Time",      maybe "" pretty $ classTimeStart classs) ]
