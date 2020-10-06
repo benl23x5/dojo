@@ -17,15 +17,15 @@ import qualified Data.Set                       as Set
 
 
 -------------------------------------------------------------------------------
--- | Produce a html form to edit tails of a single event.
+-- | Produce a html form to edit details of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
 formEventAttend :: Session -> EventForm -> Html
 formEventAttend ss eform
  = form ! A.action (H.toValue $ eventFormPath eform)
  $ do
-        let path        = eventFormPath eform
-        let fsForm      = eventFormFeedForm eform
+        let path    = eventFormPath eform
+        let fsForm  = eventFormFeedForm eform
 
         -- Stash args from the target path as hidden fields.
         mapM_   (\(fieldName, fieldData)
@@ -56,11 +56,14 @@ formEventAttend ss eform
           Just eid -> tableActions [pathEventView ss eid])
 
         divEventAttendance  eform
-        H.br
 
         input   ! A.type_  "submit"
-                ! A.class_ "input-hidden"
-                ! A.value  "Save"
+                ! A.value  "Add"
+
+        H.br; H.br
+
+        -- List of regular attendees to events of this class.
+        divRegulars eform
 
 
 -------------------------------------------------------------------------------
@@ -78,9 +81,6 @@ divEventAttendance eform
         -- Entry boxes to accept names of new attandees.
         let curStudents = fromIntegral $ length psAttend
         divAttendanceNew fsForm fsEvent event curStudents
-
-        -- List of regular attendees to events of this class.
-        divRegulars eform
 
 
 -------------------------------------------------------------------------------
@@ -103,7 +103,8 @@ divAttendanceCur eform
 
         tr $ do th "#"
                 th "attendees"
-                when bCanDel $ th "del" ! A.style  "text-align: center"
+                when (bCanDel && (not $ null psAttend))
+                 $ th "del" ! A.style  "text-align: center"
 
         -- Highlight the people that were just added.
         let pidsAdded = [pid | FeedEventPersonAdded pid <- fsEvent ]
@@ -213,10 +214,6 @@ divRegulars eform
         col ! A.class_ "name"
         col ! A.class_ "actions"
 
-        tr $ do th ""
-                th "regulars"
-                th ! A.style "text-align: center" $ "add"
-
         -- Add a link to add a regular attendee that is not already listed.
         let psAttend
                 = Set.fromList $ map personId
@@ -226,6 +223,12 @@ divRegulars eform
                 = take 10
                 $ [ pRegular | pRegular <- eventFormRegulars eform
                              , not $ Set.member (personId pRegular) psAttend]
+
+        tr $ do th ""
+                th "regulars"
+                if not $ null psRegular
+                 then th ! A.style "text-align: center" $ "add"
+                 else th ""
 
         forM_ psRegular (trNewRegular eform)
 
