@@ -18,12 +18,13 @@ import qualified Data.Digest.Pure.MD5           as Digest
 import qualified Data.ByteString.Lazy           as BS
 import qualified Data.Time                      as Time
 
+
 -------------------------------------------------------------------------------
--- The entry login page
+-- | The entry login page
 cgiLogin :: Config -> [(String, String)] -> CGI CGIResult
 cgiLogin cc inputs
 
- -- Have username and password
+ -- We have the username and password
  | Just username <- lookup "username" inputs
  , Just password <- lookup "password" inputs
  = do
@@ -33,10 +34,10 @@ cgiLogin cc inputs
 
         -- Check if there is a user with this name.
         case mUser of
-         Nothing        -> loginFail cc
-         Just user      -> loginCheck cc user password
+         Nothing    -> loginFail cc
+         Just user  -> loginCheck cc user password
 
- -- Display login page.
+ -- No username/password yet, so display login page.
  | otherwise
  = outputFPS $ renderHtml
  $ H.docTypeHtml
@@ -44,13 +45,12 @@ cgiLogin cc inputs
         pageBody
          $ H.div ! A.id "login-page"
          $ do
-                -- TODO: get logo from config
                 -- Set the image size so that works on phone form factors
                 -- as well as in a full screen laptop browser. If the logo
                 -- is any larger than this it doesn't fit on the page in the
                 -- laptop form factor.
                 H.img
-                 ! (A.src $ fromString $ configSiteUrl cc ++ "/logo-aka.jpg")
+                 ! (A.src $ fromString $ configLogoUrl cc)
                  ! (A.style "width:450px;height:450px")
                  ! (A.id    "login-logo")
 
@@ -58,13 +58,11 @@ cgiLogin cc inputs
                  $ do   formLogin (pathLogin cc)
 
 
--------------------------------------------------------------------------------
 formLogin :: Path -> Html
 formLogin path
  = H.form ! A.action (H.toValue path)
  $ H.table
  $ do
-
         tr $ do (td ! A.class_ "login-icon")
                  $ (H.i ! A.class_ "material-icons md-36")
                  $ "face"
@@ -104,9 +102,6 @@ loginCheck cc user password
         -- Whether the entered password matches the stored one.
         let match = hash == show hash'
 
-        -- ISSUE #30: If login failure then given better feedback.
-        --  this just redidirects back to the login page, we should
-        --  instead say "login failed" or something.
         if not match
          then loginFail cc
          else loginActivate cc user
@@ -125,8 +120,8 @@ loginActivate cc user
  = do
         -- Make a session key based on a random number.
         gen :: Word64 <- liftIO $ R.randomIO
-        let hash' =  take 12 $ show
-                  $  Digest.md5 $ BS.pack $ map convert $ show gen
+        let hash' = take 12 $ show
+                  $ Digest.md5 $ BS.pack $ map convert $ show gen
 
         let hash  = SessionHash hash'
 
@@ -154,7 +149,7 @@ loginActivate cc user
         conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
 
         -- Insert the new session
-        _       <- liftIO $ insertSession conn session
+        liftIO $ insertSession conn session
 
         -- Commit and disconnect from database.
         liftIO  $ commit conn
