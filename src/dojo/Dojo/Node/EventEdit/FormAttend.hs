@@ -56,7 +56,6 @@ formEventAttend ss eform
           Just eid -> tableActions [pathEventView ss eid])
 
         divEventAttendance  eform
-
         input   ! A.type_  "submit"
                 ! A.value  "Add"
 
@@ -220,7 +219,7 @@ divRegulars eform
                 $ eventFormAttendance eform
 
         let psRegular
-                = take 10
+                = take 20
                 $ [ pRegular | pRegular <- eventFormRegulars eform
                              , not $ Set.member (personId pRegular) psAttend]
 
@@ -234,22 +233,23 @@ divRegulars eform
 
 trNewRegular eform person
  = tr $ do
-        let path = eventFormPath eform
+        let Just pid  = personId person
+        let pathAdd   = eventFormPath eform <&> [("addPerson", pretty pid)]
 
+        -- Empty column to align with attendee index column
+        -- in previous table.
         td $ return ()
-        td $ H.toMarkup
+
+        td $ (H.a ! A.href (H.toValue pathAdd))
+           $ H.toMarkup
                 $ maybe "(person)" pretty
                 $ personDisplayName person
 
         -- Show '+' to add the person to the event.
-        if  | Just pid <- personId person
-            -> (td  ! A.style "text-align:center")
-             $ (H.a ! A.class_ "link"
-                    ! (A.href $ H.toValue $ path <&> [("addPerson", pretty pid)]))
-             $ (H.i ! A.class_ "material-icons md-36 green")
-                        "add_circle_outline"
-            | otherwise
-            -> td $ return ()
+        td  ! A.style "text-align:center"
+            $ (H.a ! A.href (H.toValue pathAdd))
+            $ (H.i ! A.class_ "material-icons md-36 green")
+            $ "add_circle_outline"
 
 
 -------------------------------------------------------------------------------
