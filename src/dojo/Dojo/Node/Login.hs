@@ -45,9 +45,13 @@ cgiLogin cc inputs
          $ H.div ! A.id "login-page"
          $ do
                 -- TODO: get logo from config
+                -- Set the image size so that works on phone form factors
+                -- as well as in a full screen laptop browser. If the logo
+                -- is any larger than this it doesn't fit on the page in the
+                -- laptop form factor.
                 H.img
-                 ! (A.src $ fromString $ configSiteUrl cc ++ "/logo-aka.png")
-                 ! (A.style "width:50%;height:50%")
+                 ! (A.src $ fromString $ configSiteUrl cc ++ "/logo-aka.jpg")
+                 ! (A.style "width:450px;height:450px")
                  ! (A.id    "login-logo")
 
                 H.div ! A.class_ "login-entry"
