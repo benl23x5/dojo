@@ -31,6 +31,7 @@ formEventDetails ss eform
         -- Feedback about updated and invalid fields.
         htmlFeedForm fsForm niceNameOfEventField
 
+        let event = eventFormEventValue eform
         let details
                 = EventDetails
                 { eventDetailsEvent             = eventFormEventValue eform
@@ -39,10 +40,18 @@ formEventDetails ss eform
                 , eventDetailsEventTypes        = eventFormEventTypes eform
                 , eventDetailsDojosAvail        = eventFormDojosAvail eform }
 
-        let event = eventFormEventValue eform
-        let Just userCreatedBy   = eventFormCreatedByUser eform
-        let Just personCreatedBy = eventFormCreatedByPerson eform
-        divEventDescription event userCreatedBy personCreatedBy
+        -- Only bother showing site user name to admin users.
+        let mUserCreatedBy
+                = if sessionIsAdmin ss
+                        then eventFormCreatedByUser eform
+                        else Nothing
+
+        let Just personCreatedBy
+                = eventFormCreatedByPerson eform
+
+        divEventDescription event
+                mUserCreatedBy
+                personCreatedBy
 
         (case eventId event of
           Nothing  -> return ()

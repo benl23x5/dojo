@@ -14,7 +14,7 @@ import qualified Data.Set                       as Set
 
 
 -------------------------------------------------------------------------------
--- | Produce a html form to edit tails of a single event.
+-- | Produce a html form to edit details of a single event.
 --    We don't allow the eventid to be edited because this is the primary
 --    key for the person table.
 formEvent :: EventForm -> Html
@@ -42,7 +42,6 @@ formEvent eform
                 , eventDetailsEventTypes        = eventFormEventTypes eform
                 , eventDetailsDojosAvail        = eventFormDojosAvail eform }
 
-        let Just userCreatedBy   = eventFormCreatedByUser eform
         let Just personCreatedBy = eventFormCreatedByPerson eform
 
         -- Event details.
@@ -50,7 +49,7 @@ formEvent eform
           then divEventEditDetails details fsForm
           else divEventDescription
                 (eventFormEventValue eform)
-                userCreatedBy
+                (eventFormCreatedByUser eform)
                 personCreatedBy)
 
         divEventAttendance  eform

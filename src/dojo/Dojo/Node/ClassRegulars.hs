@@ -43,7 +43,13 @@ cgiClassRegulars ss inputs
         cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
          $ H.div ! A.class_ "class-regulars"
          $ do
-                H.table $ trClassSummary classs uOwner pOwner
+                -- Only bother showing user id for class owner to admins.
+                let muOwner
+                        = if sessionIsAdmin ss
+                                then Just uOwner
+                                else Nothing
+
+                H.table $ trClassSummary classs muOwner pOwner
 
                 tableActions [ pathClassView ss cid ]
 

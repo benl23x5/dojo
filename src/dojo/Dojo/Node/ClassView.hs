@@ -78,8 +78,13 @@ divClassDetails
         eventList regularsList
  = H.div ! A.class_ "class-view"
  $ do
+        -- Only bother showing owner user id to admins
+        let muOwner
+                = if sessionIsAdmin ss
+                        then Just uOwner
+                        else Nothing
         H.table
-         $ do   trClassSummary classs uOwner pOwner
+         $ do   trClassSummary classs muOwner pOwner
 
         tableActions
          [ pathNew
@@ -161,17 +166,18 @@ divClassDetails
 
 -------------------------------------------------------------------------------
 -- | Connected summary of class details.
-trClassSummary :: Class -> User -> Person -> Html
-trClassSummary classs uOwner pOwner
+trClassSummary :: Class -> Maybe User -> Person -> Html
+trClassSummary classs muOwner pOwner
  = do
         tr $ td $ H.string
            $  maybe "" (\v -> pretty v) (classType classs)
            ++ " class"
            ++ " by "
            ++ maybe "" pretty (personDisplayName pOwner)
-           ++ " (" ++ pretty (userName uOwner) ++ ")"
+           ++ (case muOwner of
+                Nothing -> ""
+                Just uOwner -> " (" ++ pretty (userName uOwner) ++ ")")
            ++ "."
-
 
         tr $ td $ H.string
            $  maybe "[somewhere]" pretty (classLocation classs)

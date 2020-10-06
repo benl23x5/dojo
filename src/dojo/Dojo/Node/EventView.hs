@@ -34,7 +34,14 @@ cgiEventView ss inputs
         cgiPageNavi "Events" (eventDisplayName event) (pathsJump ss)
          $ H.div ! A.class_ "event-view"
          $ do
-                divEventDescription event userCreatedBy personCreatedBy
+                -- Only bother showing site user name to admin users.
+                let mUserCreatedBy
+                        = if sessionIsAdmin ss
+                                then Just userCreatedBy
+                                else Nothing
+
+                divEventDescription
+                        event mUserCreatedBy personCreatedBy
 
                 if (sessionOwnsEvent ss event)
                  then tableActions

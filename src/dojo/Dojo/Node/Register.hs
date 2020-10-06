@@ -130,7 +130,7 @@ cgiRegister_create cc conn sRegId cls
 
         if classDay cls == Just (ClassDay sDay)
          then cgiRegister_create_new cc conn sRegId cls uOwner edate
-         else cgiRegister_create_notToday cls sDay uOwner pOwner
+         else cgiRegister_create_notToday cls sDay pOwner
 
  where  ssDays :: [String]
          = [ "Sunday", "Monday", "Tuesday"
@@ -157,13 +157,15 @@ cgiRegister_create_new cc conn sRegId cls uOwner edate
 
 
 -- | This class is not on today.
-cgiRegister_create_notToday cls sDay uOwner pOwner
+cgiRegister_create_notToday cls sDay pOwner
  = cgiPagePlain "Event Registration"
  $ H.div ! A.class_ "event"
  $ do   H.h2 "Event Registration"
 
+        -- On the anon registration site we don't bother showing
+        -- the site user id for te event owner.
         H.table
-         $ trClassSummary cls uOwner pOwner
+         $ trClassSummary cls Nothing pOwner
 
         H.br
         H.string $ "Today is " ++ sDay

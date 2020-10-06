@@ -23,15 +23,19 @@ data EventDetails
 
 
 -- | Event details.
-divEventDescription :: Event -> User -> Person -> Html
-divEventDescription event userCreatedBy personCreatedBy
+divEventDescription :: Event -> Maybe User -> Person -> Html
+divEventDescription event mUserCreatedBy personCreatedBy
  = H.div ! A.class_ "event-description"
  $ H.table
  $ do   tr $ td $ H.string
            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
            ++ " by "
            ++ maybe "" pretty (personDisplayName personCreatedBy)
-           ++ " (" ++ pretty (userName userCreatedBy) ++ ")."
+           ++ (case mUserCreatedBy of
+                Nothing -> ""
+                Just userCreatedBy
+                 -> " (" ++ pretty (userName userCreatedBy) ++ ")")
+           ++ "."
 
         tr $ td $ H.string
            $  maybe "[somewhere]" pretty  (eventLocation event)
@@ -39,35 +43,6 @@ divEventDescription event userCreatedBy personCreatedBy
            ++ maybe "[sometime]" (\v -> " at " ++ pretty v) (eventTime event)
            ++ "."
 
--------------------------------------------------------------------------------
-{-}
--- | Show the event details summary, which is not editable.
-divEventShowDetails :: EventDetails -> [Html] -> H.Html
-divEventShowDetails details trExtra
- = H.div ! A.class_ "details event-description"
- $ do
-        let event       = eventDetailsEvent details
-        let mpCreated   = eventDetailsCreatedByPerson details
-        let muCreated   = eventDetailsCreatedByUser details
-
-        H.table $ do
-         tr $ td $ H.string
-            $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
-            ++ " by "
-            ++ (fromMaybe "[someperson]"
-                (join $ fmap personDisplayName mpCreated))
-            ++ " ("
-            ++ (maybe "[someuser]" (pretty . userName) muCreated)
-            ++ ")."
-
-         tr $ td $ H.string
-            $  maybe "[somewhere]" pretty (eventLocation event)
-            ++ maybe "[someday]"  (\v -> " on " ++ pretty v) (eventDate event)
-            ++ maybe "[sometime]" (\v -> " at " ++ pretty v) (eventTime event)
-            ++ "."
-
-         sequence_ trExtra
--}
 
 -------------------------------------------------------------------------------
 -- | Show the form to edit event details.
