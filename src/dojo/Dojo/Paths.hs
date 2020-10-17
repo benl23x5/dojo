@@ -115,21 +115,21 @@ pathPersonDiscard ss (PersonId pid)
 
 
 -- | Page to show QR code that redirects to the device registration page.
-pathPersonRegCode :: Session -> PersonId -> Path
-pathPersonRegCode ss (PersonId pid)
+pathPersonDevLink :: Session -> PersonId -> Path
+pathPersonDevLink ss (PersonId pid)
  = Path "Device Reg."
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
-        , ("n", "prc")
+        , ("n", "pdl")
         , ("pid", show pid) ]
 
 
 -- | The actual device registration page that will set the reg. cookie.
-pathPersonRegStatus :: Session -> PersonId -> Path
-pathPersonRegStatus ss (PersonId pid)
- = Path "Device Reg."
+pathPersonDevStatus :: Session -> PersonId -> Path
+pathPersonDevStatus ss (PersonId pid)
+ = Path "Device Status."
         (sessionCgiName ss)
-        [ ("ps", show pid) ]    -- TODO: need a hash instead of raw pid.
+        [ ("pds", show pid) ]    -- TODO: need a hash instead of raw pid.
 
 
 -- Events ---------------------------------------------------------------------

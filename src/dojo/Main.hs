@@ -18,7 +18,8 @@ import Dojo.Node.PersonList
 import Dojo.Node.PersonView
 import Dojo.Node.PersonEdit
 import Dojo.Node.PersonDel
-import Dojo.Node.PersonRegCode
+import Dojo.Node.PersonDevLink
+import Dojo.Node.PersonDevStatus
 import Dojo.Node.Register
 
 import Dojo.Data.Session
@@ -86,6 +87,10 @@ cgiTop cc
            | Just sRegId <- lookup "r" inputs
            -> cgiRegister cc inputs sRegId
 
+           -- Access student device status.
+           | Just sPid <- lookup "pds" inputs   -- TODO: use hash of pid
+           -> cgiPersonDevStatus cc sPid
+
            -- Access via an existing session key.
            | Just sHash <- lookup "s" inputs
            -> goHash sHash inputs
@@ -117,7 +122,7 @@ cgiTop cc
         "pv"    -> cgiPersonView        ss inputs
         "pe"    -> cgiPersonEdit        ss inputs
         "pd"    -> cgiPersonDel         ss inputs
-        "prc"   -> cgiPersonRegCode     ss inputs
+        "pdl"   -> cgiPersonDevLink     ss inputs
         "el"    -> cgiEventList         ss inputs
         "ev"    -> cgiEventView         ss inputs
         "ee"    -> cgiEventEdit         ss inputs

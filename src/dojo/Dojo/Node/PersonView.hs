@@ -39,7 +39,7 @@ cgiPersonView ss inputs
                 tableActions
                  $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
                  ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
-                 ++ [pathPersonRegCode ss pid]
+                 ++ [pathPersonDevLink ss pid]
 
                 H.div ! A.class_ "details"
                  $ do   divPersonDetails         ss person

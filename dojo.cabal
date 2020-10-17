@@ -87,7 +87,8 @@ Executable dojo
         Dojo.Node.PersonView
         Dojo.Node.PersonList
         Dojo.Node.PersonDel
-        Dojo.Node.PersonRegCode
+        Dojo.Node.PersonDevLink
+        Dojo.Node.PersonDevStatus
 
         Dojo.Node.EventEdit.Arg
         Dojo.Node.EventEdit.Form
