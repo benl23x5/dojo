@@ -30,13 +30,13 @@ formPerson fsFeed path person dojos memberLevels
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        -- Feedback about updated and invalid fields.
-        htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
-
         -- Save button.
         input   ! A.type_  "submit"
                 ! A.class_ "button-full"
                 ! A.value  "Save"
+
+        -- Feedback about updated and invalid fields.
+        htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
 
         -- Person details.
         divPersonDetails fsFeed person dojos memberLevels
@@ -45,6 +45,9 @@ formPerson fsFeed path person dojos memberLevels
         input   ! A.type_  "submit"
                 ! A.class_ "button-full"
                 ! A.value  "Save"
+
+        -- Feedback about updated and invalid fields.
+        htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
 
 
 -------------------------------------------------------------------------------

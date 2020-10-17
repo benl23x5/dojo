@@ -34,9 +34,6 @@ formEventAttend ss eform
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        -- Feedback about updated and invalid fields.
-        htmlFeedForm fsForm niceNameOfEventField
-
         let event = eventFormEventValue eform
 
         -- Only bother showing site user name to admin users.
@@ -58,6 +55,9 @@ formEventAttend ss eform
         divEventAttendance  eform
         input   ! A.type_  "submit"
                 ! A.value  "Add"
+
+        -- Feedback about updated and invalid fields.
+        htmlFeedForm fsForm niceNameOfEventField
 
         H.br; H.br
 
@@ -136,7 +136,7 @@ trCurAttendance bCanDel pidsAdded path ix person
              $ (H.a ! A.class_ "link"
                     ! (A.href $ H.toValue $ path <&> [("delPerson", pretty pid)]))
              $ (H.i ! A.class_ "material-icons md-36 red")
-                        "remove_circle_outline"
+             $ "remove_circle_outline"
 
             | otherwise
             -> td $ return ()

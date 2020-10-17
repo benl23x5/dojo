@@ -28,9 +28,6 @@ formEventDetails ss eform
                           ! A.value (H.toValue fieldData))
                 (pathFields path)
 
-        -- Feedback about updated and invalid fields.
-        htmlFeedForm fsForm niceNameOfEventField
-
         let event = eventFormEventValue eform
         let details
                 = EventDetails
@@ -59,11 +56,14 @@ formEventDetails ss eform
 
         divEventEditDetails details fsForm
 
-        if (eventFormDetailsEditable eform)
+        (if (eventFormDetailsEditable eform)
          then input ! A.type_  "submit"
                     ! A.class_ "button-full"
                     ! A.value  "Save"
 
          else input ! A.type_  "submit"
                     ! A.class_ "input-hidden"
-                    ! A.value  "Save"
+                    ! A.value  "Save")
+
+        -- Feedback about updated and invalid fields.
+        htmlFeedForm fsForm niceNameOfEventField
