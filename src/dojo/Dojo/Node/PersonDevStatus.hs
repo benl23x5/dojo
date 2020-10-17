@@ -71,6 +71,10 @@ cgiPersonDevStatus cc inputs strPersonId
         -- Person information based on any set cookie.
         mCookiePerson <- cgiGetPersonOfStudentCookie cc
 
+        -- TODO: compare page pid with the set cookie.
+        -- If they are for different people then display "unregistered"
+        -- relative to the page pid, not relative to the existing cookie.
+
         cgiShowStatus cc pid person (isJust mCookiePerson)
 
 cgiPersonDevStatus _ _ _
