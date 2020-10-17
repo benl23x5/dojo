@@ -31,7 +31,7 @@ cgiEventView ss inputs
         psAttend   <- liftIO $ getAttendance conn eid
         liftIO $ disconnect conn
 
-        cgiPageNavi "Events" (eventDisplayName event) (pathsJump ss)
+        cgiPageNavi ss "Events" (eventDisplayName event) (pathsJump ss)
          $ H.div ! A.class_ "event-view"
          $ do
                 -- Only bother showing site user name to admin users.

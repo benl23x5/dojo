@@ -80,7 +80,7 @@ cgiPersonEdit_entry
         -> CGI CGIResult
 
 cgiPersonEdit_entry ss person dojos memberLevels fsFeed
- = cgiPageNavi "People" "Editing Person" (pathsJump ss)
+ = cgiPageNavi ss "People" "Editing Person" (pathsJump ss)
  $ do
         let sName = fromMaybe "[person]" $ personAliasName person
         H.div ! A.class_ "person-alias-name"

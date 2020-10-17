@@ -1,6 +1,7 @@
 
 module Dojo.Chrome where
 import Dojo.Framework
+import Dojo.Data.Session
 import Data.String
 
 import qualified Network.CGI                    as CGI
@@ -20,9 +21,16 @@ cgiPage htmlContent
 
 
 -- | Output a Navi page via CGI.
-cgiPageNavi :: String -> String -> [Path] -> Html -> CGI.CGI CGI.CGIResult
-cgiPageNavi sActive sName paths htmlContent
- = cgiPage $ pageNavi sActive sName paths htmlContent
+cgiPageNavi
+        :: Session      -- ^ Current session.
+        -> String       -- ^ Page name.
+        -> String       -- ^ Name of path that is currently active.
+        -> [Path]       -- ^ Navigation paths.
+        -> Html         -- ^ Page body.
+        -> CGI.CGI CGI.CGIResult
+
+cgiPageNavi ss sActive sName paths htmlContent
+ = cgiPage $ pageNavi ss sActive sName paths htmlContent
 
 
 -- | Output a plain page via CGI
@@ -33,18 +41,19 @@ cgiPagePlain sName htmlContent
 
 -------------------------------------------------------------------------------
 -- | A complete page with navigation bar on the top.
-pageNavi :: String      -- ^ Page name
+pageNavi :: Session     -- ^ Current session.
+         -> String      -- ^ Page name.
          -> String      -- ^ Name of path that is currently active.
-         -> [Path]      -- ^ Navigation paths
+         -> [Path]      -- ^ Navigation paths.
          -> Html -> Html
 
-pageNavi sActive sName paths htmlContents
+pageNavi _ss sActive sName paths htmlContents
  = do   pageHeader sName
 
         H.body
          $ do   H.div ! A.id "navbar"
-                 $ H.table
-                 $ H.tr $ mapM_ tdPathNav paths
+                 $ H.table $ H.tr
+                 $ do   mapM_ tdPathNav paths
 
                 H.div ! A.id "container"
                  $ H.div ! A.id "content"
@@ -57,12 +66,6 @@ pageNavi sActive sName paths htmlContents
          $ H.a  ! A.href (H.toValue path)
          $ H.toMarkup $ pathName path
 
-
-{-
-        pageBody
-         $ do   tablePaths paths
-                htmlContents
--}
 
 -- | A complete page with no navigation bar.
 pagePlain :: String     -- ^ Page Name

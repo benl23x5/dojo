@@ -27,7 +27,7 @@ cgiPersonView ss inputs
         liftIO $ disconnect conn
 
         let sName = fromMaybe "[person]" $ personAliasName person
-        cgiPageNavi "People" sName (pathsJump ss)
+        cgiPageNavi ss "People" sName (pathsJump ss)
          $ H.div ! A.class_ "person-view"
          $ do
                 H.div ! A.class_ "person-alias-name"

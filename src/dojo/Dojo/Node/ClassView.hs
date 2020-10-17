@@ -56,7 +56,7 @@ cgiClassView ss inputs
 
         liftIO $ disconnect conn
 
-        cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
+        cgiPageNavi ss "Classes" (classDisplayName classs) (pathsJump ss)
          $ divClassDetails ss cid classs uOwner pOwner events regulars
 
 cgiClassView _ inputs

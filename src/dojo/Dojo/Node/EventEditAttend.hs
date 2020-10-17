@@ -292,6 +292,6 @@ cgiEventEdit_update
 -- | Html for event edit page.
 cgiEventEditAttendForm :: Session -> EventForm -> CGI CGIResult
 cgiEventEditAttendForm ss eform
- = cgiPageNavi "Events" "Editing Attendance" (pathsJump ss)
+ = cgiPageNavi ss "Events" "Editing Attendance" (pathsJump ss)
  $ H.div ! A.class_ "event" $ formEventAttend ss eform
 

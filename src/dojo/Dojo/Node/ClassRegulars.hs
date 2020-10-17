@@ -40,7 +40,7 @@ cgiClassRegulars ss inputs
 
         liftIO $ disconnect conn
 
-        cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
+        cgiPageNavi ss "Classes" (classDisplayName classs) (pathsJump ss)
          $ H.div ! A.class_ "class-regulars"
          $ do
                 -- Only bother showing user id for class owner to admins.

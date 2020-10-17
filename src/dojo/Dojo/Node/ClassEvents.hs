@@ -35,7 +35,7 @@ cgiClassEvents ss inputs
         pOwner          <- liftIO $ getPerson conn $ userPersonId uOwner
         liftIO $ disconnect conn
 
-        cgiPageNavi "Classes" (classDisplayName classs) (pathsJump ss)
+        cgiPageNavi ss "Classes" (classDisplayName classs) (pathsJump ss)
          $ H.div ! A.class_ "class-events"
          $ do
                 -- Only bother showing user id for class owner to admins.

@@ -17,7 +17,7 @@ cgiPersonList ss _inputs
         people  <- liftIO $ getPeople conn
         liftIO $ disconnect conn
 
-        cgiPageNavi "People" "People" (pathsJump ss)
+        cgiPageNavi ss "People" "People" (pathsJump ss)
          $ do   when (sessionIsAdmin ss)
                  $ tableActions [pathPersonAdd ss]
 
