@@ -26,31 +26,28 @@ cgiPersonDevLink ss inputs
         liftIO $ disconnect conn
 
         let sName = fromMaybe "[person]" $ personAliasName person
-        cgiPageNavi ss "Device Registration" sName (pathsJump ss)
-         $ H.div ! A.class_ "person-device-reg"
-         $ do
-                H.br
-                H.div ! A.class_ "person-alias-name"
-                 $ H.table
-                 $ do   tr $ td $ H.string sName
+        cgiPageNavi ss "People" sName (pathsJump ss)
+         $ H.div ! A.class_ "code-description"
+         $ do   H.br
+                H.table
+                 $ do   tr $ td $ H.h3 $ H.string sName
                         tr $ td $ H.string "Link to student device registration."
                         tr $ td $ H.string ""
 
-                let cc          = sessionConfig ss
-                let pRegStatus  = pathPersonDevStatus (sessionConfig ss) pid
-                let sLink       = configSiteUrl cc ++ "/" ++ flatten pRegStatus
-                htmlQRCode sLink
+                        let cc          = sessionConfig ss
 
-                H.div ! A.class_ "person-alias-name"
-                 $ H.table
-                 $ do   tr $ td $ H.string "The student should scan this code"
+                        -- TODO: need to base the path on a pid hash,
+                        -- not just use the raw pid as the are too easy to guess.
+                        let pRegStatus  = pathPersonDevStatus (sessionConfig ss) pid
+                        let sLink       = configSiteUrl cc ++ "/" ++ flatten pRegStatus
+                        tr $ td $ htmlQRCode sLink
+
+                        tr $ td $ H.string "The student should scan this code"
                         tr $ td $ H.string "and be directed to the page to"
                         tr $ td $ H.string "register their own device."
 
-                H.br
-                H.div ! A.class_ "person-alias-name"
-                 $ H.table
-                 $ do   tr $ td $ H.string "The direct link is:"
+                        tr $ td ! A.style "height:1ex;" $ H.string ""
+                        tr $ td $ H.string "The direct link is:"
                         tr $ td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
 
 cgiPersonDevLink _ inputs

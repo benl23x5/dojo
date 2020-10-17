@@ -1,5 +1,8 @@
 
-module Dojo.Node.PersonDevStatus (cgiPersonDevStatus) where
+module Dojo.Node.PersonDevStatus
+        ( cgiPersonDevStatus
+        , cgiGetPersonOfStudentCookie)
+where
 import Dojo.Data.Person
 import Dojo.Chrome
 import Dojo.Config
@@ -16,7 +19,6 @@ import qualified Network.CGI                    as CGI
 -- TODO: get this from the config.
 sCookieStudent
  = "aikikai-australia-student"
-
 
 -- TODO: log registration / unregistration events.
 
@@ -69,7 +71,6 @@ cgiPersonDevStatus cc inputs strPersonId
         -- Person information based on any set cookie.
         mCookiePerson <- cgiGetPersonOfStudentCookie cc
 
-
         cgiShowStatus cc pid person (isJust mCookiePerson)
 
 cgiPersonDevStatus _ _ _
@@ -80,7 +81,7 @@ cgiPersonDevStatus _ _ _
 cgiShowStatus :: Config -> PersonId -> Person -> Bool -> CGI CGIResult
 cgiShowStatus cc pid person bRegistered
  = cgiPagePlain "Device Status"
- $ H.div ! A.class_ "person-device-status"
+ $ H.div ! A.class_ "code-description"
  $ do
         H.img
          ! (A.src $ fromString $ configLogoUrl cc)
@@ -92,8 +93,8 @@ cgiShowStatus cc pid person bRegistered
         let sName = fromMaybe "[person]" $ personAliasName person
         H.div ! A.class_ "person-alias-name"
          $ H.table
-         $ do   tr $ td $ H.string sName
-                tr $ td $ H.string "Student Device Status"
+         $ do   tr $ td $ H.h3 $ H.string sName
+                tr $ td $ H.string "Student Device Registration"
 
         let pathStatus = pathPersonDevStatus cc pid
         H.div ! A.class_ "person-device-register"
@@ -119,7 +120,7 @@ cgiShowStatus cc pid person bRegistered
 
             else H.table $ do
                 tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
-                   $ do H.string "Unregistered "
+                   $ do H.string "Not Registered "
                         (H.i ! A.class_ "material-icons md-48")
                          $ "sentiment_dissatisfied"
 
