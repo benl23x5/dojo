@@ -88,8 +88,9 @@ divClassDetails
 
         tableActions
          [ pathNew
-         , pathClassEvents ss cid
-         , pathClassRegulars ss cid ]
+         , pathClassEvents   ss cid
+         , pathClassRegulars ss cid
+         , pathClassDevLink   ss cid]
 
         -- First / final date tracking only matters when searching
         -- for events, so only relevant to admins.

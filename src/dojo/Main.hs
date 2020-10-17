@@ -4,23 +4,27 @@ module Main where
 import Dojo.Node.Main
 import Dojo.Node.Login
 import Dojo.Node.Logout
+
 import Dojo.Node.ClassList
 import Dojo.Node.ClassView
 import Dojo.Node.ClassEvents
 import Dojo.Node.ClassRegulars
+import Dojo.Node.ClassDevReg
+import Dojo.Node.ClassDevLink
+
 import Dojo.Node.EventList
 import Dojo.Node.EventView
 import Dojo.Node.EventEdit
 import Dojo.Node.EventEditDetails
 import Dojo.Node.EventEditAttend
 import Dojo.Node.EventDel
+
 import Dojo.Node.PersonList
 import Dojo.Node.PersonView
 import Dojo.Node.PersonEdit
 import Dojo.Node.PersonDel
 import Dojo.Node.PersonDevLink
 import Dojo.Node.PersonDevStatus
-import Dojo.Node.Register
 
 import Dojo.Data.Session
 
@@ -85,7 +89,7 @@ cgiTop cc
 
            -- Access via a class registration key.
            | Just sRegId <- lookup "r" inputs
-           -> cgiRegister cc inputs sRegId
+           -> cgiClassDevReg cc sRegId
 
            -- Access student device status.
            | Just sPid <- lookup "pds" inputs   -- TODO: use hash of pid
@@ -133,6 +137,7 @@ cgiTop cc
         "cv"    -> cgiClassView         ss inputs
         "ce"    -> cgiClassEvents       ss inputs
         "cr"    -> cgiClassRegulars     ss inputs
+        "cdl"   -> cgiClassDevLink      ss inputs
         -- Unrecognized node name.
         _ -> CGI.redirect $ flatten $ pathLogout ss
 

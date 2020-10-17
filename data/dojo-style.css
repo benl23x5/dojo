@@ -260,6 +260,15 @@ select
 
 
 /* Person device registration *******************************/
+.code-description table
+{       margin-left:    auto;
+        margin-right:   auto;
+}
+
+.code-description td
+{       text-align:     center;
+}
+
 .person-device-reg .person-alias-name table
 {       margin-left:    auto;
         margin-right:   auto;

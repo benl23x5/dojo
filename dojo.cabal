@@ -110,6 +110,8 @@ Executable dojo
         Dojo.Node.ClassView
         Dojo.Node.ClassEvents
         Dojo.Node.ClassRegulars
+        Dojo.Node.ClassDevLink
+        Dojo.Node.ClassDevReg
 
         Dojo.Node.Register
 

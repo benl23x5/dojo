@@ -131,6 +131,7 @@ pathPersonDevStatus cc (PersonId pid)
         (configCgiName cc)
         [ ("pds", show pid) ]    -- TODO: need a hash instead of raw pid.
 
+
 -- Events ---------------------------------------------------------------------
 pathEventList :: Session -> Path
 pathEventList ss
@@ -232,7 +233,7 @@ pathClassView ss (ClassId cid)
 
 pathClassEvents :: Session -> ClassId -> Path
 pathClassEvents ss (ClassId cid)
- = Path "All Events"
+ = Path "Events"
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "ce")
@@ -241,8 +242,27 @@ pathClassEvents ss (ClassId cid)
 
 pathClassRegulars :: Session -> ClassId -> Path
 pathClassRegulars ss (ClassId cid)
- = Path "All Regulars"
+ = Path "Regulars"
         (sessionCgiName ss)
         [ ("s", show $ sessionHash ss)
         , ("n", "cr")
         , ("cid", show cid)]
+
+
+-- | Page to show class QR registration code.
+pathClassDevLink :: Session -> ClassId -> Path
+pathClassDevLink ss (ClassId cid)
+ = Path "Reg. Code"
+        (sessionCgiName ss)
+        [ ("s", show $ sessionHash ss)
+        , ("n", "cdl")
+        , ("cid", show cid) ]
+
+
+-- | Page student should access to register for the class.
+pathClassDevReg :: Config -> ClassId -> Path
+pathClassDevReg cc (ClassId cid)
+ = Path "Reg. Code"
+        (configCgiName cc)
+        [ ("r", show cid) ]
+
