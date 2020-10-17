@@ -246,22 +246,30 @@ select
 .Col3bC                         { width: 30% }
 
 
-
 /* Person List ********************************************/
 .person-list .ShortName         { width: 8em; }
 .person-list .FamilyName        { width: 10em; }
 
 
-
 /* Person View/Edit **************************************/
-
 .person-view .event-summary .Type       { width: 10em;  }
 
 .person-view .event-attendance .Date    { width: 6em;  }
 .person-view .event-attendance .Time    { width: 4em;  }
 
 
-/* Class View **********************************************/
+/* Person device registration *******************************/
+.person-device-reg .person-alias-name table
+{       margin-left:    auto;
+        margin-right:   auto;
+}
+
+.person-device-reg .person-alias-name td
+{       text-align:     center;
+}
+
+
+/* Class View *********************************************/
 .class-view .class-regulars .Fees       { width:        2em; }
 
 /* Event List *********************************************/
@@ -270,7 +278,7 @@ select
 .event-list .Location                   { min-width: 6em;  }
 .event-list .Pax                        { width: 2em;   }
 
-/* Event View/Edit ******************************************/
+/* Event View/Edit ****************************************/
 
 /* View Mode */
 #event-details-view .EventId    { width: 2em; }

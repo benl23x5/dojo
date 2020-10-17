@@ -78,6 +78,7 @@ Executable dojo
         Dojo.Framework.Parse
         Dojo.Framework.Form
         Dojo.Framework.Entity
+        Dojo.Framework.QRCode
         Dojo.Framework
 
         Dojo.Node.Main
@@ -86,6 +87,7 @@ Executable dojo
         Dojo.Node.PersonView
         Dojo.Node.PersonList
         Dojo.Node.PersonDel
+        Dojo.Node.PersonRegCode
 
         Dojo.Node.EventEdit.Arg
         Dojo.Node.EventEdit.Form

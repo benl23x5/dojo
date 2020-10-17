@@ -18,6 +18,7 @@ import Dojo.Node.PersonList
 import Dojo.Node.PersonView
 import Dojo.Node.PersonEdit
 import Dojo.Node.PersonDel
+import Dojo.Node.PersonRegCode
 import Dojo.Node.Register
 
 import Dojo.Data.Session
@@ -116,6 +117,7 @@ cgiTop cc
         "pv"    -> cgiPersonView        ss inputs
         "pe"    -> cgiPersonEdit        ss inputs
         "pd"    -> cgiPersonDel         ss inputs
+        "prc"   -> cgiPersonRegCode     ss inputs
         "el"    -> cgiEventList         ss inputs
         "ev"    -> cgiEventView         ss inputs
         "ee"    -> cgiEventEdit         ss inputs
