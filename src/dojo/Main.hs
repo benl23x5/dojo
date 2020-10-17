@@ -89,7 +89,7 @@ cgiTop cc
 
            -- Access student device status.
            | Just sPid <- lookup "pds" inputs   -- TODO: use hash of pid
-           -> cgiPersonDevStatus cc sPid
+           -> cgiPersonDevStatus cc inputs sPid
 
            -- Access via an existing session key.
            | Just sHash <- lookup "s" inputs

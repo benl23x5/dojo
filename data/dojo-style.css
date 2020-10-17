@@ -33,6 +33,7 @@ select
         box-sizing:     border-box;
 }
 
+
 /* Page Setup *********************************************/
 #container
 {       min-width:      320px;
@@ -270,12 +271,12 @@ select
 
 
 /* Person device status ***********************************/
-.person-device-status .person-alias-name table
+.person-device-status table
 {       margin-left:    auto;
         margin-right:   auto;
 }
 
-.person-device-status .person-alias-name td
+.person-device-status td
 {       text-align:     center;
 }
 

@@ -37,7 +37,7 @@ cgiPersonDevLink ss inputs
                         tr $ td $ H.string ""
 
                 let cc          = sessionConfig ss
-                let pRegStatus  = pathPersonDevStatus ss pid
+                let pRegStatus  = pathPersonDevStatus (sessionConfig ss) pid
                 let sLink       = configSiteUrl cc ++ "/" ++ flatten pRegStatus
                 htmlQRCode sLink
 

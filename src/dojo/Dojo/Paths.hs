@@ -125,12 +125,11 @@ pathPersonDevLink ss (PersonId pid)
 
 
 -- | The actual device registration page that will set the reg. cookie.
-pathPersonDevStatus :: Session -> PersonId -> Path
-pathPersonDevStatus ss (PersonId pid)
+pathPersonDevStatus :: Config -> PersonId -> Path
+pathPersonDevStatus cc (PersonId pid)
  = Path "Device Status."
-        (sessionCgiName ss)
+        (configCgiName cc)
         [ ("pds", show pid) ]    -- TODO: need a hash instead of raw pid.
-
 
 -- Events ---------------------------------------------------------------------
 pathEventList :: Session -> Path
