@@ -35,4 +35,6 @@ htmlQRCode sLink
         let ssPage  = "data:image/png;base64, " ++ ssPng64
 
         (H.a ! A.href (H.toValue sLink))
-                (H.img ! A.class_ "qrcode" ! A.src (fromString ssPage))
+         (H.img ! A.class_ "qrcode"
+                ! A.src (fromString ssPage)
+                ! A.style "width:700px;height:700px")

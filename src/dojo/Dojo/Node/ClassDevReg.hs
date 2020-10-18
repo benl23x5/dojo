@@ -17,20 +17,43 @@ import qualified Data.Time.Calendar.OrdinalDate as Time
 
 -------------------------------------------------------------------------------
 -- | Class device registration.
---   TODO: identify class by hashed registration code, not raw classid.
 cgiClassDevReg :: Config -> String -> [(String, String)] -> CGI CGIResult
 cgiClassDevReg cc sRegId inputs
- -- ?attend= ... register for class
- | strClassId   <- sRegId
- , Right cid    <- parse strClassId
- , Just "true"  <- lookup "attend" inputs
  = do
         -- Connect to database.
         conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
 
-        -- Class details based on visited URL.
-        classs  <- liftIO $ getClass conn cid
+        -- Get list of all active classes.
+        classes <- liftIO $ getClasses conn
 
+        let sUrl  = configSiteUrl cc
+        let sSalt = configQrSaltActive cc
+
+        -- Get registration links of all active classes.
+        let lsActive
+              =  catMaybes $ flip map classes $ \cls
+              -> case registrationLinkOfClass sUrl sSalt cls of
+                  Just (_sUrl, sId) -> Just (sId, cls)
+                  Nothing           -> Nothing
+
+        -- Lookup the registration link.
+        case lookup sRegId lsActive of
+         Just classs -> cgiClassDevRegMatch cc conn inputs classs
+         Nothing     -> cgiClassDevRegUnrecognizedClassCode cc
+
+
+-------------------------------------------------------------------------------
+-- | Class device registration,
+--   where we have a class record based on a matching registration id.
+cgiClassDevRegMatch
+        :: IConnection conn
+        => Config -> conn -> [(String, String)]
+        -> Class  -> CGI CGIResult
+
+cgiClassDevRegMatch cc conn inputs classs
+ -- ?attend= ... register for class
+ | Just "true"  <- lookup "attend" inputs
+ = do
         -- Lookup details of the class owner.
         let Just uname = classOwnerUserName classs
         Just uOwner <- liftIO $ getMaybeUser conn uname
@@ -38,20 +61,14 @@ cgiClassDevReg cc sRegId inputs
 
         -- Person information based on cookie set in the browser.
         mCookiePerson <- cgiGetPersonOfStudentCookie conn
-
         case mCookiePerson of
-         Nothing     -> throw $ FailNodeArgs "todo unknown person" []
+         Nothing     -> cgiClassDevRegUnrecognizedDevice cc classs pOwner
          Just person -> cgiClassDevRegAddPerson cc conn classs uOwner pOwner person
 
  -- Show class registration page.
- | strClassId  <- sRegId
- , Right cid   <- parse strClassId
+cgiClassDevRegMatch cc conn _inputs classs
  = do
-        -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
-
-        -- Class details based on visited URL.
-        classs  <- liftIO $ getClass conn cid
+        let Just cid = classId classs
 
         -- Lookup details of the class owner.
         let Just uname = classOwnerUserName classs
@@ -94,21 +111,47 @@ cgiClassDevReg cc sRegId inputs
            -- The device accessing the page is not recognized.
            -- No student identification cookie is set.
            | otherwise
-           -> cgiClassDevRegUnrecognized cc classs pOwner
-
-cgiClassDevReg _ _ _
- = throw $ FailNodeArgs "class device registration" []
+           -> cgiClassDevRegUnrecognizedDevice cc classs pOwner
 
 
 -------------------------------------------------------------------------------
--- | Show a page saying we don't recognize the student device.
-cgiClassDevRegUnrecognized
+-- | Page saying we don't recognize the class registration code.
+cgiClassDevRegUnrecognizedClassCode
+        :: Config
+        -> CGI CGIResult
+
+cgiClassDevRegUnrecognizedClassCode cc
+ = cgiPagePlain "Unrecognized Class Code"
+ $ H.div ! A.class_ "class-dev-reg"
+ $ do
+        -- TODO: shfit logo style definition to chrome module
+        -- don't keep repeating the html.
+        H.img
+         ! (A.src $ fromString $ configLogoUrl cc)
+         ! (A.style "width:450px;height:450px")
+         ! (A.id    "login-logo")
+
+        H.br
+        H.div ! A.class_ "code-description"
+         $ H.table $ do
+                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                   $ do H.string "Code Not Recognized "
+                        (H.i ! A.class_ "material-icons md-48")
+                         $ "sentiment_dissatisfied"
+
+                tr $ td $ "This registration code is not recognized."
+                tr $ td $ "Please contact the class instructor."
+
+
+-------------------------------------------------------------------------------
+-- | Page saying we don't recognize the student device.
+cgiClassDevRegUnrecognizedDevice
         :: Config
         -> Class                -- ^ Class they tried to register for.
         -> Person               -- ^ Owner of class.
         -> CGI CGIResult
 
-cgiClassDevRegUnrecognized cc classs pClassOwner
+cgiClassDevRegUnrecognizedDevice cc classs pClassOwner
  = cgiPagePlain (classDisplayName classs)
  $ H.div ! A.class_ "class-dev-reg"
  $ do
@@ -229,15 +272,17 @@ cgiClassDevRegStatus cc classs pClassOwner pCookie bAttending
                           (H.i ! A.class_ "material-icons md-48")
                             $ "sentiment_dissatisfied"
 
-                  let Just cid  = classId classs
-                  let pathClass = pathClassDevReg cc cid
+                  let sUrl  = configSiteUrl cc
+                  let sSalt = configQrSaltActive cc
+                  let Just (sRegLink, sRegId)
+                        = registrationLinkOfClass sUrl sSalt classs
 
                   -- Button to record attendance in the class.
                   tr $ td
-                     $ (H.form    ! A.action (fromString $ flatten $ pathClass))
+                     $ (H.form    ! A.action (fromString sRegLink))
                      $ do H.input ! A.type_ "hidden"
                                   ! A.name  (fromString "r")
-                                  ! A.value (fromString $ pretty cid)
+                                  ! A.value (fromString sRegId)
 
                           H.input ! A.type_ "hidden"
                                   ! A.name  (fromString "attend")
@@ -307,7 +352,6 @@ cgiClassDevRegExistingEvent
 
 cgiClassDevRegExistingEvent cc conn classs person event
  = do
-        let Just cid = classId classs
         let Just pid = personId person
         let Just eid = eventId event
 
@@ -319,13 +363,13 @@ cgiClassDevRegExistingEvent cc conn classs person event
            -- so just to back to the main reg. status page.
            |  elem pid pidsAttend
            -> do liftIO $ disconnect conn
-                 redirect $ flatten $ pathClassDevReg cc cid
+                 redirect $ flatten $ pathClassDevReg cc classs
 
            | otherwise
            -> do liftIO $ insertAttendance conn eid person
                  liftIO $ commit conn
                  liftIO $ disconnect conn
-                 redirect $ flatten $ pathClassDevReg cc cid
+                 redirect $ flatten $ pathClassDevReg cc classs
 
 
 -------------------------------------------------------------------------------

@@ -2,6 +2,7 @@
 module Dojo.Paths where
 import Dojo.Data.Session
 import Dojo.Data.Person
+import Dojo.Data.Class
 import Dojo.Framework
 import Dojo.Config
 
@@ -260,9 +261,12 @@ pathClassDevLink ss (ClassId cid)
 
 
 -- | Page student should access to register for the class.
-pathClassDevReg :: Config -> ClassId -> Path
-pathClassDevReg cc (ClassId cid)
- = Path "Reg. Code"
+pathClassDevReg :: Config -> Class -> Path
+pathClassDevReg cc classs
+ = let  sUrl  = configSiteUrl cc
+        sSalt = configQrSaltActive cc
+        Just (_, sRegId) = registrationLinkOfClass sUrl sSalt classs
+    in Path "Reg. Code"
         (configCgiName cc)
-        [ ("r", show cid) ]
+        [ ("r", sRegId) ]
 

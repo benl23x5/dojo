@@ -19,7 +19,7 @@ registrationLinkOfClass
 
 -- TODO: get cgi name from config.
 registrationLinkOfClass sUrl sSalt classs
- | Just sHash   <- registrationHashOfClass sUrl sSalt classs
+ | Just sHash <- registrationHashOfClass sUrl sSalt classs
  = Just (sUrl ++ "/dojo.cgi?r=" ++ sHash, sHash)
 
  | otherwise

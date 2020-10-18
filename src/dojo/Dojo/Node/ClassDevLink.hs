@@ -30,26 +30,24 @@ cgiClassDevLink ss inputs
         pOwner          <- liftIO $ getPerson conn $ userPersonId uOwner
 
         cgiPageNavi ss "Classes" (classDisplayName classs) (pathsJump ss)
-         $ H.div ! A.class_ "class-device-reg"
-         $ do
-                -- Only bother showing user id for class owner to non-admins.
-                let muOwner
-                        = if sessionIsAdmin ss
-                                then Just uOwner
-                                else Nothing
-
-                H.table $ trClassSummary classs muOwner pOwner
-                tableActions [ pathClassView ss cid ]
-
+         $ H.div ! A.class_ "code-description"
+         $ do H.br; H.table $ do
+                trClassSummary classs Nothing pOwner
                 let cc    = sessionConfig ss
-                let pReg  = pathClassDevReg (sessionConfig ss) cid
-                let sLink = configSiteUrl cc ++ "/" ++ flatten pReg
-                htmlQRCode sLink
+                let sUrl  = configSiteUrl cc
+                let sSalt = configQrSaltActive cc
 
-                H.div ! A.class_ "code-description"
-                 $ H.table
-                 $ do   tr $ td $ H.string "Scan this code with a registered device"
-                        tr $ td $ H.string "to join the class attendance list."
+                let Just (sLink, sRegId)
+                        = registrationLinkOfClass sUrl sSalt classs
+
+                tr $ td $ htmlQRCode sLink
+                tr $ td $ H.string "Scan this code with a registered device"
+                tr $ td $ H.string "to join the class attendance list."
+                tr $ td $ H.string $ "code id: " ++ sRegId
+
+                tr $ td ! A.style "height:1ex;" $ H.string ""
+                tr $ td $ H.string "The direct link is:"
+                tr $ td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
 
 
 cgiClassDevLink _ inputs
