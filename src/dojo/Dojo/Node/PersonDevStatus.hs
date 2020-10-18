@@ -66,10 +66,10 @@ cgiPersonDevStatus cc inputs strPersonId
 
         -- Person information based on the visited url.
         person  <- liftIO $ getPerson conn pid
-        liftIO $ disconnect conn
 
         -- Person information based on any set cookie.
-        mCookiePerson <- cgiGetPersonOfStudentCookie cc
+        mCookiePerson <- cgiGetPersonOfStudentCookie conn
+        liftIO $ disconnect conn
 
         -- TODO: compare page pid with the set cookie.
         -- If they are for different people then display "unregistered"
@@ -161,16 +161,18 @@ cgiSetStudentCookie pid
 
 -------------------------------------------------------------------------------
 -- | Get the student device registraton cookie, if there is one.
-cgiGetPersonOfStudentCookie :: Config -> CGI (Maybe Person)
-cgiGetPersonOfStudentCookie cc
+cgiGetPersonOfStudentCookie
+        :: IConnection conn
+        => conn -> CGI (Maybe Person)
+
+cgiGetPersonOfStudentCookie conn
  = do   mValue  <- CGI.getCookie sCookieStudent
         case mValue of
          Nothing -> return Nothing
          Just sPid
           |  all Char.isDigit sPid
           ,  iPid <- read sPid
-          -> do conn   <- liftIO $ connectSqlite3 $ configDatabasePath cc
-                person <- liftIO $ getPerson conn (PersonId iPid)
+          -> do person <- liftIO $ getPerson conn (PersonId iPid)
                 return $ Just person
 
           | otherwise

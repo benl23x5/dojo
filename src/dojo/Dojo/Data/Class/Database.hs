@@ -198,4 +198,29 @@ getRecentRegularsOfClassId conn cid
         getRegularsOfClassId conn cid edateFirst
 
 
+-------------------------------------------------------------------------------
+-- | Get the list of events of the class that are on today.
+--   There should only be one or none, unless there is some
+--   problem with the database.
+getEventsOfClassToday
+        :: IConnection conn
+        => conn -> ClassId
+        -> IO [Event]
 
+getEventsOfClassToday conn cid
+ = do
+        -- All events listed for the class.
+        eventsAll <- getEventsOfClassId conn cid
+
+        -- See if there is an event created for today already.
+        zonedTime <- Time.getZonedTime
+        let (edate, _etime)
+                = splitEventLocalTime
+                $ Time.zonedTimeToLocalTime zonedTime
+
+        -- Events of this class that are on today.
+        let eventsToday
+                = [ event | (event, _pax) <- eventsAll
+                  , eventDate event == Just edate ]
+
+        return eventsToday
