@@ -119,6 +119,7 @@ Executable dojo
         Dojo.Node.Logout
 
         Dojo.Chrome
+        Dojo.Data
 
         Dojo.Base
         Dojo.Config

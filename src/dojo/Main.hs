@@ -89,7 +89,7 @@ cgiTop cc
 
            -- Access via a class registration key.
            | Just sRegId <- lookup "r" inputs
-           -> cgiClassDevReg cc sRegId
+           -> cgiClassDevReg cc sRegId inputs
 
            -- Access student device status.
            | Just sPid <- lookup "pds" inputs   -- TODO: use hash of pid
