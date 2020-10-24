@@ -13,7 +13,6 @@ import qualified Network.CGI                    as CGI
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Data.Time.Clock                as Time
-import qualified Data.Char                      as Char
 
 
 -------------------------------------------------------------------------------
@@ -32,10 +31,10 @@ cgiPersonDevStatus cc inputs sCode
         mpid    <- liftIO $ lookupPersonIdOfDeviceRegCode conn sCode
         case mpid of
          Nothing
-          -> cgiPersonDevRegUnrecognizedClassCode cc
+          ->    cgiPersonDevRegUnrecognizedClassCode cc
 
          Just pid
-          -> do cgiSetStudentCookie cc pid
+          -> do cgiSetStudentCookie cc conn pid
                 redirect $ flatten $ pathPersonDevStatus cc sCode
 
  -- Unregister device by clearing the cookie.
@@ -83,21 +82,35 @@ cgiPersonDevStatus cc inputs sCode
 --   TODO: set the cookie as the student reg code, not the pid.
 --   TODO: refresh the cookie after each event registration.
 --
-cgiSetStudentCookie :: Config -> PersonId -> CGI ()
-cgiSetStudentCookie cc pid
- = do   let PersonId iPid = pid
+cgiSetStudentCookie
+        :: IConnection conn
+        => Config -> conn -> PersonId -> CGI ()
+
+cgiSetStudentCookie cc conn pid
+ = do
+        -- Acquire the current reg code for the person,
+        --  either by using the existing one recorded in the database,
+        --  or generating a fresh one.
+        sCode  <- liftIO $ acquirePersonDeviceRegCode
+                        conn (configQrSaltActive cc) pid
+        liftIO $ commit conn
 
         -- Set the cookie expiry 6 months in the future.
-        --   If the person has not used the code to register for 6 months,
-        --   then maybe they've had a break in training and the reg. system
-        --   has changed. See the instructor anyway.
+        --
+        --  If the person has not used the code to register for 6 months,
+        --  then maybe they've had a break in training and the reg. system
+        --  has changed. See the instructor anyway.
+        --
+        --  Each time the student visits a class registration page
+        --  the expiry date will be shifted into the future.
+        --
         utcNow <- liftIO $ Time.getCurrentTime
         let utcLater = Time.addUTCTime (Time.nominalDay * 185) utcNow
 
         let cookie
                 = CGI.Cookie
                 { CGI.cookieName        = configCookieNameStudentReg cc
-                , CGI.cookieValue       = show iPid
+                , CGI.cookieValue       = sCode
                 , CGI.cookieExpires     = Just $ utcLater
                 , CGI.cookieDomain      = Just $ configCookieDomain cc
                 , CGI.cookiePath        = Nothing
@@ -116,15 +129,23 @@ cgiGetPersonOfStudentCookie
 cgiGetPersonOfStudentCookie cc conn
  = do   mValue  <- CGI.getCookie $ configCookieNameStudentReg cc
         case mValue of
-         Nothing -> return Nothing
-         Just sPid
-          |  all Char.isDigit sPid
-          ,  iPid <- read sPid
-          -> do person <- liftIO $ getPerson conn (PersonId iPid)
-                return $ Just person
-
-          | otherwise
+         Nothing
           -> return Nothing
+
+         Just sCode
+          -> do mpid <- liftIO $ lookupPersonIdOfDeviceRegCode conn sCode
+                case mpid of
+                 Just pid
+                  -> do -- Lookup the person record based on the pid.
+                        person <- liftIO $ getPerson conn pid
+
+                        -- Reset the cookie to move the expiry date
+                        -- into the future.
+                        cgiSetStudentCookie cc conn pid
+
+                        return $ Just person
+
+                 _ -> return Nothing
 
 
 -------------------------------------------------------------------------------
