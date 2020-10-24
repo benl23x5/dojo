@@ -40,9 +40,13 @@ htmlQRCode sLink sDownloadName
         let ssPng64 = BC.unpack bsPng64
         let ssPage  = "data:image/png;base64, " ++ ssPng64
 
-        (H.a ! A.href (H.toValue sLink)
+        -- To get a save-as link with the correct name on an inline image
+        -- we seem to need to include the base64 encoded data twice.
+        -- Once as the target of the link and once as the image data.
+        (H.a ! A.href (fromString ssPage)
              ! I.customAttribute "download"
                 (fromString $ sDownloadName ++ ".png"))
          (H.img ! A.class_ "qrcode"
-                ! A.src (fromString ssPage)
-                ! A.style "width:700px;height:700px")
+                ! A.style "width:700px;height:700px"
+                ! A.id "someimage"
+                ! A.src (fromString ssPage))

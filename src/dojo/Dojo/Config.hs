@@ -16,6 +16,12 @@ data Config
           -- | URL to the logo displayed on the login page.
         , configLogoUrl         :: String
 
+          -- | Domain name to bind cookies to.
+        , configCookieDomain    :: String
+
+          -- | Base name for registration cookies.
+        , configCookieBase      :: String
+
           -- | Base name of script, eg "dojo.cgi"
         , configCgiName         :: String
 
@@ -38,10 +44,18 @@ configDefault
         { configSiteName        = "Aiki Dojo"
         , configSiteUrl         = "https://dojo.ouroborus.net"
         , configLogoUrl         = "https://dojo.ouroborus.net/logo-aka.jpg"
+        , configCookieDomain    = "ouroborus.net"
+        , configCookieBase      = "dojo"
         , configCgiName         = "dojo.cgi"
         , configDatabasePath    = "dojo.db"
         , configQrSaltActive    = "salt-active"
         , configQrSaltLegacy    = "salt-legacy" }
+
+
+-- | Name of cookie used for student device registration.
+configCookieNameStudentReg :: Config -> String
+configCookieNameStudentReg config
+ = configCookieBase config ++ "-student"
 
 
 -- | Load args into site config.
@@ -61,6 +75,14 @@ loadConfig aa cc
  | "-logo-url" : sLogoUrl : rest <- aa
  = loadConfig rest
  $ cc { configLogoUrl = sLogoUrl }
+
+ | "-cookie-domain" : sCookieDomain : rest <- aa
+ = loadConfig rest
+ $ cc { configCookieDomain = sCookieDomain }
+
+ | "-cookie-base" : sCookieBase : rest <- aa
+ = loadConfig rest
+ $ cc { configCookieBase = sCookieBase }
 
  | "-cgi-name" : sCgiName : rest <- aa
  = loadConfig rest
@@ -89,6 +111,7 @@ usage = unlines
  , " -site-name       STRING    Display name of site."
  , " -site-url        STRING    URL of root of site."
  , " -logo-url        STRING    URL of logo to display on login."
+ , " -cookie-domain   STRING    Domain name to bind cookies to."
  , " -cgi-name        STRING    Base name of script, eg dojo.cgi."
  , " -db-path         PATH      Full path to sqlite3 database."
  , " -qr-salt-active  STRING    Salt to generate active QR codes."

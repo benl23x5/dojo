@@ -26,6 +26,8 @@ CREATE TABLE v1_Session
         , EndTime               DATETIME
         , UNIQUE(UserId, Hash));
 
+
+/* A person known to the organization. */
 CREATE TABLE v1_Person
         ( PersonId              INTEGER PRIMARY KEY
         , MemberId              INTEGER
@@ -44,9 +46,35 @@ CREATE TABLE v1_Person
         , EmergencyName2        TEXT
         , EmergencyPhone2       TEXT);
 
+
+/* Person device registration code can be used by a person to register
+ * their device with the system. Registering sets a cookie in their
+ * device that they can then use to register attendance to classes.
+ *
+ * The code is used to generate both the registration page that the
+ * person sees, as well as the contents of the cookie in their device.
+ *
+ * If a registration code is being misused then the database admin
+ * can set the 'active' field to '0' / false to disable it.
+ *
+ * The next time the person dev link page is visited on the site
+ * a new code will be generated.
+ */
+CREATE TABLE v1_PersonDeviceRegCode
+        ( Id                    INTEGER  PRIMARY KEY
+        , TimeCreated           DATETIME NOT NULL
+        , PersonId              INTEGER  NOT NULL
+        , Content               STRING   NOT NULL
+        , Active                INTEGER  CHECK (Active IN (0, 1))
+        , FOREIGN KEY(PersonId) REFERENCES v1_Person(PersonId));
+
+
+/* Possible membership levels that a person can have with
+ * the organization. */
 CREATE TABLE v1_PersonMembershipLevel
         ( SortOrder             INTEGER
         , Name                  STRING  PRIMARY KEY);
+
 
 CREATE TABLE v1_Event
         ( EventId               INTEGER PRIMARY KEY
@@ -56,9 +84,11 @@ CREATE TABLE v1_Event
         , Time                  DATETIME
         , FOREIGN KEY(CreatedBy) REFERENCES v1_User(UserId));
 
+
 CREATE TABLE v1_EventType
         ( SortOrder             Integer
         , Name                  STRING  PRIMARY KEY);
+
 
 CREATE TABLE v1_Attendance
         ( PersonId              INTEGER
@@ -66,6 +96,7 @@ CREATE TABLE v1_Attendance
         , PRIMARY KEY(PersonId, EventId)
         , FOREIGN KEY(PersonId) REFERENCES v1_Person(PersonId)
         , FOREIGN KEY(EventId)  REFERENCES v1_Event(EventId));
+
 
 /* A reocurring weekly class, which can be used as a template
  * to create a new event. */
@@ -80,6 +111,27 @@ CREATE TABLE v1_Class
         , DateFirst             DATE    NOT NULL
         , DateFinal             DATE
         , FOREIGN KEY(OwnerUserName) REFERENCES v1_User(Name));
+
+
+/* Class device registration code can be used by a person to register
+ * their attendance for the class.
+ *
+ * The code is used to generate the QR code used to register for it.
+ *
+ * If a registration code is being misused then the database admin
+ * can set the 'active' field to '0' / false to disable it.
+ *
+ * The next time the class dev link page is visited on the site
+ * a new code will be generated.
+ */
+CREATE TABLE v1_ClassDeviceRegCode
+        ( Id            INTEGER  PRIMARY KEY
+        , TimeCreated   DATETIME NOT NULL
+        , ClassId       INTEGER  NOT NULL
+        , Content       STRING   NOT NULL
+        , Active        INTEGER  CHECK (Active IN (0, 1))
+        , FOREIGN KEY(ClassId) REFERENCES v1_Class(ClassId));
+
 
 /* Dojo names. */
 CREATE TABLE v1_Dojo

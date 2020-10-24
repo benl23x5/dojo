@@ -21,8 +21,13 @@ cgiPersonDevLink
 cgiPersonDevLink ss inputs
  | Just strPersonId <- lookup "pid" inputs
  , Right pid    <- parse strPersonId
- = do   conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
+ = do
+        let config = sessionConfig ss
+        conn    <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         person  <- liftIO $ getPerson conn pid
+        sCode   <- liftIO $ acquirePersonDeviceRegCode conn
+                                (configQrSaltActive config) pid
+        liftIO $ commit conn
         liftIO $ disconnect conn
 
         let sName = fromMaybe "[person]" $ personAliasName person
@@ -34,10 +39,7 @@ cgiPersonDevLink ss inputs
                 tr $ td $ H.string ""
 
                 let cc          = sessionConfig ss
-
-                -- TODO: need to base the path on a pid hash,
-                -- not just use the raw pid as the are too easy to guess.
-                let pRegStatus  = pathPersonDevStatus (sessionConfig ss) pid
+                let pRegStatus  = pathPersonDevStatus (sessionConfig ss) sCode
                 let sLink       = configSiteUrl cc ++ "/" ++ flatten pRegStatus
 
                 -- Base name of the file to use if the QR code .png image
@@ -51,6 +53,7 @@ cgiPersonDevLink ss inputs
                 tr $ td $ H.string "The student should scan this code"
                 tr $ td $ H.string "and be directed to the page to"
                 tr $ td $ H.string "register their own device."
+                tr $ td $ H.string $ "code id: " ++ sCode
 
                 tr $ td ! A.style "height:1ex;" $ H.string ""
                 tr $ td $ H.string "The direct link is:"

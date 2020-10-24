@@ -60,7 +60,7 @@ cgiClassDevRegMatch cc conn inputs classs
         pOwner      <- liftIO $ getPerson conn $ userPersonId uOwner
 
         -- Person information based on cookie set in the browser.
-        mCookiePerson <- cgiGetPersonOfStudentCookie conn
+        mCookiePerson <- cgiGetPersonOfStudentCookie cc conn
         case mCookiePerson of
          Nothing     -> cgiClassDevRegUnrecognizedDevice cc classs pOwner
          Just person -> cgiClassDevRegAddPerson cc conn classs uOwner pOwner person
@@ -82,7 +82,7 @@ cgiClassDevRegMatch cc conn _inputs classs
         eventsToday <- liftIO $ getEventsOfClassToday conn cid
 
         -- Person information based on cookie set in the browser.
-        mCookiePerson <- cgiGetPersonOfStudentCookie conn
+        mCookiePerson <- cgiGetPersonOfStudentCookie cc conn
 
         if -- This class is not on today.
            | not $ classDay classs == Just (ClassDay sDay)

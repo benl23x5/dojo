@@ -6,7 +6,6 @@ where
 import Dojo.Data.Person
 import Dojo.Chrome
 import Dojo.Config
-import Dojo.Fail
 import Dojo.Paths
 import Dojo.Framework
 import Data.String
@@ -15,10 +14,6 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Network.CGI                    as CGI
 
--- Name of the student identification cookie.
--- TODO: get this from the config.
-sCookieStudent
- = "aikikai-australia-student"
 
 -- TODO: log registration / unregistration events.
 
@@ -31,59 +26,99 @@ cgiPersonDevStatus
         -> String
         -> CGI CGIResult
 
-cgiPersonDevStatus cc inputs strPersonId
- -- register device
- | Right pid    <- parse strPersonId
- , Just _       <- lookup "register" inputs
- = do
-        cgiSetStudentCookie pid
-        redirect $ flatten $ pathPersonDevStatus cc pid
+cgiPersonDevStatus cc inputs sCode
+ -- Register device by setting the cookie.
+ | Just _       <- lookup "register" inputs
+ = do   conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+        mpid    <- liftIO $ lookupPersonIdOfDeviceRegCode conn sCode
+        case mpid of
+         Nothing
+          -> cgiPersonDevRegUnrecognizedClassCode cc
 
+         Just pid
+          -> do cgiSetStudentCookie cc pid
+                redirect $ flatten $ pathPersonDevStatus cc sCode
 
- -- unregister device
- | Right pid    <- parse strPersonId
- , Just _       <- lookup "unregister" inputs
+ -- Unregister device by clearing the cookie.
+ | Just _ <- lookup "unregister" inputs
  = do
         -- template of cookie to delete.
         -- only the 'name', 'domain' and 'path' are used.
         let cookieParts
                 = CGI.Cookie
-                { CGI.cookieName        = sCookieStudent
+                { CGI.cookieName        = configCookieNameStudentReg cc
                 , CGI.cookieValue       = ""
                 , CGI.cookieExpires     = Nothing
-                , CGI.cookieDomain      = Just "ouroborus.net"  -- TODO: get from config.
+                , CGI.cookieDomain      = Just $ configCookieDomain cc
                 , CGI.cookiePath        = Nothing
                 , CGI.cookieSecure      = True
                 , CGI.cookieHttpOnly    = True }
 
         CGI.deleteCookie cookieParts
-        redirect $ flatten $ pathPersonDevStatus cc pid
-
+        redirect $ flatten $ pathPersonDevStatus cc sCode
 
  -- show status page
- | Right pid    <- parse strPersonId
- = do   conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+ | otherwise
+ = do   conn <- liftIO $ connectSqlite3 $ configDatabasePath cc
+        mpid <- liftIO $ lookupPersonIdOfDeviceRegCode conn sCode
+        case mpid of
+         Nothing
+          -> cgiPersonDevRegUnrecognizedClassCode cc
 
-        -- Person information based on the visited url.
-        person  <- liftIO $ getPerson conn pid
+         Just pid
+          -> do person  <- liftIO $ getPerson conn pid
 
-        -- Person information based on any set cookie.
-        mCookiePerson <- cgiGetPersonOfStudentCookie conn
-        liftIO $ disconnect conn
+                -- Person information based on any set cookie.
+                mCookiePerson <- cgiGetPersonOfStudentCookie cc conn
+                liftIO $ disconnect conn
 
-        -- TODO: compare page pid with the set cookie.
-        -- If they are for different people then display "unregistered"
-        -- relative to the page pid, not relative to the existing cookie.
-
-        cgiShowStatus cc pid person (isJust mCookiePerson)
-
-cgiPersonDevStatus _ _ _
- = throw $ FailNodeArgs "person device status" []
+                -- TODO: compare page pid with the set cookie.
+                -- If they are for different people then display "unregistered"
+                -- relative to the page pid, not relative to the existing cookie.
+                cgiShowStatus cc sCode person (isJust mCookiePerson)
 
 
 -------------------------------------------------------------------------------
-cgiShowStatus :: Config -> PersonId -> Person -> Bool -> CGI CGIResult
-cgiShowStatus cc pid person bRegistered
+-- | Set the student device registration cookie.
+cgiSetStudentCookie :: Config -> PersonId -> CGI ()
+cgiSetStudentCookie cc pid
+ = do   let PersonId iPid = pid
+        let cookie
+                = CGI.Cookie
+                { CGI.cookieName        = configCookieNameStudentReg cc
+                , CGI.cookieValue       = show iPid
+                , CGI.cookieExpires     = Nothing               -- TODO: set ~6m in future.
+                , CGI.cookieDomain      = Just $ configCookieDomain cc
+                , CGI.cookiePath        = Nothing
+                , CGI.cookieSecure      = True
+                , CGI.cookieHttpOnly    = True }
+
+        CGI.setCookie cookie
+
+
+-------------------------------------------------------------------------------
+-- | Get the student device registraton cookie, if there is one.
+cgiGetPersonOfStudentCookie
+        :: IConnection conn
+        => Config -> conn -> CGI (Maybe Person)
+
+cgiGetPersonOfStudentCookie cc conn
+ = do   mValue  <- CGI.getCookie $ configCookieNameStudentReg cc
+        case mValue of
+         Nothing -> return Nothing
+         Just sPid
+          |  all Char.isDigit sPid
+          ,  iPid <- read sPid
+          -> do person <- liftIO $ getPerson conn (PersonId iPid)
+                return $ Just person
+
+          | otherwise
+          -> return Nothing
+
+
+-------------------------------------------------------------------------------
+cgiShowStatus :: Config -> String -> Person -> Bool -> CGI CGIResult
+cgiShowStatus cc sCode person bRegistered
  = cgiPagePlain "Device Status"
  $ H.div ! A.class_ "code-description"
  $ do
@@ -100,7 +135,7 @@ cgiShowStatus cc pid person bRegistered
          $ do   tr $ td $ H.h3 $ H.string sName
                 tr $ td $ H.string "Student Device Registration"
 
-        let pathStatus = pathPersonDevStatus cc pid
+        let pathStatus = pathPersonDevStatus cc sCode
         H.div ! A.class_ "person-device-register"
          $ if bRegistered
             then H.table $ do
@@ -111,9 +146,10 @@ cgiShowStatus cc pid person bRegistered
 
                 H.tr $ H.td
                    $ (H.form    ! A.action (fromString $ flatten $ pathStatus))
-                   $ do H.input ! A.type_ "hidden"
+                   $ do
+                        H.input ! A.type_ "hidden"
                                 ! A.name  (fromString "pds")
-                                ! A.value (fromString $ pretty pid)
+                                ! A.value (fromString sCode)
 
                         H.input ! A.type_ "hidden"
                                 ! A.name (fromString "unregister")
@@ -130,9 +166,10 @@ cgiShowStatus cc pid person bRegistered
 
                 tr $ td
                    $ (H.form    ! A.action (fromString $ flatten $ pathStatus))
-                   $ do H.input ! A.type_ "hidden"
+                   $ do
+                        H.input ! A.type_ "hidden"
                                 ! A.name  (fromString "pds")
-                                ! A.value (fromString $ pretty pid)
+                                ! A.value (fromString sCode)
 
                         H.input ! A.type_ "hidden"
                                 ! A.name (fromString "register")
@@ -141,41 +178,28 @@ cgiShowStatus cc pid person bRegistered
                                 ! A.value "Register Device"
 
 
--------------------------------------------------------------------------------
--- | Set the student device registration cookie.
-cgiSetStudentCookie :: PersonId -> CGI ()
-cgiSetStudentCookie pid
- = do   let PersonId iPid = pid
-        let cookie
-                = CGI.Cookie
-                { CGI.cookieName        = sCookieStudent
-                , CGI.cookieValue       = show iPid
-                , CGI.cookieExpires     = Nothing               -- TODO: set ~6m in future.
-                , CGI.cookieDomain      = Just "ouroborus.net"  -- TODO: get from config.
-                , CGI.cookiePath        = Nothing
-                , CGI.cookieSecure      = True
-                , CGI.cookieHttpOnly    = True }
-
-        CGI.setCookie cookie
-
 
 -------------------------------------------------------------------------------
--- | Get the student device registraton cookie, if there is one.
-cgiGetPersonOfStudentCookie
-        :: IConnection conn
-        => conn -> CGI (Maybe Person)
+-- | Page saying we don't recognize the class registration code.
+cgiPersonDevRegUnrecognizedClassCode :: Config -> CGI CGIResult
+cgiPersonDevRegUnrecognizedClassCode cc
+ = cgiPagePlain "Unrecognized Person Code"
+ $ H.div ! A.class_ "person-dev-reg"
+ $ do
+        -- TODO: shfit logo style definition to chrome module
+        -- don't keep repeating the html.
+        H.img
+         ! (A.src $ fromString $ configLogoUrl cc)
+         ! (A.style "width:450px;height:450px")
+         ! (A.id    "login-logo")
 
-cgiGetPersonOfStudentCookie conn
- = do   mValue  <- CGI.getCookie sCookieStudent
-        case mValue of
-         Nothing -> return Nothing
-         Just sPid
-          |  all Char.isDigit sPid
-          ,  iPid <- read sPid
-          -> do person <- liftIO $ getPerson conn (PersonId iPid)
-                return $ Just person
+        H.br
+        H.div ! A.class_ "code-description"
+         $ H.table $ do
+                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                   $ do H.string "Code Not Recognized "
+                        (H.i ! A.class_ "material-icons md-48")
+                         $ "sentiment_dissatisfied"
 
-          | otherwise
-          -> return Nothing
-
-
+                tr $ td $ "This registration code is not recognized."
+                tr $ td $ "Please contact the class instructor."

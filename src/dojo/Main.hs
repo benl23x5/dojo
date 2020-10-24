@@ -92,8 +92,8 @@ cgiTop cc
            -> cgiClassDevReg cc sRegId inputs
 
            -- Access student device status.
-           | Just sPid <- lookup "pds" inputs   -- TODO: use hash of pid
-           -> cgiPersonDevStatus cc inputs sPid
+           | Just sCode <- lookup "pds" inputs
+           -> cgiPersonDevStatus cc inputs sCode
 
            -- Access via an existing session key.
            | Just sHash <- lookup "s" inputs

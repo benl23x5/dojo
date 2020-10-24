@@ -1,9 +1,11 @@
 
 module Dojo.Data.Person.Database where
+import Dojo.Data.Class.Registration
 import Dojo.Data.Person.Base
 import Dojo.Framework
 import Dojo.Trivia
 import Dojo.Fail
+import qualified Data.Time      as Time
 
 
 ------------------------------------------------------------------------------
@@ -82,3 +84,92 @@ getMembershipLevels conn
             parseLevel _ = error "parseLevel: no match"
 
         return $ map parseLevel vss
+
+
+------------------------------------------------------------------------------
+-- | Lookup the device registration code for a given person,
+--   or create one if there isn't one listed already.
+acquirePersonDeviceRegCode
+        :: IConnection conn
+        => conn -> String -> PersonId -> IO String
+
+acquirePersonDeviceRegCode conn sSalt pid
+ = goLookup
+ where
+  -- Try to get any existing person device code.
+  goLookup
+   = do vssCode <- quickQuery' conn (unlines
+                [ "SELECT Content FROM v1_PersonDeviceRegCode"
+                , "WHERE PersonId=?"
+                , "  AND Active=1"
+                , "ORDER BY TimeCreated DESC" ])
+                [toSql pid]
+
+        let parseCode [v]
+             | Just (sCode :: String) <- fromSql v = sCode
+            parseCode _ = error "parseCode: no match"
+
+        case map parseCode vssCode of
+         sCode : _  -> return sCode
+         _          -> goCreate
+
+  -- Create a fresh person device code.
+  goCreate
+   = do sCode    <- newRandomDeviceCode sSalt
+        ztime    <- Time.getZonedTime
+        let ltime = Time.zonedTimeToLocalTime ztime
+
+        stmt    <- prepare conn $ unlines
+                [ "INSERT INTO v1_PersonDeviceRegCode"
+                , "(TimeCreated, PersonId, Content, Active)"
+                , "VALUES (?, ?, ?, ?)" ]
+
+        execute stmt
+                [ toSql ltime
+                , toSql pid
+                , toSql sCode
+                , toSql (1 :: Integer)]
+
+        return sCode
+
+
+-- | Lookup the person id mapped to this person device reg code.
+lookupPersonIdOfDeviceRegCode
+        :: IConnection conn
+        => conn -> String -> IO (Maybe PersonId)
+
+lookupPersonIdOfDeviceRegCode conn sCode
+ = do
+        vssId   <- quickQuery' conn (unlines
+                [ "SELECT PersonId FROM v1_PersonDeviceRegCode"
+                , "WHERE Content=?"
+                , "  AND Active=1"
+                , "ORDER BY TimeCreated DESC" ])
+                [ toSql sCode ]
+
+        if | [[v]] <- vssId
+           , Just (pid :: PersonId) <- fromSql v
+           -> return $ Just pid
+
+           | otherwise
+           -> return $ Nothing
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
