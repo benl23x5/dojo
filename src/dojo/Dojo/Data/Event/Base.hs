@@ -107,6 +107,25 @@ eventLocalTime event
  = Nothing
 
 
+-- | Pretty print an event type to use when describing a specific class.
+--   We want to use simple words like "Children" in the database,
+--   but when displaying info to the user say "Children's class".
+--   It's not worth the effort making this configurable in the database.
+eventTypeClassName :: EventType -> String
+eventTypeClassName (EventType sType)
+ = case sType of
+        "General"       -> "General class"
+        "Beginner"      -> "Beginner's class"
+        "Children"      -> "Children's class"
+        "Online"        -> "Online class"
+        "TTC"           -> "TTC class"
+        "Winter School" -> "Winter school class"
+        "Summer School" -> "Summer school class"
+        "Misogi"        -> "Misogi"
+        "Special"       -> "Special class"
+        etype           -> etype ++ " class"
+
+
 -- Constructors ---------------------------------------------------------------
 -- | Load differences to an event record specified in a query path.
 loadEvent

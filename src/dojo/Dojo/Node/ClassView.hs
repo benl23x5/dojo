@@ -127,8 +127,7 @@ trClassSummary :: Class -> Maybe User -> Person -> Html
 trClassSummary classs muOwner pOwner
  = do
         tr $ td $ H.string
-           $  maybe "" (\v -> pretty v) (classType classs)
-           ++ " class"
+           $  maybe "[class]" eventTypeClassName (classType classs)
            ++ " by "
            ++ maybe "" pretty (personDisplayName pOwner)
            ++ (case muOwner of
@@ -144,6 +143,7 @@ trClassSummary classs muOwner pOwner
            ++ maybe "[sometime]"  pretty (classTimeStart classs)
            ++ maybe "[sometime]"  (\v -> " to " ++ pretty v) (classTimeEnd classs)
            ++ "."
+
 
 
 -------------------------------------------------------------------------------

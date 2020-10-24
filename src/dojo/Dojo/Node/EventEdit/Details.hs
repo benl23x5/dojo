@@ -28,7 +28,7 @@ divEventDescription event mUserCreatedBy personCreatedBy
  = H.div ! A.class_ "event-description"
  $ H.table
  $ do   tr $ td $ H.string
-           $ maybe "[sometype]" (\v -> pretty v ++ " class") (eventType event)
+           $  maybe "[event]" eventTypeClassName (eventType event)
            ++ " by "
            ++ maybe "" pretty (personDisplayName personCreatedBy)
            ++ (case mUserCreatedBy of
