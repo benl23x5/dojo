@@ -39,7 +39,14 @@ cgiPersonDevLink ss inputs
                 -- not just use the raw pid as the are too easy to guess.
                 let pRegStatus  = pathPersonDevStatus (sessionConfig ss) pid
                 let sLink       = configSiteUrl cc ++ "/" ++ flatten pRegStatus
-                tr $ td $ htmlQRCode sLink
+
+                -- Base name of the file to use if the QR code .png image
+                -- is downloaded.
+                let sCodeFileName
+                        = personQRCodeDownloadName person
+
+                -- Generate the QR code inline in the page.
+                tr $ td $ htmlQRCode sLink sCodeFileName
 
                 tr $ td $ H.string "The student should scan this code"
                 tr $ td $ H.string "and be directed to the page to"

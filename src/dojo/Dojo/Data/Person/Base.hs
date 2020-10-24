@@ -2,6 +2,7 @@
 module Dojo.Data.Person.Base where
 import Dojo.Framework
 import Dojo.Trivia
+import qualified Data.Char      as Char
 
 
 -------------------------------------------------------------------------------
@@ -245,6 +246,22 @@ personAliasName person
 
  | otherwise
  = personDisplayName person
+
+
+-- | Base file name to use if the class registration QR code is downloaded.
+--   This is the name of the file that ends up on the client's machine
+personQRCodeDownloadName :: Person -> String
+personQRCodeDownloadName person
+ = let
+        -- Name of the person that this registration code is for.
+        sPersonName
+         = fromMaybe "person"
+         $ personDisplayName person
+
+        -- Base name of the file to use if the QR code .png image
+        -- is downloaded.
+   in   filter (not . Char.isSpace)
+         $ "qr-person-" ++ sPersonName
 
 
 -- Comparisons  ---------------------------------------------------------------

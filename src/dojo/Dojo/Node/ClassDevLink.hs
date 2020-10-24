@@ -37,10 +37,16 @@ cgiClassDevLink ss inputs
                 let sUrl  = configSiteUrl cc
                 let sSalt = configQrSaltActive cc
 
+                -- Link to the person specific device registration page.
                 let Just (sLink, sRegId)
                         = registrationLinkOfClass sUrl sSalt classs
 
-                tr $ td $ htmlQRCode sLink
+                -- Base name of the file to use if the QR code .png
+                -- image is downloaded.
+                let sCodeFileName
+                        = classQRCodeDownloadName classs
+
+                tr $ td $ htmlQRCode sLink sCodeFileName
                 tr $ td $ H.string "Scan this code with a registered device"
                 tr $ td $ H.string "to join the class attendance list."
                 tr $ td $ H.string $ "code id: " ++ sRegId

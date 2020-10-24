@@ -2,7 +2,7 @@
 module Dojo.Data.Class.Base where
 import Dojo.Framework
 import Dojo.Trivia
-
+import qualified Data.Char as Char
 
 -------------------------------------------------------------------------------
 -- | A reoccuring class.
@@ -80,6 +80,7 @@ classFields
     ]
 
 
+-- | Zero valued class with all fields set to 'Nothing'.
 zeroClass :: Class
 zeroClass
         = Class
@@ -127,3 +128,24 @@ classDisplayName classs
  ++ (case classTimeStart classs of
         Nothing -> ""
         Just t  -> " at " ++ pretty t)
+
+
+-- | Base file name to use if the class registration QC code is downloaded.
+--   This is name of the file that ends up on the client's machine.
+classQRCodeDownloadName :: Class -> String
+classQRCodeDownloadName classs
+ = let
+        sLocation  = fromMaybe "Location"
+                   $ fmap pretty $ classLocation classs
+
+        sDay       = fromMaybe "Day"
+                   $ fmap pretty $ classDay classs
+
+        sTime      = filter (not . (== ':'))
+                   $ fromMaybe "Time"
+                   $ fmap pretty $ classTimeStart classs
+
+   in   filter (not . Char.isSpace)
+         $ "qr-class-" ++ sLocation ++ "-" ++ sDay ++ "-" ++ sTime
+
+
