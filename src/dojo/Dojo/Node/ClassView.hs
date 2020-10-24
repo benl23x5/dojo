@@ -17,6 +17,7 @@ import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import qualified Data.Time                      as Time
+import qualified Data.List                      as List
 
 
 -------------------------------------------------------------------------------
@@ -43,7 +44,10 @@ cgiClassView ss inputs
                 = ltNow { Time.localDay
                         = Time.addDays (-90) (Time.localDay ltNow) }
         let (edateFirst, _) = splitEventLocalTime ltStart
-        regulars        <- liftIO $ getRegularsOfClassId conn cid edateFirst
+
+        regulars
+         <- fmap (List.sortOn (\(person, _, _) -> personDisplayName person))
+         $  liftIO $ getRegularsOfClassId conn cid edateFirst
 
         liftIO $ disconnect conn
 

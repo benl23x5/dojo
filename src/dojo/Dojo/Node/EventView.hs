@@ -10,6 +10,7 @@ import Dojo.Chrome
 import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
+import qualified Data.List                      as List
 
 
 -------------------------------------------------------------------------------
@@ -28,7 +29,8 @@ cgiEventView ss inputs
          <- liftIO $ getEventCreatedBy conn event
 
         -- Get list of people that attended the event.
-        psAttend   <- liftIO $ getAttendance conn eid
+        psAttend   <- fmap (List.sortOn personDisplayName)
+                   $  liftIO $ getAttendance conn eid
         liftIO $ disconnect conn
 
         cgiPageNavi ss "Events" (eventDisplayName event) (pathsJump ss)

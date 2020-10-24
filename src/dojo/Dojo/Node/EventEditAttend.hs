@@ -6,6 +6,7 @@ import Dojo.Node.EventEdit.Feed
 import Dojo.Node.EventEdit.FormAttend
 import Dojo.Node.EventEdit.Arg
 import Dojo.Node.Logout
+import Dojo.Data.Person
 import Dojo.Data.Event
 import Dojo.Data.Class
 import Dojo.Data.Session
@@ -15,9 +16,10 @@ import Dojo.Fail
 import Dojo.Chrome
 import Dojo.Framework
 
-import qualified Data.Time                      as Time
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
+import qualified Data.Time                      as Time
+import qualified Data.List                      as List
 
 
 -------------------------------------------------------------------------------
@@ -91,7 +93,8 @@ cgiEventEditAttend ss inputs
          | Just eid <- mEidIn
          -> do  -- TODO: handle concurrent event deletion
                 Just event <- liftIO $ getEvent      conn eid
-                psAttend   <- liftIO $ getAttendance conn eid
+                psAttend   <- fmap (List.sortOn personDisplayName)
+                           $  liftIO $ getAttendance conn eid
 
                 -- Lookup a matching class id if there is one,
                 -- which will give us regular attendees to events
