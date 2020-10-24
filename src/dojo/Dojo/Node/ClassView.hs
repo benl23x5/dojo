@@ -97,24 +97,7 @@ divClassDetails
                 -- TODO: push limit into query.
                 divRegularsList ss $ take 20 regularsList
 
-                -- Try to generate the registration code.
-                --  We need to have the type, location day,
-                --  start and end times set.
-{-
-                -- TODO: get website name from global site config.
-                let mReg = registrationLinkOfClass
-                                "http://dojo.ouroborus.net"
-                                (configQrSaltActive $ sessionConfig ss)
-                                classs
-
-                (case mReg of
-                 Nothing -> return ()
-                 Just (sRegLink, sRegId)
-                  -> goCode sRegLink sRegId)
--}
-
  where
-
   pathNew
     = Path "New Event"
         (sessionCgiName ss)
