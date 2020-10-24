@@ -9,13 +9,12 @@ import Dojo.Config
 import Dojo.Paths
 import Dojo.Framework
 import Data.String
-import qualified Data.Char                      as Char
+import qualified Network.CGI                    as CGI
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
-import qualified Network.CGI                    as CGI
+import qualified Data.Time.Clock                as Time
+import qualified Data.Char                      as Char
 
-
--- TODO: log registration / unregistration events.
 
 -------------------------------------------------------------------------------
 -- | Show the device registration QR code for a person.
@@ -80,14 +79,26 @@ cgiPersonDevStatus cc inputs sCode
 
 -------------------------------------------------------------------------------
 -- | Set the student device registration cookie.
+--
+--   TODO: set the cookie as the student reg code, not the pid.
+--   TODO: refresh the cookie after each event registration.
+--
 cgiSetStudentCookie :: Config -> PersonId -> CGI ()
 cgiSetStudentCookie cc pid
  = do   let PersonId iPid = pid
+
+        -- Set the cookie expiry 6 months in the future.
+        --   If the person has not used the code to register for 6 months,
+        --   then maybe they've had a break in training and the reg. system
+        --   has changed. See the instructor anyway.
+        utcNow <- liftIO $ Time.getCurrentTime
+        let utcLater = Time.addUTCTime (Time.nominalDay * 185) utcNow
+
         let cookie
                 = CGI.Cookie
                 { CGI.cookieName        = configCookieNameStudentReg cc
                 , CGI.cookieValue       = show iPid
-                , CGI.cookieExpires     = Nothing               -- TODO: set ~6m in future.
+                , CGI.cookieExpires     = Just $ utcLater
                 , CGI.cookieDomain      = Just $ configCookieDomain cc
                 , CGI.cookiePath        = Nothing
                 , CGI.cookieSecure      = True
