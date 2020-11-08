@@ -30,19 +30,21 @@ We use a two step workflow:
 
 \begin{enumerate}
 \item The student (here, Taylor) uses their phone to scan their
-      \emph{own personal} registration QR code.
+      own personal \emph{student registration} QR code.
 
-\item The QR code redirects the student's phone to the attendance server,
-      instructing the server to register the phone as belonging to this student.
+\item The student registration code directs the phone to the
+      attendance server, which shows a page to register the phone
+      as belonging to this student.
 
-\item The server provides a \emph{cookie} (a special code) that includes
+\item Once the student clicks a button on the registration page,
+      the server provides a \emph{cookie} (a special code) that includes
       the Aikikai identification number of the student. The phone stores
       this cookie, and will give a copy back to the server if later requested.
 \end{enumerate}
 
-Each student needs to perform the registration process at least once.
-They may need to register again if they change phones, or if they instruct the
-web browser on their phone to clear the cookies it is holding.
+Each student should only need to perform the registration process once.
+However, they may need to register again if they change phones,
+or if they instruct the web browser on their phone to clear the cookies it is holding.
 
 Your own personal registration QR code is provided on the other page.
 If you lose these printed notes then your instructor can download a new PDF version
@@ -57,14 +59,14 @@ from the attendance site, including your registration code.
 
 \begin{enumerate}
 \item When the student attends a class they use their phone to scan
-      a different \emph{class} registration QR code.
-\item The class registration code redirects the student's phone to the
-      attendance server, instructing the server to register the student
-      for the class.
+      a different \emph{class registration} QR code.
+\item The class registration code directs the phone to the
+      attendance server.
 \item The server requests a copy of the cookie provided previously,
-      so that it can determine which student is connecting to it.
-\item The phone replies with the student cookie, and the server
-      enters the student's name on the class attendance list.
+      which it uses to determine which student is connecting to it.
+\item Once the phone replies with the student cookie,
+      the server will show the page to register this particular
+      student for the class.
 \end{enumerate}
 \end{center}
 
