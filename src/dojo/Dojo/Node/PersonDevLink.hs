@@ -92,6 +92,7 @@ cgiPersonDevLink _ inputs
 --   The resulting pdf file main.pdf is copied out to URL
 --   /generated/register-CODE_ID-PERSON_NAME.pdf
 --
+--  TODO: disable browsing of generated file dir
 --  TODO: salt the name of the build directory so each build has a new name.
 --  TODO: cleanup build directory if the latex command fails.
 --  TODO: cleanup generated files once they have been around for a day,
