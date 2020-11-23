@@ -8,7 +8,7 @@ deploy:
 	cp local/cgi-test-aikikai.cgi  	/srv/dojo/test/aikikai-australia/data/www/dojo.cgi
 	cp data/dojo-style.css  	/srv/dojo/test/aikikai-australia/data/www
 	cp data/logo-aka.png  		/srv/dojo/test/aikikai-australia/data/www
-	mkdir -p /srv/dojo/prod/aikikai-australia/latex/person
+	cp -r data/latex  		/srv/dojo/test/aikikai-australia/data
 
 
 .PHONY: deploy-prod

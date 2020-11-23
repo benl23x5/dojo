@@ -28,6 +28,9 @@ data Config
           -- | Full path to sqlite3 database.
         , configDatabasePath    :: FilePath
 
+          -- | Full path to where the html files are hosted.
+        , configPathHtml        :: FilePath
+
           -- | Full path to document build directory.
         , configPathBuild       :: FilePath
 
@@ -54,6 +57,7 @@ configDefault
         , configCookieBase      = "dojo"
         , configCgiName         = "dojo.cgi"
         , configDatabasePath    = "dojo.db"
+        , configPathHtml        = "www"
         , configPathBuild       = "build"
         , configPathLatexPerson = "latex-person"
         , configQrSaltActive    = "salt-active"
@@ -99,6 +103,10 @@ loadConfig aa cc
  | "-db-path" : sDbPath : rest <- aa
  = loadConfig rest
  $ cc { configDatabasePath = sDbPath }
+
+ | "-path-html" : sPath : rest <- aa
+ = loadConfig rest
+ $ cc { configPathHtml = sPath }
 
  | "-path-build" : sPathBuild : rest <- aa
  = loadConfig rest

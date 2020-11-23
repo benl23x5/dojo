@@ -30,7 +30,9 @@ Executable dojo
         JuicyPixels             == 3.3.*,
         qrcode-juicypixels      == 0.8.*,
         qrcode-core             == 0.9.*,
-        cryptohash-md5          == 0.11.*
+        cryptohash-md5          == 0.11.*,
+        process,
+        temporary
 
 
   main-is:
