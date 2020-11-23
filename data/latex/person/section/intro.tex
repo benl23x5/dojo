@@ -9,18 +9,18 @@
 
 \textbf{Aikikai NSW Attendance System, 8th Nov 2020.}
 
-Aikikai NSW is trialing a new web based class attendance system.
-This new system will help us maintain more accurate attendance records,
+Aikikai NSW is trialing a new web based attendance tracking system.
+This new system will help us maintain more accurate records,
 reduce the administration burden to maintain these records,
-and help to determine student-to-student contacts in the case of COVID-19 infection.
-The system is being trialed by a few dojos in NSW. The trial will
-be expanded once we are happy that the system is sufficiently stable and usable.
+and help determine student-to-student contacts in the case of COVID-19 infection.
+The system is being trialed by a few dojos in NSW, which will be expanded
+once we are happy that the system is sufficiently stable and easy to use.
 
 \smallskip
 The new system is based on QR (Quick Response) codes, similar to those used
-at other organizations and businesses to track attendance to their venues.
+at other organizations to track attendance to their venues.
 
-\medskip
+\smallskip
 We use a two step workflow:
 
 \textbf{1. Student Registration}
@@ -36,23 +36,24 @@ We use a two step workflow:
       attendance server, which shows a page to register the phone
       as belonging to this student.
 
-\item Once the student clicks a button on the registration page,
-      the server provides a \emph{cookie} (a special code) that includes
-      the Aikikai identification number of the student. The phone stores
+\item The student clicks a button on the registration page,
+      which makes the server provide a \emph{cookie} (a special code) that
+      contains their Aikikai identification number. The phone stores
       this cookie, and will give a copy back to the server if later requested.
 \end{enumerate}
 
-Each student should only need to perform the registration process once.
-However, they may need to register again if they change phones,
-or if they instruct the web browser on their phone to clear the cookies it is holding.
+Students should typically only need to perform this registration process once.
+They may need to register again if they change phones, or if they instruct the
+web browser on their phone to clear the cookies it is holding.
 
-Your own personal registration QR code is provided on the other page.
+Your own personal registration QR code is provided on the previous page.
 If you lose these printed notes then your instructor can download a new PDF version
-from the attendance site, including your registration code.
+from the attendance site.
 \end{minipage}
 \hspace{2em}
 %-----------------------------------------------------------
 \begin{minipage}[t]{\dimexpr0.5\linewidth-1em}
+\vspace{2em}
 \textbf{2. Class Registration}
 \begin{center}
 \includegraphics[scale=0.4]{figure/fig-class-registration.pdf}
@@ -60,13 +61,13 @@ from the attendance site, including your registration code.
 \begin{enumerate}
 \item When the student attends a class they use their phone to scan
       a different \emph{class registration} QR code.
-\item The class registration code directs the phone to the
+\item The class registration code directs the phone back to the
       attendance server.
 \item The server requests a copy of the cookie provided previously,
       which it uses to determine which student is connecting to it.
-\item Once the phone replies with the student cookie,
-      the server will show the page to register this particular
-      student for the class.
+\item The shows a page which includes a button to add the
+      student to the attendance list for the class.
+\item The student clicks the button to have their name added to the list.
 \end{enumerate}
 \end{center}
 
@@ -93,9 +94,9 @@ from the attendance site, including your registration code.
 
 \item \emph{Q: What if I give my phone to someone else?} \\
       A: You can remove the cookie from your phone by either 1) using the ``clear cookies"
-         functionality of your web browser, or 2) using the registration QR code to return
+         functionality of your web browser, or 2) using the student registration QR code to return
          to the registration page and clicking ``unregister". You can unregister
-         and re-register a phone using your own code whenever you like.
+         and re-register a phone whenever you like.
 \end{enumerate}
 
 
@@ -105,6 +106,6 @@ from the attendance site, including your registration code.
 
 Please contact Ben Lippmeier \texttt{benl@ouroborus.net} for
 any questions, concerns or feedback.
-This is a new system, so we are interested in any feedback or ideas to make
-it easier to use.
+This is a new system, so we are interested any bug reports or
+ideas to make it easier to use.
 \end{minipage}
