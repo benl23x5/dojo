@@ -209,14 +209,19 @@ personShortName person
 --   If the event date is after the renewal date then 'expired'
 --   If there is no renewal data information then 'unknown'.
 personFeeStatus :: EventDate -> Person -> PersonFeeStatus
-personFeeStatus (EventDate dayEvent) person
+personFeeStatus _data _person
+ = PersonFeeStatus "ok"
+
+{-
+-- TODO: fee status hard coded to 'ok' until we collect more recent data.
+personFeeStatus _ _ (EventDate dayEvent) person
  | Just (PersonDate dayRenewal) <- personMembershipRenewal person
  = if dayEvent <= dayRenewal
         then PersonFeeStatus "ok"
         else PersonFeeStatus "expired"
  | otherwise
  = PersonFeeStatus "unknown"
-
+-}
 
 -- | Get the standard display name of a Person.
 --   We use the prefered name if set, and ignore middle names.

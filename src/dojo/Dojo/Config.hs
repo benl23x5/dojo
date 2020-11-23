@@ -28,6 +28,12 @@ data Config
           -- | Full path to sqlite3 database.
         , configDatabasePath    :: FilePath
 
+          -- | Full path to document build directory.
+        , configPathBuild       :: FilePath
+
+          -- | Full path to person registration latex template.
+        , configPathLatexPerson :: FilePath
+
           -- | Salt to generate the active QR codes.
         , configQrSaltActive    :: String
 
@@ -48,6 +54,8 @@ configDefault
         , configCookieBase      = "dojo"
         , configCgiName         = "dojo.cgi"
         , configDatabasePath    = "dojo.db"
+        , configPathBuild       = "build"
+        , configPathLatexPerson = "latex-person"
         , configQrSaltActive    = "salt-active"
         , configQrSaltLegacy    = "salt-legacy" }
 
@@ -92,6 +100,14 @@ loadConfig aa cc
  = loadConfig rest
  $ cc { configDatabasePath = sDbPath }
 
+ | "-path-build" : sPathBuild : rest <- aa
+ = loadConfig rest
+ $ cc { configPathBuild = sPathBuild }
+
+ | "-path-latex-person" : sPath : rest <- aa
+ = loadConfig rest
+ $ cc { configPathLatexPerson = sPath }
+
  | "-qr-salt-active" : sSalt : rest <- aa
  = loadConfig rest
  $ cc { configQrSaltActive = sSalt }
@@ -114,6 +130,7 @@ usage = unlines
  , " -cookie-domain   STRING    Domain name to bind cookies to."
  , " -cgi-name        STRING    Base name of script, eg dojo.cgi."
  , " -db-path         PATH      Full path to sqlite3 database."
+ , " -path-build      PATH      Full path to workning build directory."
  , " -qr-salt-active  STRING    Salt to generate active QR codes."
  , " -qr-salt-legacy  STRING    Salt to generate legacy QR codes."
  , "" ]

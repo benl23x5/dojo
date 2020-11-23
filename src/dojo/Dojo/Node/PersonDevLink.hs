@@ -11,12 +11,16 @@ import Dojo.Framework.QRCode
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 
+import qualified System.Directory               as S
+import qualified System.IO                      as S
+import qualified Data.Char                      as Char
+
 
 -- | Show the device registration QR code for a person.
 --      &pid=NAT   Id of the person to show code for.
 cgiPersonDevLink
-        :: Session -> [(String, String)]
-        -> CGI CGIResult
+ :: Session -> [(String, String)]
+ -> CGI CGIResult
 
 cgiPersonDevLink ss inputs
  | Just strPersonId <- lookup "pid" inputs
@@ -29,6 +33,8 @@ cgiPersonDevLink ss inputs
                                 (configQrSaltActive config) pid
         liftIO $ commit conn
         liftIO $ disconnect conn
+
+        sRegDownload <- liftIO $ buildPersonRegPDF config pid person sCode
 
         let sName = fromMaybe "[person]" $ personAliasName person
         cgiPageNavi ss "People" sName (pathsJump ss)
@@ -56,9 +62,44 @@ cgiPersonDevLink ss inputs
                 tr $ td $ H.string $ "code id: " ++ sCode
 
                 tr $ td ! A.style "height:1ex;" $ H.string ""
+
                 tr $ td $ H.string "The direct link is:"
                 tr $ td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
 
+                tr $ td $ H.string "The download link is:"
+                tr $ td $ (H.a ! A.href (H.toValue sRegDownload)) (H.string sRegDownload)
+
 cgiPersonDevLink _ inputs
  = throw $ FailNodeArgs "person device link" inputs
+
+
+buildPersonRegPDF
+ :: Config
+ -> PersonId    -- ^ Person id used to create build path.
+ -> Person
+ -> String      -- ^ Device registration code.
+ -> IO FilePath
+
+buildPersonRegPDF cc (PersonId ppid) person sCode
+ = do
+        -- Create per-person build directory.
+        let pathBuildForPerson
+                = configPathBuild cc
+                ++ "/reg-pid-" ++ show ppid ++ "-" ++ sCode
+
+        S.createDirectoryIfMissing True pathBuildForPerson
+
+        -- Name of the result doc file.
+        let Just sDisplayName
+                = personDisplayName person
+
+        let sFlatName     = filter (not . Char.isSpace) sDisplayName
+        let pathPersonReg = pathBuildForPerson ++ "/register-" ++ sFlatName ++ ".txt"
+
+        -- Write placeholder.
+        S.writeFile pathPersonReg "derp"
+
+        return pathPersonReg
+
+
 
