@@ -71,7 +71,7 @@ cgiPersonDevLink ss inputs
 
                 tr $ td ! A.style "height:1ex;" $ H.string ""
                 tr $ td $ H.string "Registration PDF download:"
-                tr $ td $ (H.a ! A.href (H.toValue $ "generated/" ++ sRegDownload))
+                tr $ td $ (H.a ! A.href (H.toValue $ "g/" ++ sRegDownload))
                                 (H.string sRegDownload)
 
 cgiPersonDevLink _ inputs
@@ -126,14 +126,14 @@ buildPersonRegPDF config (PersonId ppid) person sCode bsPngCode
 
         -- Where the generated file is stored for download.
         S.createDirectoryIfMissing True
-         $ configPathHtml config ++ "/generated"
+         $ configPathHtml config ++ "/g"
 
         let Just sDisplayName
                 = personDisplayName person
 
         let sFlatName       = filter (not . Char.isSpace) sDisplayName
         let sFileName       = "student" ++ "-" ++ sCode ++ "-" ++ sFlatName ++ ".pdf"
-        let pathHostedPDF   = configPathHtml config ++ "/generated/" ++ sFileName
+        let pathHostedPDF   = configPathHtml config ++ "/g/" ++ sFileName
 
         -- Copy latex document template into the build directory.
         S.rawSystem "cp"
