@@ -86,19 +86,16 @@ cgiEventEditAttend ss inputs
         dojos      <- liftIO $ getDojos conn
         eventTypes <- liftIO $ getEventTypes conn
 
-
         -- Lookup the current event and attendance if one was specified,
         --  otherwise create a new placeholder that we can update.
-        (event, psAttend, psRegulars) <- if
+        (event, psAttend, psRegulars, uidsAdminAttend) <- if
          | Just eid <- mEidIn
-         -> do  -- TODO: handle concurrent event deletion
-                Just event <- liftIO $ getEvent      conn eid
+         -> do  Just event <- liftIO $ getEvent conn eid
                 psAttend   <- fmap (List.sortOn personDisplayName)
                            $  liftIO $ getAttendance conn eid
 
                 -- Lookup a matching class id if there is one,
-                -- which will give us regular attendees to events
-                -- of this class.
+                -- which will give us regular attendees to events of this class.
                 mCid       <- liftIO $ getClassIdOfEventId conn eid
                 psRegularsCountLast
                  <- case mCid of
@@ -109,7 +106,14 @@ cgiEventEditAttend ss inputs
                         = [ pReg | (pReg, _nCount, _dateLast)
                                  <- psRegularsCountLast]
 
-                return (event, psAttend, psRegulars)
+                -- Ids of users that are auxilliary administrators for
+                -- events of this class.
+                uidsAdminAttend
+                 <- case mCid of
+                        Nothing  -> return []
+                        Just cid -> liftIO $ getClassAdminsOfClassId conn cid
+
+                return (event, psAttend, psRegulars, uidsAdminAttend)
 
          | otherwise
          -> do  -- Use the current time as a placeholder until the
@@ -123,18 +127,24 @@ cgiEventEditAttend ss inputs
                           { eventDate      = Just edate
                           , eventTime      = Just etime
                           , eventCreatedBy = Just $ sessionUserId ss }
-                return  (event, [], [])
+                return  (event, [], [], [])
 
         (userCreatedBy, personCreatedBy)
          <- liftIO $ getEventCreatedBy conn event
 
-        -- If user is an admin or created the event themselves
-        --  then they can edit it.
+        -- If the user is an admin or created the event themselves then they
+        -- can edit its full details.
         let bSessionOwnsEvent
              =  sessionIsAdmin ss
              || (case eventCreatedBy event of
                   Nothing  -> False
                   Just uid -> uid == sessionUserId ss)
+
+        -- If the user is an attendance administrator of the event then they
+        -- can edit the attendance records but not the other details.
+        let bSessionHasAdminAttend
+             =  sessionIsAdmin ss
+             || elem (sessionUserId ss) uidsAdminAttend
 
         let eform
                 = EventForm
@@ -146,51 +156,54 @@ cgiEventEditAttend ss inputs
                 , eventFormAttendance          = psAttend
                 , eventFormRegulars            = psRegulars
                 , eventFormDojosAvail          = dojos
-                , eventFormDetailsEditable     = True
-                , eventFormAttendanceDeletable = True
+                , eventFormDetailsEditable     = bSessionOwnsEvent
+                , eventFormAttendanceDeletable = bSessionHasAdminAttend
                 , eventFormCreatedByUser       = Just $ userCreatedBy
                 , eventFormCreatedByPerson     = Just $ personCreatedBy }
 
         if
-         -- Delete attendees from the event by person id.
-         | not $ null pidsDel
-         -> if bSessionOwnsEvent
-                then cgiEventEdit_del ss conn mEidIn pidsDel
-                else cgiLogout ss
+         -- Session tries to update details but does not have admin over event.
+         |  not bSessionOwnsEvent
+         ,  not $ null updates
+         -> cgiLogout ss
 
-         -- Apply updates or add new people based on their names.
-         |   (not $ null updates)
-          || (not $ null newNames)
-          || (not $ null pidsAdd)
-         -> if bSessionOwnsEvent
-                then cgiEventEdit_update
-                        ss conn mEidIn eform updates pidsAdd newNames
-                else cgiLogout ss
+         -- Session tries to edit attendance but does not have attendance admin.
+         |  not bSessionHasAdminAttend
+         ,  (not $ null pidsDel) || (not $ null pidsAdd) || (not $ null newNames)
+         -> cgiLogout ss
+
+         -- Session deletes attendees from the event by person id.
+         |  bSessionHasAdminAttend
+         ,  not $ null pidsDel
+         -> cgiEventEdit_del ss conn mEidIn pidsDel
+
+         -- Session adds new attendees or updates the event details.
+         -- this function handles both cases, so we need to reject update
+         -- to event details without admin access separately.
+         |  bSessionHasAdminAttend
+         ,  (not $ null updates)
+         || (not $ null pidsDel) || (not $ null newNames) || (not $ null pidsAdd)
+         -> cgiEventEdit_update ss conn mEidIn eform updates pidsAdd newNames
 
          -- Show form to update an existing event,
          --  which is possible for admins and the user that created them.
          | isJust mEidIn
-         -> if bSessionOwnsEvent
-                then do liftIO $ disconnect conn
-                        cgiEventEditAttendForm ss eform
-                else cgiLogout ss
-
-         -- Show the form to create a new event,
-         --  which is possible for everyone.
-         --  TODO: suppress editability if not owner.
-         | otherwise
          -> do  liftIO $ disconnect conn
                 cgiEventEditAttendForm ss eform
+
+         -- Only admins can create new events not associated with a class.
+         | otherwise
+         -> do  cgiLogout ss
 
 
 -------------------------------------------------------------------------------
 -- Delete some people from the event.
 cgiEventEdit_del
         :: IConnection conn
-        => Session
-        -> conn
-        -> Maybe EventId
-        -> [PersonId]
+        => Session -> conn
+        -> Maybe EventId        -- If we're editing a pre-existing event,
+                                --  then just its event id.
+        -> [PersonId]           -- pids of current attendees.
         -> CGI CGIResult
 
 cgiEventEdit_del ss conn meid pids
@@ -216,11 +229,10 @@ cgiEventEdit_del ss conn meid pids
 --  Update the database and show the updated form.
 cgiEventEdit_update
         :: IConnection conn
-        => Session
-        -> conn
+        => Session -> conn
         -> Maybe EventId        -- If we're editing a pre-existing event
                                 --  then just its eventId.
-        -> EventForm             -- Event data to edit, shown in form.
+        -> EventForm            -- Event data to edit, shown in form.
         -> [(String, String)]   -- Fields to update.
         -> [PersonId]           -- pids of people to add as attendees
         -> [String]             -- Names of people to add as attendees.
