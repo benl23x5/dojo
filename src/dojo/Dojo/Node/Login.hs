@@ -28,7 +28,7 @@ cgiLogin cc inputs
  | Just username <- lookup "username" inputs
  , Just password <- lookup "password" inputs
  = do
-        conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+        conn    <- liftIO $ connectSqlite3 $ configPathDatabase cc
         mUser   <- liftIO $ getMaybeUser conn (UserName username)
         liftIO $ disconnect conn
 
@@ -146,7 +146,7 @@ loginActivate cc user
                 , sessionEndTime        = Nothing }
 
         -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+        conn    <- liftIO $ connectSqlite3 $ configPathDatabase cc
 
         -- Insert the new session
         liftIO $ insertSession conn session

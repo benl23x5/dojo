@@ -26,7 +26,7 @@ data Config
         , configCgiName         :: String
 
           -- | Full path to sqlite3 database.
-        , configDatabasePath    :: FilePath
+        , configPathDatabase    :: FilePath
 
           -- | Full path to where the html files are hosted.
         , configPathHtml        :: FilePath
@@ -56,7 +56,7 @@ configDefault
         , configCookieDomain    = "ouroborus.net"
         , configCookieBase      = "dojo"
         , configCgiName         = "dojo.cgi"
-        , configDatabasePath    = "dojo.db"
+        , configPathDatabase    = "dojo.db"
         , configPathHtml        = "www"
         , configPathBuild       = "build"
         , configPathLatexPerson = "latex-person"
@@ -100,9 +100,9 @@ loadConfig aa cc
  = loadConfig rest
  $ cc { configCgiName = sCgiName }
 
- | "-db-path" : sDbPath : rest <- aa
+ | "-path-db" : sDbPath : rest <- aa
  = loadConfig rest
- $ cc { configDatabasePath = sDbPath }
+ $ cc { configPathDatabase = sDbPath }
 
  | "-path-html" : sPath : rest <- aa
  = loadConfig rest
@@ -137,7 +137,7 @@ usage = unlines
  , " -logo-url        STRING    URL of logo to display on login."
  , " -cookie-domain   STRING    Domain name to bind cookies to."
  , " -cgi-name        STRING    Base name of script, eg dojo.cgi."
- , " -db-path         PATH      Full path to sqlite3 database."
+ , " -path-db         PATH      Full path to sqlite3 database."
  , " -path-build      PATH      Full path to workning build directory."
  , " -qr-salt-active  STRING    Salt to generate active QR codes."
  , " -qr-salt-legacy  STRING    Salt to generate legacy QR codes."

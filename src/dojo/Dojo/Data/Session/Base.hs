@@ -66,7 +66,7 @@ sessionCgiName ss
 -- | Get the full database path from a session.
 sessionDatabasePath :: Session -> FilePath
 sessionDatabasePath ss
- = configDatabasePath $ sessionConfig ss
+ = configPathDatabase $ sessionConfig ss
 
 
 -- | Take the local start time time of an event.

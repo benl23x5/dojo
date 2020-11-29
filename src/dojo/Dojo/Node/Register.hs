@@ -31,7 +31,7 @@ cgiRegister
  -> CGI CGIResult
 
 cgiRegister cc inputs sRegId
- = do   conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+ = do   conn    <- liftIO $ connectSqlite3 $ configPathDatabase cc
         classs  <- liftIO $ getClasses conn
 
         -- Normalise incoming arguments.

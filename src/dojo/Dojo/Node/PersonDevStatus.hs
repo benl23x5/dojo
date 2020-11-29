@@ -27,7 +27,7 @@ cgiPersonDevStatus
 cgiPersonDevStatus cc inputs sCode
  -- Register device by setting the cookie.
  | Just _       <- lookup "register" inputs
- = do   conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+ = do   conn    <- liftIO $ connectSqlite3 $ configPathDatabase cc
         mpid    <- liftIO $ lookupPersonIdOfDeviceRegCode conn sCode
         case mpid of
          Nothing
@@ -57,7 +57,7 @@ cgiPersonDevStatus cc inputs sCode
 
  -- show status page
  | otherwise
- = do   conn <- liftIO $ connectSqlite3 $ configDatabasePath cc
+ = do   conn <- liftIO $ connectSqlite3 $ configPathDatabase cc
         mpid <- liftIO $ lookupPersonIdOfDeviceRegCode conn sCode
         case mpid of
          Nothing

@@ -105,7 +105,7 @@ cgiTop cc
 
   -- Lookup the current session details from the db.
   goHash hash inputs
-   = do conn <- liftIO $ connectSqlite3 (configDatabasePath cc)
+   = do conn <- liftIO $ connectSqlite3 $ configPathDatabase cc
         mss  <- liftIO $ getSessionByHash cc conn (SessionHash hash)
         liftIO $ disconnect conn
         case mss of

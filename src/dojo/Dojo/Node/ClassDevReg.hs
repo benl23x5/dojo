@@ -21,7 +21,7 @@ cgiClassDevReg :: Config -> String -> [(String, String)] -> CGI CGIResult
 cgiClassDevReg cc sRegId inputs
  = do
         -- Connect to database.
-        conn    <- liftIO $ connectSqlite3 $ configDatabasePath cc
+        conn    <- liftIO $ connectSqlite3 $ configPathDatabase cc
 
         -- Get list of all active classes.
         classes <- liftIO $ getClasses conn
