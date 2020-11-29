@@ -17,4 +17,4 @@ deploy-prod:
 	cp local/cgi-prod-aikikai.cgi   /srv/dojo/prod/aikikai-australia/data/www/dojo.cgi
 	cp data/dojo-style.css  	/srv/dojo/prod/aikikai-australia/data/www
 	cp data/logo-aka.png 		/srv/dojo/prod/aikikai-australia/data/www
-	cp -r data/latex  		/srv/dojo/test/aikikai-australia/data
+	cp -r data/latex  		/srv/dojo/prod/aikikai-australia/data
