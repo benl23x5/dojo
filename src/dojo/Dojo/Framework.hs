@@ -6,6 +6,7 @@ module Dojo.Framework
         , module Dojo.Framework.Parse
         , module Dojo.Framework.Form
         , module Dojo.Framework.Entity
+        , module Dojo.Framework.Random
         , module Dojo.Base)
 where
 import Dojo.Framework.Path
@@ -14,5 +15,6 @@ import Dojo.Framework.Pretty
 import Dojo.Framework.Parse
 import Dojo.Framework.Form
 import Dojo.Framework.Entity
+import Dojo.Framework.Random
 import Dojo.Base
 

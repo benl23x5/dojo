@@ -1,6 +1,5 @@
 
 module Dojo.Data.Person.Database where
-import Dojo.Data.Class.Registration
 import Dojo.Data.Person.Base
 import Dojo.Framework
 import Dojo.Trivia

@@ -79,7 +79,8 @@ cgiPersonDevLink _ inputs
 
 
 ---------------------------------------------------------------------------------------------------
--- | Build the per-person device registration PDF and return the relative URL to it.
+-- | Build the per-person device registration PDF and return the
+--   relative URL to it.
 --
 --   Latex template for the pdf is specified in configPathLatexPerson
 --    The template has files:
@@ -92,48 +93,54 @@ cgiPersonDevLink _ inputs
 --   The resulting pdf file main.pdf is copied out to URL
 --   /generated/register-CODE_ID-PERSON_NAME.pdf
 --
---  TODO: disable browsing of generated file dir
---  TODO: salt the name of the build directory so each build has a new name.
---  TODO: cleanup build directory if the latex command fails.
 --  TODO: cleanup generated files once they have been around for a day,
 --        or there are too many.
 --
 buildPersonRegPDF
  :: Config
- -> PersonId            -- ^ Person id used to create build path.
- -> Person
- -> String              -- ^ Device registration code.
- -> BS.ByteString       -- ^ PNG file contents for QR image.
- -> IO FilePath
+ -> PersonId        -- ^ Person id used to create build path.
+ -> Person          -- ^ Person to build the QR registration sheet for.
+ -> String          -- ^ Device registration code.
+ -> BS.ByteString   -- ^ PNG file contents for QR image.
+ -> IO FilePath     -- ^ Public URL to the hosted QR registration sheet.
 
 buildPersonRegPDF config (PersonId ppid) person sCode bsPngCode
  = do
-        -- Create per-person build directory.
+        -- Create per-person random build salt, which we use to ensure that
+        -- concurrent builds of the same document will not conflict.
+        sBuildSalt
+         <- newRandomDeviceCode (configQrSaltActive config)
+
+        -- Create the person person build directory for the latex document.
+        --  We copy in the template, update it with the current person name,
+        --  then call latex in this directory.
         let pathBuildForPerson
                 = configPathBuild config
-                ++ "/reg-pid-" ++ show ppid ++ "-" ++ sCode
+                ++ "/reg-pid-" ++ show ppid ++ "-" ++ sBuildSalt ++ "-" ++ sCode
 
         S.createDirectoryIfMissing True
          $ pathBuildForPerson
 
-        -- Where the latex template is copied to.
+        -- Where the latex template itself is copied to.
         let pathBuildForPersonLatex
                 = pathBuildForPerson ++ "/latex"
 
-        -- Where the per-person reg file is built.
+        -- Where the generated PDF file is written.
         let pathBuiltPDF
                 = pathBuildForPersonLatex ++ "/main.pdf"
 
-        -- Where the generated file is stored for download.
+        -- Where the generated PDF file is stored for download,
+        -- in a publically accessible web path.
         S.createDirectoryIfMissing True
          $ configPathHtml config ++ "/g"
 
+        -- Full path to the generated PDF.
         let Just sDisplayName
                 = personDisplayName person
 
-        let sFlatName       = filter (not . Char.isSpace) sDisplayName
-        let sFileName       = "student" ++ "-" ++ sCode ++ "-" ++ sFlatName ++ ".pdf"
-        let pathHostedPDF   = configPathHtml config ++ "/g/" ++ sFileName
+        let sFlatName     = filter (not . Char.isSpace) sDisplayName
+        let sFileName     = "student" ++ "-" ++ sCode ++ "-" ++ sFlatName ++ ".pdf"
+        let pathHostedPDF = configPathHtml config ++ "/g/" ++ sFileName
 
         -- Copy latex document template into the build directory.
         S.rawSystem "cp"
@@ -154,15 +161,17 @@ buildPersonRegPDF config (PersonId ppid) person sCode bsPngCode
         -- Call pdflatex latex to build the document.
         S.withCurrentDirectory
                 pathBuildForPersonLatex
-         $ do   S.readProcess
-                        "/usr/bin/pdflatex"
-                        [ "main.tex"]
-                        ""
+         $ S.readProcess
+                "/usr/bin/pdflatex"
+                [ "main.tex"]
+                ""
 
         -- Copy out the result into the host directory.
         S.rawSystem "cp" [ pathBuiltPDF, pathHostedPDF ]
 
         -- Remove leftover build files.
+        --  This runs indepdendently of whether the latex command completed
+        --  successfully or not.
         S.removeDirectoryRecursive pathBuildForPerson
 
         return sFileName

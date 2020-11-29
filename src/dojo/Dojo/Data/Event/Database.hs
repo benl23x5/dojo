@@ -191,8 +191,8 @@ getEventTypes conn
                 [ "SELECT Name FROM v1_EventType"
                 , "ORDER BY SortOrder ASC" ]) []
 
-        let parseType [v]
-             = let Just typ = fromSql v
-               in  typ
+        let parseType = \[v] ->
+                let Just typ = fromSql v
+                in  typ
 
         return $ map parseType vss

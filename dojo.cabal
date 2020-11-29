@@ -82,6 +82,7 @@ Executable dojo
         Dojo.Framework.Form
         Dojo.Framework.Entity
         Dojo.Framework.QRCode
+        Dojo.Framework.Random
         Dojo.Framework
 
         Dojo.Node.Main
