@@ -76,6 +76,10 @@ CREATE TABLE v1_PersonMembershipLevel
         , Name                  STRING  PRIMARY KEY);
 
 
+/* An event that people can attend.
+ * The event may either be an instance of a reoccuring class,
+ * or a one-off class created separately.
+ */
 CREATE TABLE v1_Event
         ( EventId               INTEGER PRIMARY KEY
         , CreatedBy             INTEGER NOT NULL
@@ -111,6 +115,17 @@ CREATE TABLE v1_Class
         , DateFirst             DATE    NOT NULL
         , DateFinal             DATE
         , FOREIGN KEY(OwnerUserName) REFERENCES v1_User(Name));
+
+
+/* Additional adminstrator for a reoccuring class that manages
+ * the attendance records, but is not the primary class owner.
+ */
+CREATE TABLE v1_ClassAdmin
+        ( ClassId               INTEGER NOT NULL
+        , AdminUserName         STRING  NOT NULL
+        , PRIMARY KEY (ClassId, AdminUserName)
+        , FOREIGN KEY(ClassId)       REFERENCES v1_Class(ClassId)
+        , FOREIGN KEY(AdminUserName) REFERENCES v1_User(UserName));
 
 
 /* Class device registration code can be used by a person to register

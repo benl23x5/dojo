@@ -224,3 +224,27 @@ getEventsOfClassToday conn cid
                   , eventDate event == Just edate ]
 
         return eventsToday
+
+
+-------------------------------------------------------------------------------
+-- | Get list of attendance adminstrators for the class
+--   with the given id.
+getClassAdminsOfClassId
+        :: IConnection conn
+        => conn -> ClassId
+        -> IO [UserId]
+
+getClassAdminsOfClassId conn cid
+ = do
+        vss     <- quickQuery' conn (unlines
+                [ "SELECT v1_User.UserId"
+                , "FROM   v1_Class, v1_ClassAdmin, v1_User"
+                , "WHERE  v1_Class.ClassId = ?"
+                , " AND   v1_ClassAdmin.ClassId       = v1_Class.ClassId"
+                , " AND   v1_ClassAdmin.AdminUserName = v1_User.UserName"])
+                [toSql cid]
+
+        let elemOfSqlValues [v] = fromSql v
+            elemOfSqlValues _   = error "no match"
+
+        return $ map elemOfSqlValues vss

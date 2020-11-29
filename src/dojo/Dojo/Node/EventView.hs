@@ -3,6 +3,7 @@ module Dojo.Node.EventView (cgiEventView) where
 import Dojo.Data.Session
 import Dojo.Data.Event
 import Dojo.Data.Person
+import Dojo.Data.Class
 import Dojo.Node.EventEdit.Details
 import Dojo.Paths
 import Dojo.Fail
@@ -28,10 +29,24 @@ cgiEventView ss inputs
         (userCreatedBy, personCreatedBy)
          <- liftIO $ getEventCreatedBy conn event
 
+        -- See if the event is associated with a reoccuring class,
+        --  and if it is, lookup any extra attendance administrators.
+        mCid <- liftIO $ getClassIdOfEventId conn eid
+        uidsClassAdminAttend
+         <- case mCid of
+                Nothing  -> return []
+                Just cid -> liftIO $ getClassAdminsOfClassId conn cid
+
         -- Get list of people that attended the event.
         psAttend   <- fmap (List.sortOn personDisplayName)
                    $  liftIO $ getAttendance conn eid
         liftIO $ disconnect conn
+
+        -- Session can adminstrate attendance if the associated user
+        -- owns the class, or is listed as an auxilliary attendance admin.
+        let bSessionHasAdminAttend
+                =  sessionOwnsEvent ss event
+                || elem (sessionUserId ss) uidsClassAdminAttend
 
         cgiPageNavi ss "Events" (eventDisplayName event) (pathsJump ss)
          $ H.div ! A.class_ "event-view"
@@ -45,12 +60,21 @@ cgiEventView ss inputs
                 divEventDescription
                         event mUserCreatedBy personCreatedBy
 
-                if (sessionOwnsEvent ss event)
+                -- Both the session owner and attendance admins should se
+                -- some administration options.
+                if bSessionHasAdminAttend
                  then tableActions
-                        $  [ pathEventEditDetails ss (Just eid)
-                           , pathEventEditAttend  ss (Just eid) ]
-                        ++ (if | null psAttend -> [pathEventDel ss eid]
-                               | otherwise     -> [])
+                        $  (if | sessionOwnsEvent ss event
+                               -> [pathEventEditDetails ss (Just eid)]
+                               | otherwise -> [])
+
+                        ++ (if | bSessionHasAdminAttend
+                               -> [pathEventEditAttend  ss (Just eid)]
+                               | otherwise -> [])
+
+                        ++ (if | sessionOwnsEvent ss event && null psAttend
+                               -> [pathEventDel ss eid]
+                               | otherwise -> [])
                  else H.br
 
                 divAttendeesList ss event psAttend
