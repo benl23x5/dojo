@@ -143,7 +143,7 @@ cgiEventEditAttend ss inputs
         -- If the user is an attendance administrator of the event then they
         -- can edit the attendance records but not the other details.
         let bSessionHasAdminAttend
-             =  sessionIsAdmin ss
+             =  bSessionOwnsEvent
              || elem (sessionUserId ss) uidsAdminAttend
 
         let eform
