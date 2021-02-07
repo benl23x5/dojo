@@ -25,6 +25,16 @@ data Config
           -- | Base name of script, eg "dojo.cgi"
         , configCgiName         :: String
 
+          -- | Salt to generate the active QR codes.
+        , configQrSaltActive    :: String
+
+          -- | Salt to generate the legacy QR codes,
+          --   which still work now but will be removed in the next rotation.
+        , configQrSaltLegacy    :: String
+
+          -- | Path to write logs.
+        , configPathLog         :: FilePath
+
           -- | Full path to sqlite3 database.
         , configPathDatabase    :: FilePath
 
@@ -35,14 +45,7 @@ data Config
         , configPathBuild       :: FilePath
 
           -- | Full path to person registration latex template.
-        , configPathLatexPerson :: FilePath
-
-          -- | Salt to generate the active QR codes.
-        , configQrSaltActive    :: String
-
-          -- | Salt to generate the legacy QR codes,
-          --   which still work now but will be removed in the next rotation.
-        , configQrSaltLegacy    :: String }
+        , configPathLatexPerson :: FilePath }
         deriving Show
 
 
@@ -56,12 +59,13 @@ configDefault
         , configCookieDomain    = "ouroborus.net"
         , configCookieBase      = "dojo"
         , configCgiName         = "dojo.cgi"
+        , configQrSaltActive    = "salt-active"
+        , configQrSaltLegacy    = "salt-legacy"
+        , configPathLog         = "log"
         , configPathDatabase    = "dojo.db"
         , configPathHtml        = "www"
         , configPathBuild       = "build"
-        , configPathLatexPerson = "latex-person"
-        , configQrSaltActive    = "salt-active"
-        , configQrSaltLegacy    = "salt-legacy" }
+        , configPathLatexPerson = "latex-person" }
 
 
 -- | Name of cookie used for student device registration.
@@ -100,17 +104,21 @@ loadConfig aa cc
  = loadConfig rest
  $ cc { configCgiName = sCgiName }
 
- | "-path-db" : sDbPath : rest <- aa
+ | "-path-log" : sPath : rest <- aa
  = loadConfig rest
- $ cc { configPathDatabase = sDbPath }
+ $ cc { configPathLog = sPath }
+
+ | "-path-db" : sPath : rest <- aa
+ = loadConfig rest
+ $ cc { configPathDatabase = sPath }
 
  | "-path-html" : sPath : rest <- aa
  = loadConfig rest
  $ cc { configPathHtml = sPath }
 
- | "-path-build" : sPathBuild : rest <- aa
+ | "-path-build" : sPath : rest <- aa
  = loadConfig rest
- $ cc { configPathBuild = sPathBuild }
+ $ cc { configPathBuild = sPath }
 
  | "-path-latex-person" : sPath : rest <- aa
  = loadConfig rest
@@ -132,13 +140,16 @@ loadConfig aa cc
 usage :: String
 usage = unlines
  [ "dojo ARGS.."
- , " -site-name       STRING    Display name of site."
- , " -site-url        STRING    URL of root of site."
- , " -logo-url        STRING    URL of logo to display on login."
- , " -cookie-domain   STRING    Domain name to bind cookies to."
- , " -cgi-name        STRING    Base name of script, eg dojo.cgi."
- , " -path-db         PATH      Full path to sqlite3 database."
- , " -path-build      PATH      Full path to workning build directory."
- , " -qr-salt-active  STRING    Salt to generate active QR codes."
- , " -qr-salt-legacy  STRING    Salt to generate legacy QR codes."
+ , " -site-name         STRING  Display name of site."
+ , " -site-url          STRING  URL of root of site."
+ , " -logo-url          STRING  URL of logo to display on login."
+ , " -cookie-domain     STRING  Domain name to bind cookies to."
+ , " -cgi-name          STRING  Base name of script, eg dojo.cgi."
+ , " -path-log          PATH    Full path to log directory."
+ , " -path-db           PATH    Full path to sqlite3 database."
+ , " -path-html         PATH    Full path to base html files."
+ , " -path-build        PATH    Full path to workning build directory."
+ , " -path-latex-person PATH    Full path to latex template for reg docs."
+ , " -qr-salt-active    STRING  Salt to generate active QR codes."
+ , " -qr-salt-legacy    STRING  Salt to generate legacy QR codes."
  , "" ]
