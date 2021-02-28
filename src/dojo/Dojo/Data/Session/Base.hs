@@ -36,11 +36,6 @@ data Session
         , sessionEndTime        :: Maybe SessionTime }
         deriving Show
 
-data SessionId
-        = SessionId Integer
-        deriving (Eq, Ord, Show)
-
-
 
 instance Show SessionHash where
  show (SessionHash hash) = hash

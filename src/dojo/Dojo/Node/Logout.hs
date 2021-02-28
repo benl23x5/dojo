@@ -3,6 +3,7 @@ module Dojo.Node.Logout (cgiLogout) where
 import Dojo.Data.Session
 import Dojo.Framework
 import Dojo.Paths
+import Dojo.Log
 import qualified Network.CGI            as CGI
 import qualified Data.Time              as Time
 
@@ -22,6 +23,9 @@ cgiLogout ss
         liftIO $ endSession conn endDate endTime ss
         liftIO $ commit conn
         liftIO $ disconnect conn
+
+        llogs ss "trace" "logout"
+         $ O    [ ("session", toValue $ sessionId ss) ]
 
         CGI.redirect $ flatten $ pathLogin (sessionConfig ss)
 

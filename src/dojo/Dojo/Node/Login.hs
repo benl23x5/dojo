@@ -7,7 +7,7 @@ import Dojo.Framework
 import Dojo.Trivia
 import Dojo.Config
 import Dojo.Chrome
--- import Dojo.Log
+import Dojo.Log
 import Dojo.Paths
 import Data.Word
 import Data.String
@@ -35,8 +35,15 @@ cgiLogin cc inputs
 
         -- Check if there is a user with this name.
         case mUser of
-         Nothing    -> loginFail cc
-         Just user  -> loginCheck cc user password
+         Nothing
+          -> do
+                llogc cc "trace" "login-fail-username"
+                 $ O    [ ("user-name", S username) ]
+
+                loginFail cc
+
+         Just user
+          ->    loginCheck cc user password
 
  -- No username/password yet, so display login page.
  | otherwise
@@ -107,9 +114,8 @@ loginCheck cc user password
 
         if not match
          then do
---                llog cc "trace"
---                 $ O [  ("event", S "login-fail-password"),
---                        ("user",  value $ userId user)]
+                llogc cc "trace" "login'fail'password"
+                 $ O [ ("user",  toValue $ userId user) ]
                 loginFail cc
 
          else do
@@ -165,12 +171,10 @@ loginActivate cc user
         liftIO  $ commit conn
         liftIO  $ disconnect conn
 
---        llog cc "trace"
---         $ O    [ ("event", S $ "login")
---                , ("user",  value  $ userId user)
---                , ("date",  value  $ startDate)
---                , ("time",  value  $ startTime)
---                , ("key",   value  $ hash) ]
+        llogc cc "trace" "login"
+         $ O    [ ("user'id",   toValue $ userId user)
+                , ("user'name", toValue $ userName user)
+                , ("key",       toValue $ hash) ]
 
         -- Redirect to main page.
         CGI.redirect $ flatten $ (pathClassList session)

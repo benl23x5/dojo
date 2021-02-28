@@ -74,6 +74,7 @@ Executable dojo
         Dojo.Trivia.Convertible
         Dojo.Trivia.Parse
         Dojo.Trivia.Pretty
+        Dojo.Trivia.ToValue
         Dojo.Trivia
 
         Dojo.Framework.Lens
