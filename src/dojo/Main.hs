@@ -32,6 +32,7 @@ import Dojo.Chrome
 import Dojo.Paths
 import Dojo.Config
 import Dojo.Framework
+import Dojo.Trivia
 
 import qualified System.Environment                     as S
 import qualified Network.CGI                            as CGI

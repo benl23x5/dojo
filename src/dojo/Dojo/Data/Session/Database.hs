@@ -2,6 +2,7 @@
 module Dojo.Data.Session.Database where
 import Dojo.Data.Session.Base
 import Dojo.Config
+import Dojo.Trivia
 import Dojo.Base
 
 

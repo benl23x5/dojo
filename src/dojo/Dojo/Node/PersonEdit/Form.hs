@@ -21,17 +21,17 @@ formPerson
         -> Html
 
 formPerson fsFeed path person dojos memberLevels
- = form ! A.action (H.toValue path)
+ = H.form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
         mapM_   (\(fieldName, fieldData)
-                 -> input ! A.type_ "hidden"
-                          ! A.name  (H.toValue fieldName)
-                          ! A.value (H.toValue fieldData))
+                 -> H.input ! A.type_ "hidden"
+                            ! A.name  (H.toValue fieldName)
+                            ! A.value (H.toValue fieldData))
                 (pathFields path)
 
         -- Save button.
-        input   ! A.type_  "submit"
+        H.input ! A.type_  "submit"
                 ! A.class_ "button-full"
                 ! A.value  "Save"
 
@@ -42,7 +42,7 @@ formPerson fsFeed path person dojos memberLevels
         divPersonDetails fsFeed person dojos memberLevels
 
         -- Save button.
-        input   ! A.type_  "submit"
+        H.input ! A.type_  "submit"
                 ! A.class_ "button-full"
                 ! A.value  "Save"
 
@@ -90,20 +90,20 @@ divPersonDetails fsFeed person dojos memberLevels
         -- TODO: add 'ok' feedback when updated.
         let sDojo   = fromString $ maybe "" pretty $ personDojoHome person
         H.table
-         $ do   col ! A.class_ "DojoHome"
-                tr $ th $ "home dojo"
-                tr $ td $ (H.select ! A.name "DojoHome")
-                        $ do    H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty dojos) (optSelected sDojo)
+         $ do   H.col ! A.class_ "DojoHome"
+                H.tr $ H.th $ "home dojo"
+                H.tr $ H.td $ (H.select ! A.name "DojoHome")
+                            $ do H.option ! A.value "" $ "(unspecified)"
+                                 forM_ (map pretty dojos) (optSelected sDojo)
 
         -- TODO: add 'ok' feedback when updated.
         let sMember = fromString $ maybe "" pretty $ personMembershipLevel person
         H.table
-         $ do   col ! A.class_ "MembershipLevel"
-                tr $ th $ "membership level"
-                tr $ td $ (H.select ! A.name "MembershipLevel")
-                        $ do    H.option ! A.value "" $ "(unspecified)"
-                                forM_ (map pretty memberLevels) (optSelected sMember)
+         $ do   H.col ! A.class_ "MembershipLevel"
+                H.tr $  H.th $ "membership level"
+                H.tr $  H.td $ (H.select ! A.name "MembershipLevel")
+                 $ do   H.option ! A.value "" $ "(unspecified)"
+                        forM_ (map pretty memberLevels) (optSelected sMember)
 
         fieldm  "MembershipRenewal" "membership renewal date"
                 (personMembershipRenewal person)

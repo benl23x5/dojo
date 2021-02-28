@@ -91,13 +91,13 @@ divAttendeesList ss event people
  = H.div ! A.class_ "list" ! A.id "event-attendance-cur"
  $ H.table
  $ do   col' "index"; col' "Name"; col' "Fees"
-        tr $ do th "#"
-                th "attendees"
-                th "fees" ! A.style "text-align: center"
+        H.tr $ do H.th "#"
+                  H.th "attendees"
+                  H.th "fees" ! A.style "text-align: center"
 
-        forM_ (zip [(1 :: Int)..] people) $ \(ix, person) -> tr $ do
+        forM_ (zip [(1 :: Int)..] people) $ \(ix, person) -> H.tr $ do
 
-         td $ H.toMarkup $ show ix
+         H.td $ H.toMarkup $ show ix
 
          td' person
           $ personDisplayName person
@@ -109,12 +109,12 @@ divAttendeesList ss event people
                 Nothing   -> H.string "unknown"
                 Just date -> H.string $ pretty $ personFeeStatus date person
 
- where  col' c  = col ! A.class_ c
+ where  col' c = H.col ! A.class_ c
 
         td' person val
-         = td $ linkView person (H.toMarkup $ maybe "" pretty val)
+         = H.td $ linkView person (H.toMarkup $ maybe "" pretty val)
 
         linkView person hh
          | Just pid <- personId person
-         = (a ! A.href (H.toValue $ pathPersonView ss pid)) hh
+         = (H.a ! A.href (H.toValue $ pathPersonView ss pid)) hh
          | otherwise = hh

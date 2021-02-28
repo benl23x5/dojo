@@ -29,11 +29,9 @@ import Database.HDBC
 import Database.HDBC.Sqlite3
         (connectSqlite3)
 
-import Text.Blaze
-        hiding ((!?))
+import Text.Blaze ((!))
 
-import Text.Blaze.Html5
-        hiding (map, span, (!?), main, details)
+import Text.Blaze.Html5 (Html)
 
 import Text.Blaze.Html.Renderer.Utf8
         (renderHtml)

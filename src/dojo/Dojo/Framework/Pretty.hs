@@ -1,14 +1,15 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Dojo.Framework.Pretty where
 import Dojo.Base
-import qualified Data.Time      as Time
+import qualified Data.Time              as Time
+import qualified Text.Blaze.Html5       as H
 
 
 class Pretty a where
  pretty :: a -> String
 
-instance {-# INCOHERENT #-} Pretty a => ToMarkup a where
- toMarkup = toMarkup . pretty
+instance {-# INCOHERENT #-} Pretty a => H.ToMarkup a where
+ toMarkup = H.toMarkup . pretty
 
 
 instance Pretty Integer where

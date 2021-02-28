@@ -36,27 +36,27 @@ colOfRow (RowLens cols) fieldName
 
 trOfRowLens :: a -> RowLens a -> Html
 trOfRowLens val (RowLens cols)
- = tr
- $ do   mapM_ (\lens -> td $ H.toMarkup $ colLensShow lens val) cols
+ = H.tr
+ $ do   mapM_ (\lens -> H.td $ H.toMarkup $ colLensShow lens val) cols
 
 
 -- | Build a form input field for the named column in this row.
 trFormRowOfRowLens :: a -> RowLens a -> String -> Html
 trFormRowOfRowLens val (RowLens cols) fieldName
- = let  Just column     = find (\c -> colLensName c == fieldName) cols
+ = let  Just column = find (\c -> colLensName c == fieldName) cols
    in   trFormRowOfColLens val column
 
 
 -- | Build a form input field for the given column.
 trFormRowOfColLens :: a -> ColLens a -> Html
 trFormRowOfColLens val colLens
- = tr  
- $ do   th (toMarkup $ colLensNiceName colLens)
-        td $ input
-                ! A.type_ (H.toValue $ colLensFormType colLens)
-                ! A.name  (H.toValue $ colLensName     colLens)
-                ! A.autocomplete "off"
-                ! A.value (H.toValue $ colLensShow     colLens val)
+ = H.tr
+ $ do   H.th (H.toMarkup $ colLensNiceName colLens)
+        H.td $ H.input
+         ! A.type_ (H.toValue $ colLensFormType colLens)
+         ! A.name  (H.toValue $ colLensName     colLens)
+         ! A.autocomplete "off"
+         ! A.value (H.toValue $ colLensShow     colLens val)
 
 
 -- View -----------------------------------------------------------------------
@@ -70,11 +70,11 @@ trViewRowOfRowLens val (RowLens cols) fieldName
 -- | Build a form input field for the given column.
 trViewRowOfColLens :: a -> ColLens a -> Html
 trViewRowOfColLens val colLens
- = tr  
- $ do   th (toMarkup $ colLensNiceName colLens)
-        td  (H.toMarkup $ colLensShow     colLens val)
+ = H.tr
+ $ do   H.th (H.toMarkup $ colLensNiceName colLens)
+        H.td (H.toMarkup $ colLensShow     colLens val)
 
-{-}                ! A.type_ (H.toValue $ colLensFormType colLens)
+{-              ! A.type_ (H.toValue $ colLensFormType colLens)
                 ! A.name  (H.toValue $ colLensName     colLens)
                 ! A.autocomplete "off"
                 ! A.value ()

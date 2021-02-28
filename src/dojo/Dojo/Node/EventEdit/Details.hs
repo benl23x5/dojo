@@ -9,7 +9,6 @@ import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
 import Data.String
 
-
 -------------------------------------------------------------------------------
 -- | Identifying details of an event.
 data EventDetails
@@ -27,7 +26,7 @@ divEventDescription :: Event -> Maybe User -> Person -> Html
 divEventDescription event mUserCreatedBy personCreatedBy
  = H.div ! A.class_ "event-description"
  $ H.table
- $ do   tr $ td $ H.string
+ $ do   H.tr $ H.td $ H.string
            $  maybe "[event]" eventTypeClassName (eventType event)
            ++ " by "
            ++ maybe "" pretty (personDisplayName personCreatedBy)
@@ -37,7 +36,7 @@ divEventDescription event mUserCreatedBy personCreatedBy
                  -> " (" ++ pretty (userName userCreatedBy) ++ ")")
            ++ "."
 
-        tr $ td $ H.string
+        H.tr $ H.td $ H.string
            $  maybe "[somewhere]" pretty  (eventLocation event)
            ++ maybe "[someday]"  (\v -> " on " ++ pretty v) (eventDate event)
            ++ maybe "[sometime]" (\v -> " at " ++ pretty v) (eventTime event)
@@ -56,18 +55,18 @@ divEventEditDetails details fsForm
 
         let sType = maybe "" pretty $ eventType event
         H.table
-         $ do   tr $ do thInputFeedback fsForm "Type" "type"
-                tr $ do td $ (H.select ! A.name "Type")
-                         $ do   H.option ! A.value "" $ "(unspecified)"
+         $ do   H.tr $ do thInputFeedback fsForm "Type" "type"
+                H.tr $ do H.td $ (H.select ! A.name "Type")
+                           $ do H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty eventTypes) (optSelected sType)
 
         -- When this is a new event put focus on the location input field,
         -- otherwise allow focus to be taken by the last person entry field.
         let sDojo = maybe "" pretty $ eventLocation event
         H.table
-         $ do   tr $ do thInputFeedback fsForm "Location" "location"
-                tr $ do td $ (H.select ! A.name "Location")
-                         $ do   H.option ! A.value "" $ "(unspecified)"
+         $ do   H.tr $ do thInputFeedback fsForm "Location" "location"
+                H.tr $ do H.td $ (H.select ! A.name "Location")
+                           $ do H.option ! A.value "" $ "(unspecified)"
                                 forM_ (map pretty dojos) (optSelected sDojo)
 
         tableFields fsForm

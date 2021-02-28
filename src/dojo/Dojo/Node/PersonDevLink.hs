@@ -49,29 +49,29 @@ cgiPersonDevLink ss inputs
         cgiPageNavi ss "People" sName (pathsJump ss)
          $ H.div ! A.class_ "code-description"
          $ do H.br; H.table $ do
-                tr $ td $ H.h3 $ H.string sName
-                tr $ td $ H.string "Link to student device registration."
-                tr $ td $ H.string ""
+                H.tr $ H.td $ H.h3 $ H.string sName
+                H.tr $ H.td $ H.string "Link to student device registration."
+                H.tr $ H.td $ H.string ""
 
                 -- Base name of the file to use if the QR code .png image
                 -- is downloaded.
                 let sCodeFileName = personQRCodeDownloadName person
 
                 -- Generate the QR code inline in the page.
-                tr $ td $ htmlQRCode sLink sCodeFileName
+                H.tr $ H.td $ htmlQRCode sLink sCodeFileName
 
-                tr $ td $ H.string "The student should scan this code"
-                tr $ td $ H.string "and be directed to the page to"
-                tr $ td $ H.string "register their own device."
-                tr $ td $ H.string $ "code id: " ++ sCode
+                H.tr $ H.td $ H.string "The student should scan this code"
+                H.tr $ H.td $ H.string "and be directed to the page to"
+                H.tr $ H.td $ H.string "register their own device."
+                H.tr $ H.td $ H.string $ "code id: " ++ sCode
 
-                tr $ td ! A.style "height:1ex;" $ H.string ""
-                tr $ td $ H.string "The direct link is:"
-                tr $ td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
+                H.tr $ H.td ! A.style "height:1ex;" $ H.string ""
+                H.tr $ H.td $ H.string "The direct link is:"
+                H.tr $ H.td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
 
-                tr $ td ! A.style "height:1ex;" $ H.string ""
-                tr $ td $ H.string "Registration PDF download:"
-                tr $ td $ (H.a ! A.href (H.toValue $ "g/" ++ sRegDownload))
+                H.tr $ H.td ! A.style "height:1ex;" $ H.string ""
+                H.tr $ H.td $ H.string "Registration PDF download:"
+                H.tr $ H.td $ (H.a ! A.href (H.toValue $ "g/" ++ sRegDownload))
                                 (H.string sRegDownload)
 
 cgiPersonDevLink _ inputs

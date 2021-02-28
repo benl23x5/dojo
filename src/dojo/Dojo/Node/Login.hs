@@ -7,6 +7,7 @@ import Dojo.Framework
 import Dojo.Trivia
 import Dojo.Config
 import Dojo.Chrome
+-- import Dojo.Log
 import Dojo.Paths
 import Data.Word
 import Data.String
@@ -63,26 +64,28 @@ formLogin path
  = H.form ! A.action (H.toValue path)
  $ H.table
  $ do
-        tr $ do (td ! A.class_ "login-icon")
-                 $ (H.i ! A.class_ "material-icons md-36")
-                 $ "face"
+        H.tr $ do (H.td ! A.class_ "login-icon")
+                   $ (H.i ! A.class_ "material-icons md-36")
+                   $ "face"
 
-                td $ input ! A.name  "username"
-                           ! A.type_ "text"
-                           ! A.autocomplete "off"
-                           ! A.autofocus    "on"
+                  H.td $ H.input
+                       ! A.name  "username"
+                       ! A.type_ "text"
+                       ! A.autocomplete "off"
+                       ! A.autofocus    "on"
 
-        tr $ do (td ! A.class_ "login-icon")
-                 $ (H.i ! A.class_ "material-icons md-36")
-                 $ "vpn_key"
+        H.tr $ do (H.td ! A.class_ "login-icon")
+                   $ (H.i ! A.class_ "material-icons md-36")
+                   $ "vpn_key"
 
-                td $ input ! A.name  "password"
-                           ! A.type_ "password"
+                  H.td  $ H.input
+                        ! A.name  "password"
+                        ! A.type_ "password"
 
-        tr $ (td ! A.colspan "2")
-           $ input ! A.type_  "submit"
-                   ! A.class_ "button-login"
-                   ! A.value  "Login"
+        H.tr $ (H.td ! A.colspan "2")
+           $ H.input ! A.type_  "submit"
+                     ! A.class_ "button-login"
+                     ! A.value  "Login"
 
 
 -------------------------------------------------------------------------------
@@ -103,15 +106,22 @@ loginCheck cc user password
         let match = hash == show hash'
 
         if not match
-         then loginFail cc
-         else loginActivate cc user
+         then do
+--                llog cc "trace"
+--                 $ O [  ("event", S "login-fail-password"),
+--                        ("user",  value $ userId user)]
+                loginFail cc
+
+         else do
+                loginActivate cc user
+
 
 
 -- | Login failure, bad username or password.
 loginFail :: Config -> CGI CGIResult
 loginFail cc
- = CGI.redirect $ flatten
- $ pathDebug cc "Login failed."
+ = do   CGI.redirect $ flatten
+         $ pathDebug cc "Login failed."
 
 
 -- | Activate user session and go to main page.
@@ -154,6 +164,13 @@ loginActivate cc user
         -- Commit and disconnect from database.
         liftIO  $ commit conn
         liftIO  $ disconnect conn
+
+--        llog cc "trace"
+--         $ O    [ ("event", S $ "login")
+--                , ("user",  value  $ userId user)
+--                , ("date",  value  $ startDate)
+--                , ("time",  value  $ startTime)
+--                , ("key",   value  $ hash) ]
 
         -- Redirect to main page.
         CGI.redirect $ flatten $ (pathClassList session)

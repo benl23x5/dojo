@@ -1,6 +1,6 @@
 
 all:
-	cabal build
+	cabal v1-build
 
 .PHONY: deploy
 deploy:

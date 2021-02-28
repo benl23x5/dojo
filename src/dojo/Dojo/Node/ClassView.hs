@@ -113,7 +113,7 @@ divClassDetails
 trClassSummary :: Class -> Maybe User -> Person -> Html
 trClassSummary classs muOwner pOwner
  = do
-        tr $ td $ H.string
+        H.tr $ H.td $ H.string
            $  maybe "[class]" eventTypeClassName (classType classs)
            ++ " by "
            ++ maybe "" pretty (personDisplayName pOwner)
@@ -122,7 +122,7 @@ trClassSummary classs muOwner pOwner
                 Just uOwner -> " (" ++ pretty (userName uOwner) ++ ")")
            ++ "."
 
-        tr $ td $ H.string
+        H.tr $ H.td $ H.string
            $  maybe "[somewhere]" pretty (classLocation classs)
            ++ " on "
            ++ maybe "[someday]"   pretty (classDay classs)
@@ -144,14 +144,14 @@ divRegularsList ss regulars
  = H.div ! A.class_ "list class-regulars"
  $ H.table
  $ do
-        col ! A.class_ "Date"
-        col ! A.class_ "Name"
-        col ! A.class_ "Fees"
-        tr $ do th "last attended"
-                th "regular attendee"
-                th "fees" ! A.style "text-align: center"
+        H.col ! A.class_ "Date"
+        H.col ! A.class_ "Name"
+        H.col ! A.class_ "Fees"
+        H.tr $ do H.th "last attended"
+                  H.th "regular attendee"
+                  H.th "fees" ! A.style "text-align: center"
 
-        forM_ regulars $ \(person, _nCount, dateLast) -> tr $ do
+        forM_ regulars $ \(person, _nCount, dateLast) -> H.tr $ do
          td' person (Just dateLast)
          td' person (personDisplayName person)
 
@@ -162,10 +162,10 @@ divRegularsList ss regulars
 
  where
         td' person val
-         = td $ linkView person (H.toMarkup $ maybe "" pretty val)
+         = H.td $ linkView person (H.toMarkup $ maybe "" pretty val)
 
         linkView person hh
          | Just pid <- personId person
-         = (a ! A.href (H.toValue $ pathPersonView ss pid)) hh
+         = (H.a ! A.href (H.toValue $ pathPersonView ss pid)) hh
          | otherwise = hh
 

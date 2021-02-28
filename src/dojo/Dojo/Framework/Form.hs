@@ -51,10 +51,10 @@ tableFields
 
 tableFields fsFeed fs
  = H.table $ do
-        tr $ forM_ fs $ \(sClass, sLabel, _sValue, _mHolder, _bFocus) -> do
+        H.tr $ forM_ fs $ \(sClass, sLabel, _sValue, _mHolder, _bFocus) -> do
                 thInputFeedback fsFeed sClass sLabel
 
-        tr $ forM_ fs $ \(sClass, _sLabel, sValue, mHolder, bFocus) -> do
+        H.tr $ forM_ fs $ \(sClass, _sLabel, sValue, mHolder, bFocus) -> do
                 tdInputFeedback bFocus fsFeed sClass sValue mHolder
 
 
@@ -67,8 +67,8 @@ trInput :: [FeedForm]
         -> Html
 
 trInput fsFeed sClassName sDisplayLabel sValue mPlaceholder
- = do   tr $ thInputFeedback fsFeed sClassName sDisplayLabel
-        tr $ tdInputFeedback False fsFeed sClassName sValue mPlaceholder
+ = do   H.tr $ thInputFeedback fsFeed sClassName sDisplayLabel
+        H.tr $ tdInputFeedback False fsFeed sClassName sValue mPlaceholder
 
 
 -- | A table for a single input field,
@@ -87,8 +87,8 @@ trInputWithFocus
         -> Html
 
 trInputWithFocus fsFeed sClassName sDisplayLabel sValue mPlaceholder
- = do   tr $ thInputFeedback fsFeed sClassName sDisplayLabel
-        tr $ tdInputFeedback True fsFeed sClassName sValue mPlaceholder
+ = do   H.tr $ thInputFeedback fsFeed sClassName sDisplayLabel
+        H.tr $ tdInputFeedback True fsFeed sClassName sValue mPlaceholder
 
 
 -- | A table row for a single input field,
@@ -109,17 +109,17 @@ thInputFeedback fsFeed fieldName niceName
  | Just sError <- takeHead
         [sError | FeedFormInvalid f _ sError <- fsFeed
                 , f == fieldName]
- = th   ! A.class_ (H.toValue ("invalid " ++ fieldName))
+ = H.th ! A.class_ (H.toValue ("invalid " ++ fieldName))
         $ (H.toMarkup $ niceName ++ " (" ++ sError ++ ")")
 
  -- Feedback entry field was just updated.
  | elem fieldName [ f | FeedFormUpdated f <- fsFeed]
- = th   ! A.class_ (H.toValue ("updated "  ++ fieldName))
+ = H.th ! A.class_ (H.toValue ("updated "  ++ fieldName))
         $ (H.toMarkup $ niceName ++ " (ok)")
 
  -- Regular column header.
  | otherwise
- = th   ! A.class_ (H.toValue fieldName)
+ = H.th ! A.class_ (H.toValue fieldName)
         $ (H.toMarkup $ niceName)
 
 
@@ -127,7 +127,7 @@ thInputFeedback fsFeed fieldName niceName
 --    If the field contains invalid contents then continue displaying
 --    the contents and take the focus.
 tdInputFeedback
-        :: ToValue a
+        :: H.ToValue a
         => Bool                 -- ^ Whether to take focus
         -> [FeedForm]           -- ^ Feedback to add to the field/
         -> FieldClass
@@ -141,10 +141,11 @@ tdInputFeedback bHintFocus fsFeed fieldName val mPlaceholder
  | Just sValue  <- takeHead
         [ sValue | FeedFormInvalid sName sValue _ <- fsFeed
                  , sName == fieldName]
- = td   $ input !  A.name   (H.toValue fieldName)
-                !  A.autocomplete "off"
-                !  A.autofocus "on"
-                !  A.value  (H.toValue sValue)
+ = H.td $ H.input
+        ! A.name   (H.toValue fieldName)
+        ! A.autocomplete "off"
+        ! A.autofocus "on"
+        ! A.value  (H.toValue sValue)
 
  | otherwise
  = do   -- Whether any of the other fields had errors.
@@ -160,14 +161,14 @@ tdInputFeedback bHintFocus fsFeed fieldName val mPlaceholder
 
         case mPlaceholder of
          Nothing
-          -> td $ input
+          -> H.td $ H.input
                 ! A.name   (H.toValue fieldName)
                 ! A.autocomplete "off"
                 ! A.value  (H.toValue val)
                 !? (bTakeFocus, A.autofocus, "on")
 
          Just sPlaceholder
-          -> td $ input
+          -> H.td $ H.input
                 ! A.name   (H.toValue fieldName)
                 ! A.autocomplete "off"
                 ! A.value  (H.toValue val)

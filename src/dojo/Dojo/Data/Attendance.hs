@@ -16,18 +16,18 @@ data Attendance
 -- | Render an attendance record as a row of checkboxes.
 trAttendance :: Attendance -> Html
 trAttendance (Attendance person flags)
- = tr
+ = H.tr
  $ do   tdPerson person
         mapM_ tdFlag flags
 
  where  -- If we've lost the name due to an internal bug then still
         --  display a '(person)' placeholder so we can click on the row.
         tdPerson person'
-         = td   $ toMarkup
+         = H.td $ H.toMarkup
                 $ fromMaybe "(person)" $ personDisplayName person'
 
         tdFlag _flag
-         = td   $ H.input
-                        ! A.type_ "checkbox"
-                        ! A.name  "check1"
+         = H.td $ H.input
+                ! A.type_ "checkbox"
+                ! A.name  "check1"
 

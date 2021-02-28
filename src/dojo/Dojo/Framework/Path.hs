@@ -1,6 +1,7 @@
 
 module Dojo.Framework.Path where
 import Dojo.Base
+import qualified Text.Blaze as H
 
 -- | A Path to a node.
 data Path
@@ -15,8 +16,8 @@ data Path
         , pathFields    :: [(String, String)] }
         deriving Show
 
-instance ToValue Path where
- toValue path = toValue (flatten path)
+instance H.ToValue Path where
+ toValue path = H.toValue (flatten path)
 
 
 flatten  :: Path -> String

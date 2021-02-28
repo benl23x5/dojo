@@ -41,10 +41,6 @@ data SessionId
         deriving (Eq, Ord, Show)
 
 
-data SessionHash        = SessionHash String
-data SessionDate        = SessionDate Time.Day              deriving Show
-data SessionTime        = SessionTime Time.TimeOfDay        deriving Show
-data SessionLocalTime   = SessionLocalTime Time.LocalTime   deriving (Show, Eq)
 
 instance Show SessionHash where
  show (SessionHash hash) = hash

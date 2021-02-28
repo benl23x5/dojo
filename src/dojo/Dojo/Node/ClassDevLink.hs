@@ -46,14 +46,14 @@ cgiClassDevLink ss inputs
                 let sCodeFileName
                         = classQRCodeDownloadName classs
 
-                tr $ td $ htmlQRCode sLink sCodeFileName
-                tr $ td $ H.string "Scan this code with a registered device"
-                tr $ td $ H.string "to join the class attendance list."
-                tr $ td $ H.string $ "code id: " ++ sRegId
+                H.tr $ H.td $ htmlQRCode sLink sCodeFileName
+                H.tr $ H.td $ H.string "Scan this code with a registered device"
+                H.tr $ H.td $ H.string "to join the class attendance list."
+                H.tr $ H.td $ H.string $ "code id: " ++ sRegId
 
-                tr $ td ! A.style "height:1ex;" $ H.string ""
-                tr $ td $ H.string "The direct link is:"
-                tr $ td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
+                H.tr $ H.td ! A.style "height:1ex;" $ H.string ""
+                H.tr $ H.td $ H.string "The direct link is:"
+                H.tr $ H.td $ (H.a ! A.href (H.toValue sLink)) (H.string sLink)
 
 
 cgiClassDevLink _ inputs

@@ -25,13 +25,13 @@ divClassList :: Session -> [Class] -> H.Html
 divClassList  ss classes
  = H.div ! A.class_ "list class-list"
  $ H.table
- $ do   col ! A.class_ "Location"
-        col ! A.class_ "Day"
-        col ! A.class_ "TimeStart"
-        col ! A.class_ "Type"
-        tr $ do th "location"; th "day"; th "time"; th "type"
+ $ do   H.col ! A.class_ "Location"
+        H.col ! A.class_ "Day"
+        H.col ! A.class_ "TimeStart"
+        H.col ! A.class_ "Type"
+        H.tr $ do H.th "location"; H.th "day"; H.th "time"; H.th "type"
 
-        forM_ classes $ \classs -> tr $ do
+        forM_ classes $ \classs -> H.tr $ do
          td' classs $ classLocation classs
          td' classs $ classDay classs
          td' classs $ classTimeStart classs
@@ -39,9 +39,9 @@ divClassList  ss classes
 
  where  td' classs val
          | Just cid <- classId classs
-         = td $ (a ! A.href (H.toValue $ pathClassView ss cid))
-                (H.toMarkup $ fromMaybe "" $ fmap pretty val)
+         = H.td $ (H.a ! A.href (H.toValue $ pathClassView ss cid))
+                  (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 
          | otherwise
-         = td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
+         = H.td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 

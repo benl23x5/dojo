@@ -35,8 +35,8 @@ cgiPersonEdit ss inputs
 
         -- Fields of the user entry to update.
         let fieldUpdates
-                = [ (field, value)
-                  | (field@(f : _), value) <- inputs
+                = [ (field, v)
+                  | (field@(f : _), v) <- inputs
                   , isUpper f ]
 
         -- See if we were given an existing person id.
@@ -84,7 +84,7 @@ cgiPersonEdit_entry ss person dojos memberLevels fsFeed
  $ do
         let sName = fromMaybe "[person]" $ personAliasName person
         H.div ! A.class_ "person-alias-name"
-         $ H.table $ tr $ td $ H.string sName
+         $ H.table $ H.tr $ H.td $ H.string sName
 
         tableActions
          $ case personId person of

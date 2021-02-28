@@ -164,14 +164,14 @@ cgiShowStatus cc sCode person bRegistered
         let sName = fromMaybe "[person]" $ personAliasName person
         H.div ! A.class_ "person-alias-name"
          $ H.table
-         $ do   tr $ td $ H.h3 $ H.string sName
-                tr $ td $ H.string "Student Device Registration"
+         $ do   H.tr $ H.td $ H.h3 $ H.string sName
+                H.tr $ H.td $ H.string "Student Device Registration"
 
         let pathStatus = pathPersonDevStatus cc sCode
         H.div ! A.class_ "person-device-register"
          $ if bRegistered
             then H.table $ do
-                tr $ td $ H.h2 $ (H.p ! A.style "color:Green;")
+                H.tr $ H.td $ H.h2 $ (H.p ! A.style "color:Green;")
                    $ do H.string "Registered "
                         (H.i ! A.class_ "material-icons md-48")
                           $ "sentiment_satisfied_alt"
@@ -191,12 +191,12 @@ cgiShowStatus cc sCode person bRegistered
 
 
             else H.table $ do
-                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                H.tr $ H.td $ H.h2 $ (H.p ! A.style "color:Brown;")
                    $ do H.string "Not Registered "
                         (H.i ! A.class_ "material-icons md-48")
                          $ "sentiment_dissatisfied"
 
-                tr $ td
+                H.tr $ H.td
                    $ (H.form    ! A.action (fromString $ flatten $ pathStatus))
                    $ do
                         H.input ! A.type_ "hidden"
@@ -228,10 +228,10 @@ cgiPersonDevRegUnrecognizedClassCode cc
         H.br
         H.div ! A.class_ "code-description"
          $ H.table $ do
-                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
-                   $ do H.string "Code Not Recognized "
-                        (H.i ! A.class_ "material-icons md-48")
-                         $ "sentiment_dissatisfied"
+                H.tr $ H.td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                     $ do H.string "Code Not Recognized "
+                          (H.i ! A.class_ "material-icons md-48")
+                           $ "sentiment_dissatisfied"
 
-                tr $ td $ "This registration code is not recognized."
-                tr $ td $ "Please contact the class instructor."
+                H.tr $ H.td $ "This registration code is not recognized."
+                H.tr $ H.td $ "Please contact the class instructor."

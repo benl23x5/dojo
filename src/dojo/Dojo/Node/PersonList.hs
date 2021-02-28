@@ -32,10 +32,10 @@ divPersonList ss people
  $ H.table
  $ do
         col' "ShortName"; col' "FamilyName"; col' "PhoneMobile"
-        tr $ do th "pref / first"; th "family"; th "phone"
+        H.tr $ do H.th "pref / first"; H.th "family"; H.th "phone"
 
          -- Clicking on any column goes to person view page.
-        forM_ people $ \person -> tr $ do
+        forM_ people $ \person -> H.tr $ do
          -- If we've lost the name due to an internal bug then still
          --  display a '(person)' placeholder so we can click on the row.
          td' person
@@ -52,12 +52,12 @@ divPersonList ss people
                |  otherwise
                -> personPhoneFixed person
 
- where  col' c = col ! A.class_ c
+ where  col' c = H.col ! A.class_ c
 
         td' person val
          | Just pid <- personId person
-         = td $ (a ! A.href (H.toValue $ pathPersonView ss pid))
-                (H.toMarkup $ fromMaybe "" $ fmap pretty val)
+         = H.td $ (H.a ! A.href (H.toValue $ pathPersonView ss pid))
+                  (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 
          | otherwise
-         = td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
+         = H.td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)

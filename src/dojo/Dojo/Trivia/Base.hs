@@ -1,7 +1,26 @@
 
 module Dojo.Trivia.Base where
 import qualified Data.Time      as Time
+import Dojo.Framework.Value
 
+-------------------------------------------------------------------------------
+data SessionHash
+        = SessionHash String
+
+instance MakeValue SessionHash where
+ value (SessionHash s) = S s
+
+data SessionDate
+        = SessionDate Time.Day
+        deriving Show
+
+data SessionTime
+        = SessionTime Time.TimeOfDay
+        deriving Show
+
+data SessionLocalTime
+        = SessionLocalTime Time.LocalTime
+        deriving (Show, Eq)
 
 
 -------------------------------------------------------------------------------

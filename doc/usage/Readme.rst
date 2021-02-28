@@ -8,14 +8,14 @@ Aiki Dojo is web based attendance tracking system for martial arts and similar  
 Overview
 --------
 
-Students must first register their phones with the system by scanning a personal registration QR code. Each student should be given their personal registration QR code in printed form, along with instructions about how to use the system.
+Students first register their phones with the system by scanning a personal registration QR code. Each student should be given their personal registration QR code in printed form, along with instructions about how to use the system.
 
-Once the student's phone is registered, they can then scan a different class regisration QR code which adds their name to the attendance list for that event. This class registration code should be laminated and either kept at the dojo, or brought by the class instructor and displayed each time for the students to scan.
+Once the student's phone is registered, they can then scan the laminated class QR code, which adds their name to the attendance list for the class on that particular day. The class registration code should be kept at the dojo, or brought by the class instructor and displayed each time the class is held.
 
 Terminology
 -----------
 
-We use the word *event* to mean a single event on a particular day. We use *class* to mean a sequence of reoccurring events. For example, the Tuesday *class* is held every week. There is one event for that class on this week, and another event for that class next week, and another the week after.
+We use "event" to mean a single event on a particular day. We use "class" to mean a sequence of reoccurring events. For example, the Tuesday *class* is held every week. There is one event for that class on this week, and another event for that class next week, and another the week after.
 
 
 Student Workflows

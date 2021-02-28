@@ -31,7 +31,7 @@ cgiPersonView ss inputs
          $ H.div ! A.class_ "person-view"
          $ do
                 H.div ! A.class_ "person-alias-name"
-                 $ H.table $ tr $ td $ H.string sName
+                 $ H.table $ H.tr $ H.td $ H.string sName
 
                 let bCanEdit = sessionIsAdmin ss
                 let bCanDel  = sessionIsAdmin ss && null events
@@ -61,72 +61,72 @@ divPersonDetails ss person
          $ do   let bHasPref = isJust $ personPreferredName person
 
                 (if bHasPref
-                 then do col ! A.class_ "Col3A"
-                         col ! A.class_ "Col3B"
-                         col ! A.class_ "Col3C"
-                 else do col ! A.class_ "Col2A"
-                         col ! A.class_ "Col2B")
+                 then do H.col ! A.class_ "Col3A"
+                         H.col ! A.class_ "Col3B"
+                         H.col ! A.class_ "Col3C"
+                 else do H.col ! A.class_ "Col2A"
+                         H.col ! A.class_ "Col2B")
 
-                tr $ do th "first"
-                        when bHasPref $ th "preferred"
-                        th "family"
+                H.tr $ do H.th "first"
+                          when bHasPref $ H.th "preferred"
+                          H.th "family"
 
-                tr $ do td' $ personFirstName person
-                        when bHasPref $ td' $ personPreferredName person
-                        td' $ personFamilyName   person
+                H.tr $ do td' $ personFirstName person
+                          when bHasPref $ td' $ personPreferredName person
+                          td' $ personFamilyName   person
 
         -- Suppress date of birth if the role is less than Admin.
         H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "home dojo"
-                        when isAdmin $ th "date of birth"
-                tr $ do td' $ personDojoHome person
-                        when isAdmin $ td' $ personDateOfBirth  person
+         $ do   H.col ! A.class_ "Col2A"; H.col ! A.class_ "Col2B"
+                H.tr $ do H.th "home dojo"
+                          when isAdmin $ H.th "date of birth"
+                H.tr $ do td' $ personDojoHome person
+                          when isAdmin $ td' $ personDateOfBirth person
 
         H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "membership id"; th "renewal date"
-                tr $ do td' $ personMemberId person
-                        td' $ personMembershipRenewal person
-
-        -- Keep this on a single line as the values are long.
-        H.table
-         $ do   tr $ th "membership level"
-                tr $ td' $ personMembershipLevel person
+         $ do   H.col ! A.class_ "Col2A"; H.col ! A.class_ "Col2B"
+                H.tr $ do H.th "membership id"; H.th "renewal date"
+                H.tr $ do td' $ personMemberId person
+                          td' $ personMembershipRenewal person
 
         -- Keep this on a single line as the values are long.
         H.table
-         $ do   tr $ th "email address"
-                tr $ td' $ personEmail person
+         $ do   H.tr $ H.th "membership level"
+                H.tr $ td' $ personMembershipLevel person
+
+        -- Keep this on a single line as the values are long.
+        H.table
+         $ do   H.tr $ H.th "email address"
+                H.tr $ td' $ personEmail person
 
         let hasPhoneFixed = isJust $ personPhoneFixed person
         H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "mobile phone"
-                        when hasPhoneFixed $ th "fixed phone"
-                tr $ do td' $ personPhoneMobile  person
-                        when hasPhoneFixed $ td' $ personPhoneFixed person
+         $ do   H.col ! A.class_ "Col2A"; H.col ! A.class_ "Col2B"
+                H.tr $ do H.th "mobile phone"
+                          when hasPhoneFixed $ H.th "fixed phone"
+                H.tr $ do td' $ personPhoneMobile  person
+                          when hasPhoneFixed $ td' $ personPhoneFixed person
 
         -- Suppress emergency contact if not filled.
         when (or [ isJust $ personEmergencyName1  person
                  , isJust $ personEmergencyPhone1 person])
          $ H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "emergency contact 1"; th "phone"
-                tr $ do td' $ personEmergencyName1 person
-                        td' $ personEmergencyPhone1 person
+         $ do   H.col ! A.class_ "Col2A"; H.col ! A.class_ "Col2B"
+                H.tr $ do H.th "emergency contact 1"; H.th "phone"
+                H.tr $ do td' $ personEmergencyName1 person
+                          td' $ personEmergencyPhone1 person
 
 
         -- Suppress emergency contact if not filled.
         when (or [ isJust $ personEmergencyName2  person
                  , isJust $ personEmergencyPhone2 person])
          $ H.table
-         $ do   col ! A.class_ "Col2A"; col ! A.class_ "Col2B"
-                tr $ do th "emergency contact 2"; th "phone"
-                tr $ do td' $ personEmergencyName2 person
-                        td' $ personEmergencyPhone2 person
+         $ do   H.col ! A.class_ "Col2A"; H.col ! A.class_ "Col2B"
+                H.tr $ do H.th "emergency contact 2"; H.th "phone"
+                H.tr $ do td' $ personEmergencyName2 person
+                          td' $ personEmergencyPhone2 person
 
- where  td' val = td $ H.toMarkup $ maybe "" pretty $ val
+ where  td' val = H.td $ H.toMarkup $ maybe "" pretty $ val
 
 
 -------------------------------------------------------------------------------
@@ -135,14 +135,14 @@ divPersonEventSummary :: Session -> [Event] -> Html
 divPersonEventSummary _ss events
  = H.div ! A.class_ "list event-summary"
  $ H.table
- $ do   col ! A.class_ "Type"
-        col ! A.class_ "Count"
-        tr $ do th "event type"; th "attended"
+ $ do   H.col ! A.class_ "Type"
+        H.col ! A.class_ "Count"
+        H.tr $ do H.th "event type"; H.th "attended"
 
         forM_ (summarizeEventTypes events)
-         $ \((EventType name, nCount)) -> tr $ do
-                td (H.string name)
-                td (H.string $ show nCount)
+         $ \((EventType name, nCount)) -> H.tr $ do
+                H.td (H.string name)
+                H.td (H.string $ show nCount)
 
 
 -------------------------------------------------------------------------------
@@ -152,22 +152,22 @@ divPersonEventAttendance ss events
  = H.div ! A.class_ "list event-attendance"
  $ H.table
  $ do
-        col ! A.class_ "Date"
-        col ! A.class_ "Time"
-        col ! A.class_ "Location"
-        tr $ do th "date"; th "time"; th "location"
+        H.col ! A.class_ "Date"
+        H.col ! A.class_ "Time"
+        H.col ! A.class_ "Location"
+        H.tr $ do H.th "date"; H.th "time"; H.th "location"
 
         -- Clicking any column goes to event view page.
-        forM_ events $ \event -> tr $ do
+        forM_ events $ \event -> H.tr $ do
          td' event $ eventDate event
          td' event $ eventTime event
          td' event $ eventLocation  event
 
  where  td' event val
          | Just eid <- eventId event
-         = td $ (a ! A.href (H.toValue $ pathEventView ss eid))
+         = H.td $ (H.a ! A.href (H.toValue $ pathEventView ss eid))
                 (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 
          | otherwise
-         = td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
+         = H.td $ (H.toMarkup $ fromMaybe "" $ fmap pretty val)
 

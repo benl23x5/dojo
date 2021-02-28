@@ -134,13 +134,13 @@ cgiClassDevRegUnrecognizedClassCode cc
         H.br
         H.div ! A.class_ "code-description"
          $ H.table $ do
-                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                H.tr $ H.td $ H.h2 $ (H.p ! A.style "color:Brown;")
                    $ do H.string "Code Not Recognized "
                         (H.i ! A.class_ "material-icons md-48")
                          $ "sentiment_dissatisfied"
 
-                tr $ td $ "This registration code is not recognized."
-                tr $ td $ "Please contact the class instructor."
+                H.tr $ H.td $ "This registration code is not recognized."
+                H.tr $ H.td $ "Please contact the class instructor."
 
 
 -------------------------------------------------------------------------------
@@ -165,14 +165,14 @@ cgiClassDevRegUnrecognizedDevice cc classs pClassOwner
          $ H.table $ do
                 trClassSummary classs Nothing pClassOwner
 
-                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                H.tr $ H.td $ H.h2 $ (H.p ! A.style "color:Brown;")
                    $ do H.string "Device not Registered "
                         (H.i ! A.class_ "material-icons md-48")
                          $ "sentiment_dissatisfied"
 
-                tr $ td $ "This device is not registered"
-                tr $ td $ "for the class attendance system."
-                tr $ td $ "Please contact the class instructor."
+                H.tr $ H.td $ "This device is not registered"
+                H.tr $ H.td $ "for the class attendance system."
+                H.tr $ H.td $ "Please contact the class instructor."
 
 
 -------------------------------------------------------------------------------
@@ -251,23 +251,23 @@ cgiClassDevRegStatus cc classs pClassOwner pCookie bAttending
          $ do   trClassSummary classs Nothing pClassOwner
 
                 let sName = fromMaybe "[person]" $ personAliasName pCookie
-                tr $ td ! A.style "height:1em;" $ ""
-                tr $ td $ H.h3 $ H.string sName
-                tr $ td ! A.style "height:1ex;" $ H.string ""
+                H.tr $ H.td ! A.style "height:1em;" $ ""
+                H.tr $ H.td $ H.h3 $ H.string sName
+                H.tr $ H.td ! A.style "height:1ex;" $ H.string ""
 
                 if bAttending
                  then do
                   -- Attending
-                  tr $ td $ H.h2 $ (H.div ! A.style "color:Green;")
+                  H.tr $ H.td $ H.h2 $ (H.div ! A.style "color:Green;")
                      $ do H.string "Attending "
                           (H.i ! A.class_ "material-icons md-48")
                             $ "sentiment_satisfied_alt"
 
-                  tr $ td ! A.style "height:1ex;" $ H.string ""
+                  H.tr $ H.td ! A.style "height:1ex;" $ H.string ""
 
                  else do
                   -- Not attending
-                  tr $ td $ H.h2 $ (H.div ! A.style "color:Brown;")
+                  H.tr $ H.td $ H.h2 $ (H.div ! A.style "color:Brown;")
                      $ do H.string "Not Attending "
                           (H.i ! A.class_ "material-icons md-48")
                             $ "sentiment_dissatisfied"
@@ -278,7 +278,7 @@ cgiClassDevRegStatus cc classs pClassOwner pCookie bAttending
                         = registrationLinkOfClass sUrl sSalt classs
 
                   -- Button to record attendance in the class.
-                  tr $ td
+                  H.tr $ H.td
                      $ (H.form    ! A.action (fromString sRegLink))
                      $ do H.input ! A.type_ "hidden"
                                   ! A.name  (fromString "r")
@@ -309,7 +309,7 @@ cgiClassNotToday cc classs pClassOwner
          $ H.table
          $ do   trClassSummary classs Nothing pClassOwner
 
-                tr $ td $ H.h2 $ (H.p ! A.style "color:Brown;")
+                H.tr $ H.td $ H.h2 $ (H.p ! A.style "color:Brown;")
                    $ do H.string "Class not on today "
                         (H.i ! A.class_ "material-icons md-48")
                          $ "sentiment_dissatisfied"
