@@ -18,9 +18,7 @@ cgiPersonList ss _inputs
         liftIO $ disconnect conn
 
         cgiPageNavi ss "People" "People" (pathsJump ss)
-         $ do   when (sessionIsAdmin ss)
-                 $ tableActions [pathPersonAdd ss]
-
+         $ do   tableActions [pathPersonAdd ss]
                 divPersonList ss people
 
 
