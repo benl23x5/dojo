@@ -51,8 +51,6 @@ logsIO ss channel event v
          $ showValue v' ++ "\n"
 
 
-
-
 showValue :: Value -> String
 showValue vv
  = case vv of
@@ -62,7 +60,7 @@ showValue vv
         D d     -> "#d'" ++ show d
         S s     -> show s
         O fs    -> "{" ++ intercalate ", " [f ++ " = " ++ showValue v | (f, v) <- fs] ++ "}"
-        A vs    -> "[" ++ intercalate ", " [show v | v <- vs] ++ "}"
+        A vs    -> "[" ++ intercalate ", " [showValue v | v <- vs] ++ "]"
         TD td   -> "#td'" ++ show td
 
         TT tt

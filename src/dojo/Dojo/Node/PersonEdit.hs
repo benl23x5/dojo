@@ -1,12 +1,12 @@
 
 module Dojo.Node.PersonEdit (cgiPersonEdit) where
 import Dojo.Node.PersonEdit.Form
-import Dojo.Node.Logout
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Data.Dojo
 import Dojo.Paths
 import Dojo.Fail
+import Dojo.Log
 import Dojo.Chrome
 import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
@@ -24,11 +24,6 @@ import qualified Text.Blaze.Html5.Attributes    as A
 --
 cgiPersonEdit :: Session -> [(String, String)] -> CGI CGIResult
 cgiPersonEdit ss inputs
- -- Only admins can edit people
- | not $ sessionIsAdmin ss
- = cgiLogout ss
-
- | otherwise
  = do   conn            <- liftIO $ connectSqlite3 $ sessionDatabasePath ss
         dojos           <- liftIO $ getDojos conn
         memberLevels    <- liftIO $ getMembershipLevels conn
@@ -91,7 +86,7 @@ cgiPersonEdit_entry ss person dojos memberLevels fsFeed
             Nothing     -> []
             Just pid    -> [pathPersonView ss pid]
 
-        formPerson fsFeed
+        formPerson ss fsFeed
                 (pathPersonEdit ss (personId person))
                 person dojos memberLevels
 
@@ -136,13 +131,20 @@ cgiPersonEdit_update ss conn
 
     -- All the fields parsed.
     Right personNew
-      -> do liftIO $ updatePerson conn personNew
+     -> do  let ssDiffFields = diffPerson personOld personNew
+
+            llogs ss "trace" "person-update"
+             $ O [ ("diff", A $ map S ssDiffFields)
+                 , ("old",  personValueWith ssDiffFields $ personOld)
+                 , ("new",  personValue personNew) ]
+
+            liftIO $ updatePerson conn personNew
             liftIO $ commit conn
             liftIO $ disconnect conn
 
             let fsFeed =
                  [ FeedFormUpdated sField
-                 | sField <- diffPerson personOld personNew ]
+                 | sField <- ssDiffFields ]
 
             cgiPersonEdit_entry ss personNew dojos memberLevels fsFeed
 

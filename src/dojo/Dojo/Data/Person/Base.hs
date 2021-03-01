@@ -78,81 +78,97 @@ personFields
  =  [ Field "PersonId"              "id"
         (\s -> fmap toSql $ (parse s :: Either ParseError PersonId) )
         (toSql . personId)
+        (fmap toValue . personId)
         (\v x -> x { personId = fromSql v})
 
     , Field "MemberId"              "member id"
         (fmap toSql . loadInput @PersonMemberId)
         (toSql . personMemberId)
+        (fmap toValue . personMemberId)
         (\v x -> x { personMemberId = fromSql v})
 
     , Field "PreferredName"         "preferred name"
         (fmap toSql . loadInput @PersonName)
         (toSql . personPreferredName)
+        (fmap toValue . personPreferredName)
         (\v x -> x { personPreferredName = fromSql v})
 
     , Field "FirstName"             "first name"
         (fmap toSql . loadInput @PersonName)
         (toSql . personFirstName)
+        (fmap toValue . personFirstName)
         (\v x -> x { personFirstName = fromSql v})
 
     , Field "FamilyName"            "family name"
         (fmap toSql . loadInput @PersonName)
         (toSql . personFamilyName)
+        (fmap toValue . personFamilyName)
         (\v x -> x { personFamilyName = fromSql v})
 
     , Field "DateOfBirth"           "date of birth"
         (fmap toSql . loadInput @PersonDate)
         (toSql . personDateOfBirth)
+        (fmap toValue . personDateOfBirth)
         (\v x -> x { personDateOfBirth = fromSql v})
 
     , Field "PhoneMobile"           "mobile phone number"
         (fmap toSql . loadInput @PersonPhone)
         (toSql . personPhoneMobile)
+        (fmap toValue . personPhoneMobile)
         (\v x -> x { personPhoneMobile = fromSql v})
 
     , Field "PhoneFixed"            "fixed phone number"
         (fmap toSql . loadInput @PersonPhone)
         (toSql . personPhoneFixed)
+        (fmap toValue . personPhoneFixed)
         (\v x -> x { personPhoneFixed = fromSql v})
 
     , Field "Email"                 "email address"
         (fmap toSql . loadInput @PersonEmail)
         (toSql . personEmail)
+        (fmap toValue . personEmail)
         (\v x -> x { personEmail = fromSql v})
 
     , Field "DojoHome"              "home dojo"
         (fmap toSql . loadInput @PersonDojo)
         (toSql . personDojoHome)
+        (fmap toValue . personDojoHome)
         (\v x -> x { personDojoHome = fromSql v})
 
     , Field "MembershipLevel"       "membership level"
         (fmap toSql . loadInput @PersonMembershipLevel)
         (toSql . personMembershipLevel)
+        (fmap toValue . personMembershipLevel)
         (\v x -> x { personMembershipLevel = fromSql v})
 
     , Field "MembershipRenewal"     "membership renewal data"
         (fmap toSql . loadInput @PersonDate)
         (toSql . personMembershipRenewal)
+        (fmap toValue . personMembershipRenewal)
         (\v x -> x { personMembershipRenewal = fromSql v})
 
     , Field "EmergencyName1"        "emergency contact name 1"
         (fmap toSql . loadInput @PersonName)
         (toSql . personEmergencyName1)
+        (fmap toValue . personEmergencyName1)
         (\v x -> x { personEmergencyName1 = fromSql v})
 
     , Field "EmergencyPhone1"       "emergency contact phone 1"
         (fmap toSql . loadInput @PersonPhone)
         (toSql . personEmergencyPhone1)
+        (fmap toValue . personEmergencyPhone1)
         (\v x -> x { personEmergencyPhone1 = fromSql v})
 
     , Field "EmergencyName2"        "emergency contact name 2"
         (fmap toSql . loadInput @PersonName)
         (toSql . personEmergencyName2)
+        (fmap toValue . personEmergencyName2)
         (\v x -> x { personEmergencyName2 = fromSql v})
 
     , Field "EmergencyPhone2"       "emergency contact phone 2"
         (fmap toSql . loadInput @PersonPhone)
         (toSql . personEmergencyPhone2)
+        (fmap toValue . personEmergencyPhone2)
         (\v x -> x { personEmergencyPhone2 = fromSql v})
     ]
 
@@ -163,6 +179,28 @@ personFieldsNoKey :: [Field Person]
 personFieldsNoKey
  = [pf | pf <- personFields
        , fieldNameTable pf /= entityKey personEntity ]
+
+
+-- | Produce a general value describing a person.
+personValue :: Person -> Value
+personValue pp
+ = O $ catMaybes
+     $ [ case fieldToValue field pp of
+          Nothing -> Nothing
+          Just v  -> Just (fieldNameTable field, v)
+       | field <- personFields ]
+
+
+-- | Produce a general value describing a person,
+--   but only including the fields with the given names.
+personValueWith :: [String] -> Person -> Value
+personValueWith keep pp
+ = O $ catMaybes
+     $ [ case fieldToValue field pp of
+          Nothing -> Nothing
+          Just v  -> Just (fieldNameTable field, v)
+       | field <- personFields
+       , elem (fieldNameTable field) keep ]
 
 
 -- Constructors ---------------------------------------------------------------

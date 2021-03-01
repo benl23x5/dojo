@@ -36,46 +36,55 @@ classFields
  =  [ Field "ClassId"           "id"
         (fmap toSql . load @ClassId)
         (toSql . classId)
+        (fmap toValue . classId)
         (\v x -> x { classId = fromSql v})
 
     , Field "OwnerUserName"     "owner user name"
         (fmap toSql . load @UserName)
         (toSql . classOwnerUserName)
+        (fmap toValue . classOwnerUserName)
         (\v x -> x { classOwnerUserName = fromSql v})
 
     , Field "Type"              "type"
         (fmap toSql . load @EventType)
         (toSql . classType)
+        (fmap toValue . classType)
         (\v x -> x { classType = fromSql v})
 
     , Field "Location"          "location"
         (fmap toSql . load @EventLocation)
         (toSql . classLocation)
+        (fmap toValue . classLocation)
         (\v x -> x { classLocation = fromSql v})
 
     , Field "Day"               "day"
         (fmap toSql . load @ClassDay)
         (toSql . classDay)
+        (fmap toValue . classDay)
         (\v x -> x { classDay = fromSql v})
 
     , Field "TimeStart"         "time start"
         (fmap toSql . load @EventTime)
         (toSql . classTimeStart)
+        (fmap toValue . classTimeStart)
         (\v x -> x { classTimeStart = fromSql v})
 
     , Field "TimeEnd"           "time end"
         (fmap toSql . load @EventTime)
         (toSql . classTimeEnd)
+        (fmap toValue . classTimeEnd)
         (\v x -> x { classTimeEnd = fromSql v})
 
     , Field "DateFirst"         "date first"
         (fmap toSql . load @EventDate)
         (toSql . classDateFirst)
+        (fmap toValue . classDateFirst)
         (\v x -> x { classDateFirst = fromSql v})
 
     , Field "DateFinal"         "date final"
         (fmap toSql . load @EventDate)
         (toSql . classDateFinal)
+        (fmap toValue . classDateFinal)
         (\v x -> x { classDateFinal = fromSql v})
     ]
 

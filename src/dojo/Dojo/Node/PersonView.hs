@@ -33,11 +33,10 @@ cgiPersonView ss inputs
                 H.div ! A.class_ "person-alias-name"
                  $ H.table $ H.tr $ H.td $ H.string sName
 
-                let bCanEdit = sessionIsAdmin ss
-                let bCanDel  = sessionIsAdmin ss && null events
+                let bCanDel = sessionIsAdmin ss && null events
 
                 tableActions
-                 $  (if bCanEdit then [pathPersonEdit ss $ personId person] else [])
+                 $  [pathPersonEdit ss $ personId person]
                  ++ (if bCanDel  then [pathPersonDel  ss $ pid] else [])
                  ++ [pathPersonDevLink ss pid]
 

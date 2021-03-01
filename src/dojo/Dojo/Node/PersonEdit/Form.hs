@@ -3,6 +3,7 @@ module Dojo.Node.PersonEdit.Form
         (formPerson)
 where
 import Dojo.Data.Person
+import Dojo.Data.Session
 import Dojo.Framework
 import qualified Text.Blaze.Html5               as H
 import qualified Text.Blaze.Html5.Attributes    as A
@@ -13,14 +14,15 @@ import Data.String
 --    We don't allow the userid to be edited because this is the primary
 --    key for the person table.
 formPerson
-        :: [FeedForm]   -- ^ Feedback to add to current form.
+        :: Session
+        -> [FeedForm]   -- ^ Feedback to add to current form.
         -> Path         -- ^ Path to submit form.
         -> Person       -- ^ Person details to populate form.
         -> [PersonDojo] -- ^ Current dojos list.
         -> [PersonMembershipLevel]
         -> Html
 
-formPerson fsFeed path person dojos memberLevels
+formPerson ss fsFeed path person dojos memberLevels
  = H.form ! A.action (H.toValue path)
  $ do
         -- Stash args from the target path as hidden fields.
@@ -39,7 +41,7 @@ formPerson fsFeed path person dojos memberLevels
         htmlFeedForm fsFeed (formTableNameOfEntity personEntity)
 
         -- Person details.
-        divPersonDetails fsFeed person dojos memberLevels
+        divPersonDetails ss fsFeed person dojos memberLevels
 
         -- Save button.
         H.input ! A.type_  "submit"
@@ -52,11 +54,11 @@ formPerson fsFeed path person dojos memberLevels
 
 -------------------------------------------------------------------------------
 divPersonDetails
-        :: [FeedForm]
+        :: Session -> [FeedForm]
         -> Person -> [PersonDojo] -> [PersonMembershipLevel]
         -> Html
 
-divPersonDetails fsFeed person dojos memberLevels
+divPersonDetails ss fsFeed person dojos memberLevels
  = H.div ! A.id "person-details-edit" ! A.class_ "details"
  $ do
         -- If the first name is not filled in then the form
@@ -72,8 +74,10 @@ divPersonDetails fsFeed person dojos memberLevels
         fieldm  "FamilyName"    "family name"
                 (personFamilyName person)
 
-        fieldm  "DateOfBirth"   "date of birth (dd-mm-yyyy)"
-                (personDateOfBirth person)
+        -- Suppress date of birth if the role is less than Admin.
+        when (sessionIsAdmin ss)
+         $ fieldm "DateOfBirth"   "date of birth (dd-mm-yyyy)"
+                  (personDateOfBirth person)
 
         fieldm  "MemberId"      "member id"
                 (personMemberId person)

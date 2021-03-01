@@ -1,6 +1,7 @@
 
 module Dojo.Framework.Entity where
 import Dojo.Framework.Parse
+import Dojo.Framework.Value
 import Dojo.Base
 
 -------------------------------------------------------------------------------
@@ -32,6 +33,9 @@ data Field entity
 
           -- | Project out the field as an SQL value.
         , fieldToSql            :: entity -> SqlValue
+
+          -- | Project out the field as a generic value.
+        , fieldToValue          :: entity -> Maybe Value
 
           -- | Update the correspondingx field in the entity.
         , fieldFromSql          :: SqlValue -> entity -> entity }

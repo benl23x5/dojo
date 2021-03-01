@@ -66,31 +66,37 @@ eventFields
  = [ Field "EventId"    "id"
         (\s -> fmap toSql $ (parse s :: Either ParseError EventId))
         (toSql . eventId)
+        (fmap toValue . eventId)
         (\v x -> x { eventId = fromSql v})
 
    , Field "Type"       "type"
         (fmap toSql . loadInput @EventType)
         (toSql . eventType)
+        (fmap toValue . eventType)
         (\v x -> x { eventType = fromSql v})
 
    , Field "Location"    "location"
         (fmap toSql . loadInput @EventLocation)
         (toSql . eventLocation)
+        (fmap toValue . eventLocation)
         (\v x -> x { eventLocation = fromSql v})
 
    , Field "Date"       "date"
         (fmap toSql . loadInput @EventDate)
         (toSql . eventDate)
+        (fmap toValue . eventDate)
         (\v x -> x { eventDate = fromSql v})
 
    , Field "Time"       "time"
         (fmap toSql . loadInput @EventTime)
         (toSql . eventTime)
+        (fmap toValue . eventTime)
         (\v x -> x { eventTime = fromSql v})
 
    , Field "CreatedBy"  "created by"
         (fmap toSql . loadInput @UserId)
         (toSql . eventCreatedBy)
+        (fmap toValue . eventCreatedBy)
         (\v x -> x { eventCreatedBy = fromSql v})
    ]
 
