@@ -37,8 +37,8 @@ cgiLogin cc inputs
         case mUser of
          Nothing
           -> do
-                llogc cc "trace" "login-fail-username"
-                 $ O    [ ("user-name", S username) ]
+                llogc cc "trace" "login'fail'username"
+                 $ O    [ ("user'name", S username) ]
 
                 loginFail cc
 
@@ -115,7 +115,9 @@ loginCheck cc user password
         if not match
          then do
                 llogc cc "trace" "login'fail'password"
-                 $ O [ ("user",  toValue $ userId user) ]
+                 $ O [ ("user'id",   toValue $ userId user)
+                     , ("user'name", toValue $ userName user)
+                     , ("attempt",   S password) ]
                 loginFail cc
 
          else do
