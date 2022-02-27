@@ -1,5 +1,8 @@
 
-module Dojo.Node.PersonDevLink (cgiPersonDevLink) where
+module Dojo.Node.PersonDevLink
+ ( cgiPersonDevLink
+ , buildPersonRegPDF)
+where
 import Dojo.Data.Session
 import Dojo.Data.Person
 import Dojo.Chrome
@@ -41,7 +44,7 @@ cgiPersonDevLink ss inputs
         let pRegStatus  = pathPersonDevStatus (sessionConfig ss) sCode
         let sLink       = configSiteUrl cc ++ "/" ++ flatten pRegStatus
 
-        let sCodePng = makeQRCode sLink
+        let sCodePng    = makeQRCode sLink
         sRegDownload
          <- liftIO $ buildPersonRegPDF config pid person sCode sCodePng
 

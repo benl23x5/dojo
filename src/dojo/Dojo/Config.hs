@@ -2,12 +2,27 @@
 module Dojo.Config where
 import Data.List
 
+-- | Main command mode.
+data Mode
+        -- | Default command to respond to a CGI request.
+        = ModeCgi
+
+        -- | List people in the database.
+        | ModeListPeople
+
+        -- | Build device registration forms for all people in the database.
+        | ModeBuildDevRegs
+        deriving Show
+
 
 -- | Global site config.
 data Config
         = Config
-        { -- | "Your Organization Name"
-          configSiteName        :: String
+        { -- | Major mode of command-line program.
+          configMode            :: Mode
+
+        -- | "Your Organization Name"
+        , configSiteName        :: String
 
           -- | URL to root of site.
           --   "http://... " with no trailing '/'.
@@ -53,7 +68,8 @@ data Config
 configDefault :: Config
 configDefault
         = Config
-        { configSiteName        = "Aiki Dojo"
+        { configMode            = ModeCgi
+        , configSiteName        = "Aiki Dojo"
         , configSiteUrl         = "https://dojo.ouroborus.net"
         , configLogoUrl         = "https://dojo.ouroborus.net/logo-aka.jpg"
         , configCookieDomain    = "ouroborus.net"
@@ -79,6 +95,14 @@ loadConfig :: [String] -> Config -> IO Config
 loadConfig aa cc
  | [] <- aa
  = return cc
+
+ | "--list-people" : rest <- aa
+ = loadConfig rest
+ $ cc { configMode = ModeListPeople }
+
+ | "--build-dev-regs" : rest <- aa
+ = loadConfig rest
+ $ cc { configMode = ModeBuildDevRegs }
 
  | "-site-name" : sSiteName : rest  <- aa
  = loadConfig rest

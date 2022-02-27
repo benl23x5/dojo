@@ -34,6 +34,9 @@ import Dojo.Config
 import Dojo.Framework
 import Dojo.Trivia
 
+import Dojo.Mode.BuildDevRegs
+import Dojo.Mode.ListPeople
+
 import qualified System.Environment                     as S
 import qualified Network.CGI                            as CGI
 import qualified Text.Blaze.Html5                       as H
@@ -48,9 +51,15 @@ main :: IO ()
 main
  = do   args   <- S.getArgs
         config <- loadConfig args configDefault
-        CGI.runCGI $ CGI.handleErrors
-         $ C.catch (cgiTop config)
-         $ (\(e :: Control.SomeException) -> sorry e)
+        case configMode config of
+         ModeCgi -> do
+          CGI.runCGI $ CGI.handleErrors
+           $ C.catch (cgiTop config)
+           $ (\(e :: Control.SomeException) -> sorry e)
+
+         ModeBuildDevRegs   -> modeBuildDevRegs config
+         ModeListPeople     -> modeListPeople config
+
 
 
 -- | Redirect all hard errors to the issue tracker.

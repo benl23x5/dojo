@@ -70,12 +70,8 @@ Executable dojo
         Dojo.Data.User.Database
         Dojo.Data.User
 
-        Dojo.Trivia.Base
-        Dojo.Trivia.Convertible
-        Dojo.Trivia.Parse
-        Dojo.Trivia.Pretty
-        Dojo.Trivia.ToValue
-        Dojo.Trivia
+        Dojo.Mode.BuildDevRegs
+        Dojo.Mode.ListPeople
 
         Dojo.Framework.Lens
         Dojo.Framework.Path
@@ -124,6 +120,13 @@ Executable dojo
 
         Dojo.Node.Login
         Dojo.Node.Logout
+
+        Dojo.Trivia.Base
+        Dojo.Trivia.Convertible
+        Dojo.Trivia.Parse
+        Dojo.Trivia.Pretty
+        Dojo.Trivia.ToValue
+        Dojo.Trivia
 
         Dojo.Chrome
         Dojo.Data
